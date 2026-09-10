@@ -1,0 +1,18 @@
+.review-page { background-color: var(--paper); background-image: url("/assets/backgrounds/new1-mist-meadow.jpg"); background-position: center top; background-repeat: no-repeat; background-size: 100% auto; }
+.review-content { padding: 24rpx var(--layout-page-gutter) 190rpx; background: var(--surface-translucent); }
+.topbar { display: grid; grid-template-columns: 64rpx minmax(0, 1fr) 64rpx; align-items: center; }
+.topbar > button { width: 56rpx; height: 56rpx; padding: 0; border: 0; background: transparent; color: var(--ink); font-size: var(--type-display); line-height: 1; }
+.topbar > button::after { border: 0; }
+.topbar > button image { width: 34rpx; height: 34rpx; }
+.wordmark { justify-self: center; }
+.review-stack { display: grid; gap: 26rpx; }
+.thread-heading { padding: 24rpx 0; border-bottom: 1rpx solid var(--line); display: grid; gap: 8rpx; }
+.thread-heading text:first-child { font-size: var(--type-card); line-height: 1.35; font-weight: var(--weight-semibold); }
+.thread-heading text:last-child { color: var(--ink-soft); font-size: var(--type-micro); }
+.message-list { display: grid; gap: 20rpx; }
+.message { max-width: 88%; padding: 20rpx; border: 1rpx solid var(--line); border-radius: var(--radius-default); display: grid; gap: 12rpx; background: var(--surface); }
+.message.creator { justify-self: end; border-color: var(--warning); background: var(--warning-soft); }
+.message > view { display: flex; justify-content: space-between; gap: 18rpx; color: var(--ink-soft); font-size: var(--type-micro); }
+.message > text { font-size: var(--type-secondary); line-height: 1.6; }
+.reply-box { padding-top: 22rpx; border-top: 1rpx solid var(--line); display: grid; gap: 16rpx; }
+.reply-box textarea { width: 100%; min-height: 190rpx; box-sizing: border-box; padding: 18rpx; border: 1rpx solid var(--line-strong); border-radius: var(--radius-default); background: var(--surface); color: var(--text); font-size: var(--type-secondary); line-height: 1.55; }

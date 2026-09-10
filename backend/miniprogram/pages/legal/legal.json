@@ -1,0 +1,6 @@
+{
+  "usingComponents": {
+    "brand-header": "/components/brand-header/brand-header",
+    "consumer-tabs": "/components/consumer-tabs/consumer-tabs"
+  }
+}

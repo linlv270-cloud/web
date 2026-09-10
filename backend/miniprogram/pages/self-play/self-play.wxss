@@ -1,0 +1,2 @@
+@import "../../styles/content-list.wxss";
+.self-list-page { background-image: url("/assets/backgrounds/new1-moving-canopy.jpg"); }

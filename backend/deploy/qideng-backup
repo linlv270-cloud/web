@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+DATA_DIR="${DATA_DIR:-/opt/tde/data}"
+BACKUP_DIR="${BACKUP_DIR:-/opt/tde/backups}"
+DATABASE="${DATA_DIR}/qideng-curated-invitations.sqlite"
+STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+TARGET="${BACKUP_DIR}/qideng-curated-invitations-${STAMP}.sqlite"
+
+install -d -m 0700 "${BACKUP_DIR}"
+test -f "${DATABASE}"
+sqlite3 "${DATABASE}" ".timeout 10000" ".backup '${TARGET}'"
+for suffix in -wal -shm; do
+  if test -f "${DATABASE}${suffix}"; then
+    cp -p "${DATABASE}${suffix}" "${BACKUP_DIR}/qideng-curated-invitations-${STAMP}.sqlite${suffix}"
+  fi
+done
+if [[ -d "${DATA_DIR}/uploads" ]]; then
+  tar -C "${DATA_DIR}" -czf "${BACKUP_DIR}/uploads-${STAMP}.tar.gz" uploads
+fi
+find "${BACKUP_DIR}" -type f -mtime +14 -delete

@@ -1,0 +1,15 @@
+.env
+.env.local
+.next/
+node_modules/
+.npm-cache/
+.tmp-tests/
+.preview-data/
+.release/
+.secrets/
+data/*.sqlite*
+data/uploads/
+*.log
+.DS_Store
+tsconfig.tsbuildinfo
+*.tsbuildinfo

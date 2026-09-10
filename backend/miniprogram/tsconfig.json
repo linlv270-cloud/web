@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "ESNext",
+    "strict": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "types": [],
+    "typeRoots": ["./types"]
+  },
+  "include": ["**/*.ts", "types/**/*.d.ts"]
+}

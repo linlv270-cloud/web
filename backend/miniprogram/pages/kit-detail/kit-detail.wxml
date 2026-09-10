@@ -1,0 +1,39 @@
+<view class="page detail-page" wx:if="{{detail}}">
+  <view class="detail-hero kit-hero">
+    <image class="detail-hero-image" src="{{coverUrl}}" mode="aspectFill"/>
+    <view class="detail-hero-shade"></view>
+    <brand-header compact immersive />
+    <view class="detail-hero-toolbar"><button class="page-back" bindtap="back" aria-label="返回"><image src="/assets/icons/chevron-left-light.svg" mode="aspectFit"/></button><text>自在体验</text></view>
+    <view class="detail-hero-copy"><text>COCOC / 自在</text><text>{{detail.kit.title}}</text><text>{{detail.kit.subtitle || '按教程完成你的作品'}}</text></view>
+  </view>
+  <view class="detail-content">
+    <view class="info-card"><text class="detail-title serif">体验介绍</text><text class="lead">{{detail.kit.description || detail.kit.subtitle || '到店领取材料包，按现场指引自在体验。'}}</text></view>
+    <view class="info-card detail-facts">
+      <view><text>时间</text><text>{{detail.kit.durationMinutes || '-'}} 分钟</text></view>
+      <view><text>年龄</text><text>{{detail.kit.ageRange || '到店咨询'}}</text></view>
+      <view><text>难度</text><text>{{detail.kit.difficulty === 'easy' ? '轻松上手' : detail.kit.difficulty === 'hard' ? '需要耐心' : '适中'}}</text></view>
+    </view>
+    <view class="info-card story-block">
+      <text class="serif">自在指南</text>
+      <block wx:if="{{detail.guides && detail.guides.length}}">
+        <view wx:for="{{detail.guides}}" wx:key="id" class="guide-step"><text>{{item.stepOrder < 10 ? '0' + item.stepOrder : item.stepOrder}}</text><view><strong>{{item.title}}</strong><text>{{item.body}}</text><button wx:if="{{item.videoUrl}}" data-link="{{item.videoUrl}}" bindtap="openGuideLink">教程链接</button></view></view>
+      </block>
+      <block wx:else>
+        <view class="guide-step"><text>01</text><view><strong>领取材料包</strong><text>确认名称和材料清单。</text></view></view>
+        <view class="guide-step"><text>02</text><view><strong>扫码看教程</strong><text>按页面顺序完成每一步。</text></view></view>
+        <view class="guide-step"><text>03</text><view><strong>完成并归位</strong><text>整理工位，工具放回原处。</text></view></view>
+      </block>
+    </view>
+    <view class="info-card story-block">
+      <text class="serif">店内规范</text>
+      <block wx:if="{{detail.venueRules && detail.venueRules.length}}"><view wx:for="{{detail.venueRules}}" wx:key="id" class="guide-step"><text>{{item.stepOrder < 10 ? '0' + item.stepOrder : item.stepOrder}}</text><view><strong>{{item.title}}</strong><text>{{item.body}}</text><button wx:if="{{item.linkUrl}}" data-link="{{item.linkUrl}}" bindtap="openGuideLink">补充链接</button></view></view></block>
+      <block wx:else><view class="guide-step"><text>01</text><view><strong>按教程使用</strong><text>公共工具只用于对应步骤。</text></view></view><view class="guide-step"><text>02</text><view><strong>照顾同行儿童</strong><text>儿童体验需由成年人陪同。</text></view></view><view class="guide-step"><text>03</text><view><strong>完成后归位</strong><text>离开前清洁桌面并归还工具。</text></view></view></block>
+      <text wx:if="{{detail.kit.safetyNotes}}" class="safety-copy">{{detail.kit.safetyNotes}}</text>
+      <button class="secondary-button feedback-button" bindtap="contact">联系奇灯</button>
+    </view>
+  </view>
+  <view class="detail-sticky single">
+    <button class="secondary-button" bindtap="favorite">{{favorited ? '已收藏' : '收藏'}}</button>
+  </view>
+  <consumer-tabs active="self" />
+</view>

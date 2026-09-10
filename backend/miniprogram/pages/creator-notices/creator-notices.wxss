@@ -1,0 +1,8 @@
+.notices-page { background-color: var(--paper); background-image: url("/assets/backgrounds/new1-mist-meadow.jpg"); background-position: center top; background-repeat: no-repeat; background-size: 100% auto; }
+.notice-list { padding: var(--space-3) var(--layout-page-gutter) 180rpx; background: var(--surface-translucent); }
+.notice-list button { width: 100%; min-height: 170rpx; padding: 26rpx 8rpx; border: 0; border-bottom: 1rpx solid var(--line-strong); display: grid; grid-template-columns: 1fr auto; align-items: start; gap: 18rpx; text-align: left; background: transparent; color: var(--ink); }
+.notice-list button.unread { border-left: 1rpx solid var(--warning); padding-left: 22rpx; }
+.notice-list button > view { display: grid; gap: 12rpx; line-height: 1.55; }
+.notice-list .notice-title { color: var(--ink); font-size: var(--type-card); line-height: var(--line-card); font-weight: var(--weight-card); }
+.notice-list .muted { font-size: var(--type-micro); }
+.notice-indicator { width: 12rpx; height: 12rpx; margin-top: 12rpx; border-radius: var(--radius-circle); background: var(--warning); }

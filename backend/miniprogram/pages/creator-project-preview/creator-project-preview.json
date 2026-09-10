@@ -1,0 +1,6 @@
+{
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "creator-tabs": "/components/creator-tabs/creator-tabs"
+  }
+}

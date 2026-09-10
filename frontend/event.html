@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>活动详情 · TDE</title>
+<style>
+:root{
+  --yellow:#FFE600;--yellow-light:#FFF3B0;
+  --pink:#FFCDD2;--pink-light:#FCE4EC;
+  --blue:#283593;--blue-light:#E8EAF6;
+  --red:#E53935;--red-light:#FFEBEE;
+  --green:#4CAF50;--green-light:#E8F5E9;
+  --orange:#FB8C00;--orange-light:#FFF3E0;
+  --text:#222;--text-light:#666;--border:#e8e5de;--bg:#F7F5F0;--card:#fff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.6;min-height:100vh;}
+
+.topbar{position:sticky;top:0;z-index:100;background:var(--yellow);border-bottom:3px solid var(--text);padding:10px 20px;display:flex;align-items:center;gap:16px;}
+.logo{font-weight:900;font-size:22px;letter-spacing:1px;cursor:pointer;}
+.logo span{color:var(--blue);}
+.back-btn{border:2px solid var(--text);background:var(--card);border-radius:999px;padding:6px 16px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;color:var(--text);}
+.topbar-right{margin-left:auto;}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:var(--pink);border:2px solid var(--text);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;cursor:pointer;overflow:hidden;}
+.user-avatar img{width:100%;height:100%;object-fit:cover;}
+
+.container{max-width:800px;margin:0 auto;padding:20px;}
+
+.event-hero{background:var(--card);border:2px solid var(--text);border-radius:16px;overflow:hidden;margin-bottom:20px;}
+.event-cover{height:240px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;position:relative;}
+.event-cover img{width:100%;height:100%;object-fit:cover;}
+.event-status{position:absolute;top:16px;right:16px;padding:6px 16px;border-radius:999px;font-size:12px;font-weight:700;border:2px solid var(--text);}
+.event-status.recruiting{background:var(--green);color:#fff;}
+.event-status.full{background:var(--orange);color:#fff;}
+.event-status.ended{background:var(--text-light);color:#fff;}
+.event-content{padding:24px;}
+.event-title{font-size:26px;font-weight:900;margin-bottom:8px;}
+.event-intro{font-size:15px;color:var(--text-light);margin-bottom:16px;}
+.event-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;}
+.meta-item{background:var(--bg);border-radius:10px;padding:12px 16px;}
+.meta-label{font-size:11px;color:var(--text-light);font-weight:700;letter-spacing:1px;margin-bottom:4px;}
+.meta-value{font-size:14px;font-weight:600;}
+.event-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+.event-tag{font-size:12px;padding:5px 14px;border-radius:999px;background:var(--yellow-light);font-weight:600;}
+.event-desc{background:var(--card);border:2px solid var(--text);border-radius:16px;padding:24px;margin-bottom:20px;}
+.event-desc h3{font-size:16px;font-weight:900;margin-bottom:12px;}
+.event-desc p{font-size:14px;line-height:1.8;color:var(--text-light);white-space:pre-wrap;}
+
+.register-box{background:var(--yellow-light);border:2px solid var(--text);border-radius:16px;padding:24px;margin-bottom:20px;}
+.register-box h3{font-size:18px;font-weight:900;margin-bottom:12px;}
+.register-info{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px;font-size:14px;}
+.register-info span{display:flex;align-items:center;gap:6px;}
+.register-info b{color:var(--red);}
+.register-form textarea{width:100%;padding:12px;border:2px solid var(--text);border-radius:10px;font-family:inherit;font-size:14px;resize:vertical;min-height:80px;margin-bottom:12px;background:var(--card);}
+.register-btn{width:100%;border:2px solid var(--text);background:var(--text);color:var(--yellow);border-radius:999px;padding:14px;font-size:16px;font-weight:900;cursor:pointer;font-family:inherit;transition:all .2s;}
+.register-btn:hover{background:var(--yellow);color:var(--text);}
+.register-btn:disabled{opacity:.5;cursor:not-allowed;}
+.register-btn.cancel{background:var(--red);color:#fff;border-color:var(--red);}
+
+.status-badge{display:inline-block;padding:8px 20px;border-radius:999px;font-size:14px;font-weight:700;border:2px solid var(--text);}
+.status-badge.pending{background:var(--orange-light);color:var(--orange);}
+.status-badge.approved{background:var(--green-light);color:var(--green);}
+.status-badge.rejected{background:var(--red-light);color:var(--red);}
+.status-badge.cancelled{background:var(--border);color:var(--text-light);}
+
+.conflict-warning{background:var(--red-light);border:2px solid var(--red);border-radius:10px;padding:12px 16px;margin-bottom:12px;font-size:13px;color:var(--red);font-weight:600;}
+
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--yellow);padding:10px 22px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:200;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(max-width:600px){
+  .event-meta-grid{grid-template-columns:1fr;}
+  .event-cover{height:160px;}
+  .event-title{font-size:20px;}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a href="calendar.html" class="back-btn">← 返回日历</a>
+  <div class="logo" onclick="location.href='index.html'">TDE<span>·</span>活动</div>
+  <div class="topbar-right" id="topbarRight"></div>
+</header>
+
+<div class="container" id="app" style="display:none">
+  <!-- Hero -->
+  <div class="event-hero">
+    <div class="event-cover" id="eventCover">
+      <div style="font-size:60px;font-weight:900;color:var(--blue)">TDE</div>
+    </div>
+    <div class="event-content">
+      <div class="event-status" id="eventStatus">招募中</div>
+      <h1 class="event-title" id="eventTitle"></h1>
+      <p class="event-intro" id="eventIntro"></p>
+      <div class="event-meta-grid">
+        <div class="meta-item">
+          <div class="meta-label">活动时间</div>
+          <div class="meta-value" id="eventDate"></div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">报名截止</div>
+          <div class="meta-value" id="eventDeadline"></div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">活动地点</div>
+          <div class="meta-value" id="eventLocation"></div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">主办方</div>
+          <div class="meta-value" id="eventOrganizer"></div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">招募品类</div>
+          <div class="meta-value" id="eventSlots"></div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">浏览量</div>
+          <div class="meta-value" id="eventViews"></div>
+        </div>
+      </div>
+      <div class="event-tags" id="eventTags"></div>
+    </div>
+  </div>
+
+  <!-- Description -->
+  <div class="event-desc">
+    <h3>活动详情</h3>
+    <p id="eventDesc"></p>
+  </div>
+
+  <!-- Register -->
+  <div class="register-box" id="registerBox">
+    <h3>我要报名</h3>
+    <div class="register-info" id="registerInfo"></div>
+    <div id="conflictWarning" style="display:none" class="conflict-warning"></div>
+    <div id="registerFormArea">
+      <textarea id="registerMessage" placeholder="留言（选填）：介绍你的品牌、想带的作品、特殊需求等"></textarea>
+      <button class="register-btn" id="registerBtn" onclick="submitRegister()">确认报名</button>
+    </div>
+    <div id="registeredArea" style="display:none;text-align:center">
+      <div class="status-badge" id="myRegStatus"></div>
+      <p style="margin-top:12px;font-size:13px;color:var(--text-light)" id="myRegMessage"></p>
+      <button class="register-btn cancel" style="margin-top:16px;max-width:200px" id="cancelBtn" onclick="cancelRegister()">取消报名</button>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:60px;color:var(--text-light)" id="loading">加载中...</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+let eventData = null;
+let myReg = null;
+let scheduleConflict = false;
+
+function getEventId(){
+  return new URLSearchParams(location.search).get('id');
+}
+
+function checkLogin(){
+  const token = localStorage.getItem('tde_token');
+  const creator = localStorage.getItem('tde_creator');
+  if(token && creator){
+    try{
+      const c = JSON.parse(creator);
+      $('topbarRight').innerHTML = `<div class="user-avatar" onclick="location.href='profile.html'">${c.logoImageUrl ? `<img src="${c.logoImageUrl}">` : (c.brandName||'主').charAt(0)}</div>`;
+      return true;
+    }catch(e){}
+  }
+  $('topbarRight').innerHTML = `<a href="login.html" style="border:2px solid var(--text);background:var(--card);border-radius:999px;padding:6px 16px;font-size:12px;font-weight:700;color:var(--text);text-decoration:none">登录</a>`;
+  return false;
+}
+
+async function loadEvent(){
+  const id = getEventId();
+  if(!id){ location.href = 'calendar.html'; return; }
+  try{
+    const headers = {};
+    const token = localStorage.getItem('tde_token');
+    if(token) headers['Authorization'] = 'Bearer ' + token;
+    const res = await fetch(`/api/web/events/${id}`, { headers });
+    const data = await res.json();
+    if(data.error){ toast(data.error); setTimeout(()=>location.href='calendar.html', 1500); return; }
+    eventData = data.event;
+    myReg = data.myRegistration;
+    renderEvent();
+    $('loading').style.display = 'none';
+    $('app').style.display = 'block';
+    // 检查档期冲突
+    checkScheduleConflict();
+  }catch(e){
+    $('loading').textContent = '加载失败';
+    console.error(e);
+  }
+}
+
+function renderEvent(){
+  const e = eventData;
+  if(e.coverUrl){
+    $('eventCover').innerHTML = `<img src="${e.coverUrl}" alt="${e.title}">`;
+  }
+  const statusText = {recruiting:'招募中', full:'已满员', ended:'已结束', cancelled:'已取消'}[e.status] || e.status;
+  const statusEl = $('eventStatus');
+  statusEl.textContent = statusText;
+  statusEl.className = 'event-status ' + e.status;
+
+  $('eventTitle').textContent = e.title;
+  $('eventIntro').textContent = e.short_intro;
+
+  const start = new Date(e.start_date);
+  const end = new Date(e.end_date);
+  const dateStr = `${start.getFullYear()}.${start.getMonth()+1}.${start.getDate()} - ${end.getFullYear()}.${end.getMonth()+1}.${end.getDate()}`;
+  $('eventDate').textContent = dateStr;
+  $('eventDeadline').textContent = e.registration_deadline || '无';
+  $('eventLocation').textContent = `${e.province} ${e.city} ${e.district || ''} ${e.address || ''}`;
+  $('eventOrganizer').textContent = e.organizer || 'TDE官方';
+  $('eventSlots').textContent = e.max_participants ? `剩余${e.remaining}/${e.max_participants}个名额` : '名额不限';
+  $('eventViews').textContent = e.view_count + ' 次';
+
+  $('eventTags').innerHTML = e.categoryTags.map(t => `<span class="event-tag">${t}</span>`).join('');
+  $('eventDesc').textContent = e.description || '暂无详细介绍';
+
+  // 报名区域
+  renderRegisterArea();
+}
+
+function renderRegisterArea(){
+  const isLoggedIn = checkLogin();
+  const info = $('registerInfo');
+
+  if(eventData.status === 'recruiting'){
+    info.innerHTML = `<span>📅 活动时间：${eventData.start_date} 至 ${eventData.end_date}</span><span>⏰ 报名截止：${eventData.registration_deadline || '无'}</span>`;
+  }else if(eventData.status === 'full'){
+    info.innerHTML = `<span style="color:var(--orange);font-weight:700">该活动名额已满</span>`;
+  }else{
+    info.innerHTML = `<span style="color:var(--text-light)">该活动已结束或已取消</span>`;
+  }
+
+  if(myReg && myReg.status !== 'cancelled' && myReg.status !== 'rejected'){
+    // 已报名
+    $('registerFormArea').style.display = 'none';
+    $('registeredArea').style.display = 'block';
+    const statusText = {pending:'待审核', approved:'已确认', rejected:'已拒绝', cancelled:'已取消'}[myReg.status] || myReg.status;
+    $('myRegStatus').textContent = statusText;
+    $('myRegStatus').className = 'status-badge ' + myReg.status;
+    $('myRegMessage').textContent = myReg.message ? `留言：${myReg.message}` : '等待主办方审核，结果将通过站内信通知';
+    $('cancelBtn').style.display = myReg.status === 'pending' ? 'inline-block' : 'none';
+  }else{
+    // 未报名
+    $('registerFormArea').style.display = 'block';
+    $('registeredArea').style.display = 'none';
+    const btn = $('registerBtn');
+    if(!isLoggedIn){
+      btn.textContent = '登录后报名';
+      btn.onclick = () => location.href = 'login.html';
+    }else if(eventData.status !== 'recruiting'){
+      btn.disabled = true;
+      btn.textContent = eventData.status === 'full' ? '名额已满' : '不可报名';
+    }else{
+      btn.textContent = '确认报名';
+      btn.onclick = submitRegister;
+    }
+  }
+}
+
+async function checkScheduleConflict(){
+  if(!myReg && checkLogin() && eventData){
+    try{
+      const res = await fetch('/api/web/profile', {
+        headers: { 'Authorization': 'Bearer ' + localStorage.getItem('tde_token') }
+      });
+      const data = await res.json();
+      const busyPeriods = data.busyPeriods || [];
+      const conflict = busyPeriods.some(p => {
+        return !(eventData.end_date < p.start_date || eventData.start_date > p.end_date);
+      });
+      if(conflict){
+        scheduleConflict = true;
+        const warn = $('conflictWarning');
+        warn.style.display = 'block';
+        warn.textContent = '⚠️ 注意：该活动日期与你在"档期管理"中标记的不可邀请日期有冲突，请确认后再报名。';
+      }
+    }catch(e){}
+  }
+}
+
+async function submitRegister(){
+  const message = $('registerMessage').value;
+  const btn = $('registerBtn');
+  btn.disabled = true;
+  btn.textContent = '提交中...';
+  try{
+    const res = await fetch(`/api/web/events/${eventData.id}/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('tde_token') },
+      body: JSON.stringify({ message })
+    });
+    const data = await res.json();
+    if(data.error){ toast(data.error); btn.disabled = false; btn.textContent = '确认报名'; return; }
+    toast('报名成功，等待审核');
+    myReg = { status: 'pending', message };
+    renderRegisterArea();
+  }catch(e){
+    toast('报名失败，请重试');
+    btn.disabled = false;
+    btn.textContent = '确认报名';
+  }
+}
+
+async function cancelRegister(){
+  if(!confirm('确定要取消报名吗？')) return;
+  try{
+    const res = await fetch(`/api/web/events/${eventData.id}/register`, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + localStorage.getItem('tde_token') }
+    });
+    const data = await res.json();
+    if(data.error){ toast(data.error); return; }
+    toast('已取消报名');
+    myReg = null;
+    renderRegisterArea();
+  }catch(e){
+    toast('取消失败');
+  }
+}
+
+let toastTimer = null;
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+checkLogin();
+loadEvent();
+</script>
+</body>
+</html>

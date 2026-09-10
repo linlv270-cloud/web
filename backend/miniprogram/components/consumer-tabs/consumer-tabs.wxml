@@ -1,0 +1,6 @@
+<view class="consumer-tabs {{immersive ? 'immersive' : ''}}">
+  <button wx:for="{{tabs}}" wx:key="key" class="{{active === item.key ? 'active' : ''}}" data-key="{{item.key}}" data-url="{{item.url}}" bindtap="open" hover-class="tab-hover">
+    <image class="tab-icon" src="{{active === item.key ? item.activeIcon : immersive ? item.lightIcon : item.icon}}" mode="aspectFit" />
+    <text>{{item.label}}</text>
+  </button>
+</view>

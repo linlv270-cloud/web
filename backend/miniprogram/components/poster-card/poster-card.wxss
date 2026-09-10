@@ -1,0 +1,25 @@
+.poster-card {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  min-width: 0;
+  padding: 0;
+  border: 1rpx solid var(--dark-hairline);
+  border-radius: var(--radius-default);
+  overflow: hidden;
+  position: relative;
+  background: var(--surface-soft);
+  color: var(--surface);
+  text-align: left;
+  contain: layout paint;
+  transition: transform var(--motion-standard) var(--ease-out), opacity var(--motion-fast) var(--ease-standard);
+}
+.poster-card::after { border: 0; }
+.poster-card image { width: 100%; height: 100%; display: block; overflow: hidden; }
+.poster-shade { position: absolute; z-index: 1; left: 0; right: 0; bottom: 0; height: 40%; background: var(--scrim-strong); pointer-events: none; }
+.poster-copy { position: absolute; z-index: 2; left: var(--space-3); right: var(--space-3); bottom: var(--space-3); min-width: 0; display: grid; gap: var(--space-1); }
+.poster-title { max-width: 100%; max-height: calc(var(--line-card) * 2); overflow: hidden; color: var(--on-dark); font-family: var(--font-sans); font-size: var(--type-card); line-height: var(--line-card); font-weight: var(--weight-medium); overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.poster-title.long { font-size: var(--type-card); line-height: var(--line-card); }
+.poster-category { overflow: hidden; color: var(--dark-text-soft); font-size: var(--type-micro); line-height: 1.5; white-space: nowrap; text-overflow: ellipsis; }
+.poster-card.featured .poster-title { max-height: calc(var(--line-card) * 2); font-size: var(--type-card); line-height: var(--line-card); font-weight: var(--weight-card); }
+.poster-card.featured .poster-title.long { font-size: var(--type-card); }
+.poster-card-active { opacity: .94; transform: scale(.985); }

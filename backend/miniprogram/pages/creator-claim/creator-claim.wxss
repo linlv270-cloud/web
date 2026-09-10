@@ -1,0 +1,19 @@
+.claim-page { background-color: var(--paper); background-image: url("/assets/backgrounds/new1-mist-meadow.jpg"); background-position: center top; background-repeat: no-repeat; background-size: 100% auto; }
+.claim-content { padding: 26rpx var(--layout-page-gutter) 180rpx; display: grid; gap: var(--space-5); background: var(--surface-translucent); }
+.topbar { display: grid; grid-template-columns: 64rpx minmax(0, 1fr) 64rpx; align-items: center; }
+.topbar > button { width: 56rpx; height: 56rpx; padding: 0; border: 0; background: transparent; color: var(--ink); font-size: var(--type-display); line-height: 1; }
+.topbar > button::after { border: 0; }
+.topbar > button image { width: 34rpx; height: 34rpx; }
+.wordmark { justify-self: center; }
+.claim-intro { min-height: 210rpx; padding: 30rpx 26rpx; border: 1rpx solid var(--warning); border-radius: var(--radius-default); display: grid; align-content: center; gap: 16rpx; background: var(--warning-soft); box-shadow: none; }
+.claim-intro text:first-child { color: var(--ink); font-size: var(--type-section); line-height: var(--line-section); font-weight: var(--weight-section); }
+.claim-intro text:last-child { color: var(--ink-soft); font-size: var(--type-secondary); line-height: 1.6; }
+.claim-code { height: 104rpx; padding: 0 22rpx; border: 1rpx solid var(--line-strong); border-radius: var(--radius-default); background: var(--surface); color: var(--ink); font-size: var(--type-card); font-weight: var(--weight-card); letter-spacing: 0; }
+.agreement-row { width: 100%; min-height: 108rpx; padding: 18rpx; border: 1rpx solid var(--line); border-radius: var(--radius-default); display: grid; grid-template-columns: 42rpx minmax(0, 1fr); align-items: center; gap: 14rpx; background: var(--surface); color: var(--ink-soft); text-align: left; font-size: var(--type-caption); line-height: 1.5; }
+.agreement-row > view { width: 38rpx; height: 38rpx; border: 1rpx solid var(--line-strong); display: grid; place-items: center; background: var(--paper); color: var(--ink); }
+.agreement-row > view image { width: 26rpx; height: 26rpx; }
+.agreement-row.selected { border-color: var(--line-strong); }
+.legal-link { justify-self: start; min-height: 54rpx; padding: 0; border: 0; border-bottom: 1rpx solid var(--line-strong); border-radius: var(--radius-sm); background: transparent; color: var(--ink); font-size: var(--type-caption); }
+.legal-link::after { border: 0; }
+.claim-button { margin-top: 10rpx; }
+.claim-note { color: var(--ink-soft); font-size: var(--type-micro); line-height: 1.6; }

@@ -1,0 +1,7 @@
+<view class="creator-tabs">
+  <button wx:for="{{tabs}}" wx:key="key" data-key="{{item.key}}" bindtap="go" class="{{item.key}} {{active === item.key ? 'active' : ''}}">
+    <image class="tab-mark" src="{{active === item.key ? item.activeIcon : item.icon}}" mode="aspectFit"/>
+    <text class="unread" wx:if="{{item.key === 'notices' && noticeUnread}}">{{noticeUnread}}</text>
+    <text>{{item.label}}</text>
+  </button>
+</view>

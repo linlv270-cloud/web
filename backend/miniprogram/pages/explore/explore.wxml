@@ -1,0 +1,10 @@
+<view class="page content-list-page explore-list-page atmosphere-page">
+  <brand-header immersive show-city city-label="{{cityText}}" city-columns="{{cityColumns}}" city-indexes="{{cityIndexes}}" bind:citycolumnchange="cityColumnChange" bind:citychange="selectCity" />
+  <view class="content-list">
+    <view class="content-list-heading"><view><text class="eyebrow">DISCOVER</text><text class="content-list-title">{{tag || '发现新遇'}}</text></view><text class="content-result">{{loading ? '正在更新' : allCards.length + '个体验'}}</text></view>
+    <view wx:if="{{!loading && cards.length}}" class="content-poster-grid"><view wx:for="{{cards}}" wx:key="key" class="content-grid-card"><poster-card card="{{item}}" bind:open="openCard" /></view></view>
+    <view wx:if="{{!loading && !cards.length}}" class="content-inline-empty">这个方向暂时还没有匹配的体验</view>
+    <view wx:if="{{loading}}" class="content-inline-empty">正在更新城市体验</view>
+  </view>
+  <consumer-tabs active="{{mode === 'companion' ? 'companion' : mode === 'self' ? 'self' : 'home'}}" immersive />
+</view>

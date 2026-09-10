@@ -1,0 +1,32 @@
+# Operating-system metadata
+.DS_Store
+._*
+
+# Secrets and private configuration
+**/.env
+**/.env.*
+!**/.env.example
+**/project.private.config.json
+
+# Dependencies and build output
+**/node_modules/
+**/.next/
+**/.release/
+**/.npm-cache/
+**/.tmp-tests/
+**/.preview-data/
+**/backup/
+
+# Local runtime data
+**/.local-data/
+**/data/*.sqlite
+**/data/*.sqlite-shm
+**/data/*.sqlite-wal
+**/data/uploads/
+**/*.log
+
+# Archives and generated deployment bundles
+*.zip
+*.tar
+*.tar.gz
+*.tgz

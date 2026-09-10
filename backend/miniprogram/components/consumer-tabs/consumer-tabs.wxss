@@ -1,0 +1,24 @@
+.consumer-tabs {
+  position: fixed;
+  z-index: 9998;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  height: calc(var(--layout-bottom-nav) + env(safe-area-inset-bottom));
+  padding: 10rpx var(--layout-page-gutter) calc(10rpx + env(safe-area-inset-bottom));
+  border-top: 1rpx solid var(--line);
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: var(--paper);
+  transform: translateZ(0);
+}
+.consumer-tabs button { min-width: 0; min-height: 88rpx; padding: 8rpx 4rpx; border: 0; border-radius: var(--radius-default); display: grid; place-items: center; align-content: center; gap: 6rpx; background: transparent; color: var(--muted); font-size: var(--type-micro); line-height: var(--line-micro); font-weight: var(--weight-body); transition: transform var(--motion-fast) var(--ease-standard), background var(--motion-standard) var(--ease-out); }
+.consumer-tabs button::after { border: 0; }
+.consumer-tabs button image, .tab-icon { width: 40rpx; height: 40rpx; }
+.consumer-tabs button.active { color: var(--accent-pressed); background: var(--accent-soft); font-weight: var(--weight-secondary); }
+.consumer-tabs button:active { transform: scale(.98); }
+.tab-hover { background: var(--surface-soft); }
+.consumer-tabs.immersive { border-top-color: var(--dark-hairline); background: var(--night); }
+.consumer-tabs.immersive button { color: var(--dark-text-soft); }
+.consumer-tabs.immersive button.active { color: var(--accent-pressed); background: var(--accent-soft); }

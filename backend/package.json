@@ -1,0 +1,80 @@
+{
+  "name": "qideng-workshop-platform-new1",
+  "version": "1.1.0-new1",
+  "private": true,
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "browserslist": {
+    "production": [
+      "Chrome >= 100",
+      "Edge >= 100",
+      "Firefox >= 100",
+      "Safari >= 15.6",
+      "iOS >= 15.6"
+    ],
+    "development": [
+      "last 1 Chrome version",
+      "last 1 Firefox version",
+      "Safari >= 15.6",
+      "iOS >= 15.6"
+    ]
+  },
+  "scripts": {
+    "dev": "next dev",
+    "sync:public": "node scripts/sync-public-static.mjs",
+    "check:static-source": "node scripts/sync-public-static.mjs --check",
+    "build": "npm run sync:public && npm run check:design-system && npm run check:mini-types && next build --webpack && node scripts/prepare-standalone.mjs",
+    "start": "node .next/standalone/server.js",
+    "lint": "eslint .",
+    "design:sync": "node design-system/generate-tokens.mjs",
+    "font:embed": "node scripts/embed-editorial-font.mjs",
+    "icons:sync": "node scripts/generate-mini-icons.mjs",
+    "check:launch": "node scripts/launch-check.mjs",
+    "check:design-system": "node scripts/check-design-system.mjs",
+    "check:all": "npm run check:design-system && npm run check:mini-types && npm run check:content-first && npm run check:workshop-rules && npm run check:launch && npm run lint",
+    "check:mini-types": "tsc -p miniprogram/tsconfig.json --noEmit",
+    "check:content-first": "node scripts/check-content-first.mjs",
+    "check:workshop-rules": "node scripts/check-workshop-rules.mjs",
+    "check:release-package": "node scripts/check-release-package.mjs",
+    "release:source": "node scripts/create-release-package.mjs",
+    "check:local-ready": "node scripts/check-local-ready.mjs",
+    "check:env": "node scripts/check-production-env.mjs",
+    "check:tencent-map": "node scripts/check-tencent-map-key.mjs",
+    "mini:preview": "npm run check:all && node scripts/preview-mini-program.mjs",
+    "mini:upload": "npm run check:all && node scripts/upload-mini-program.mjs",
+    "seed:preview": "tsx scripts/seed-workshop-preview.mjs",
+    "refresh:preview": "tsx scripts/refresh-workshop-preview.mjs",
+    "clear:preview": "tsx scripts/clear-workshop-preview.mjs",
+    "test": "npm run build && node --import tsx --test tests/*.test.mjs",
+    "test:smoke": "node --import tsx --test tests/*.test.mjs",
+    "test:mini": "npm run build && node --import tsx --test tests/mini-program.test.mjs",
+    "test:permissions": "node --import tsx --test tests/permissions.test.mjs"
+  },
+  "dependencies": {
+    "html2canvas": "^1.4.1",
+    "jszip": "^3.10.1",
+    "lucide-react": "^0.468.0",
+    "next": "16.2.6",
+    "opentype.js": "^2.0.0",
+    "pptxgenjs": "^4.0.1",
+    "qrcode.react": "^4.2.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.19",
+    "@types/opentype.js": "^1.3.10",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.2.6",
+    "miniprogram-ci": "^2.1.31",
+    "playwright": "^1.62.1",
+    "prettier": "^3.9.6",
+    "tsx": "^4.20.6",
+    "typescript": "5.9.3"
+  },
+  "type": "module"
+}

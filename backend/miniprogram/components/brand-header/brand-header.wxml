@@ -1,0 +1,17 @@
+<view class="brand-header-host {{compact ? 'compact' : ''}} {{immersive ? 'immersive' : ''}}" style="{{brandMetricsStyle}}">
+  <view class="brand-header">
+    <view class="brand-safe"></view>
+    <view class="brand-main">
+      <button class="brand-home" bindtap="home" hover-class="none" aria-label="返回首页">
+        <view class="brand-name">
+          <view class="brand-wordmark"><text>奇灯</text><text>COCOC</text></view>
+          <text class="brand-tagline">在城市里，发现一次新遇</text>
+        </view>
+      </button>
+      <picker wx:if="{{showCity}}" class="brand-city-picker" mode="multiSelector" range="{{cityColumns}}" value="{{cityIndexes}}" bindcolumnchange="cityColumnChange" bindchange="cityChange">
+        <view class="brand-city"><image class="city-pin" src="{{immersive ? '/assets/icons/map-light.svg' : '/assets/icons/map-active.svg'}}" mode="aspectFit"/><text>{{cityLabel}}</text><image class="city-arrow" src="{{immersive ? '/assets/icons/chevron-down-light.svg' : '/assets/icons/chevron-down-muted.svg'}}" mode="aspectFit"/></view>
+      </picker>
+      <view wx:else class="brand-action-space"></view>
+    </view>
+  </view>
+</view>

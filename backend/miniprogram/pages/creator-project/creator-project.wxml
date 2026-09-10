@@ -1,0 +1,78 @@
+<view class="page creator-project-page">
+  <brand-header />
+  <view class="topbar"><view class="wordmark"><text>体验</text><view class="wordmark-line"></view></view><text class="muted">{{home ? activeProjectCount + '/' + maxRetainedProjects : ''}}</text></view>
+  <view wx:if="{{!loading}}" class="form-stack creator-project-form">
+    <view wx:if="{{home.applicationStatus !== 'active' && home.applicationStatus !== 'legacy'}}" class="project-status">奇灯新遇官申请通过前，体验仅保存为草稿。</view>
+
+    <view class="section-block project-library">
+      <view class="project-library-heading"><text class="serif section-title">体验管理</text><text class="muted">前台只展示一个体验</text></view>
+      <button class="new-project-button" bindtap="newProject" disabled="{{activeProjectCount >= maxRetainedProjects}}"><image src="/assets/icons/plus-light.svg" mode="aspectFit"/><text>发布体验</text></button>
+      <view class="history-heading"><text>历史体验</text><text>{{activeProjectCount}}</text></view>
+      <view wx:if="{{projects.length}}" class="history-list">
+        <view wx:for="{{projects}}" wx:key="id" class="history-card {{item.selectedForDisplay ? 'displayed' : ''}}">
+          <button class="history-image" data-url="{{item.imageUrl}}" bindtap="previewHistoryImage"><image wx:if="{{item.imageUrl}}" src="{{item.imageUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="projectImageError" /><view wx:else>暂无图片</view></button>
+          <view class="history-copy"><text class="history-title">{{item.displayTitle}}</text><text class="history-intro">{{item.oneLiner}}</text><text class="history-status">{{item.statusLabel}}</text></view>
+          <view class="history-actions">
+            <button data-id="{{item.id}}" bindtap="editProject">编辑</button>
+            <button class="display-action {{item.selectedForDisplay ? 'active' : ''}}" data-id="{{item.id}}" bindtap="setDisplayProject" disabled="{{item.selectedForDisplay || actionProjectId}}">{{item.selectedForDisplay ? '展示中' : '设为展示'}}</button>
+            <button class="delete-action" data-id="{{item.id}}" bindtap="deleteProject" disabled="{{actionProjectId}}">删除</button>
+          </view>
+        </view>
+      </view>
+      <view wx:else class="project-empty">还没有体验</view>
+    </view>
+
+    <view wx:if="{{editorOpen}}" id="project-editor" class="section-block activity-section project-editor">
+      <view class="section-heading"><view><text class="serif section-title">{{form.projectId ? '编辑体验' : '发布体验'}}</text></view><button bindtap="closeEditor">关闭</button></view>
+      <label class="field"><text class="field-label">体验名称</text><input class="field-input" value="{{form.projectTitle}}" data-key="projectTitle" bindinput="field" maxlength="80" placeholder="例如：周末陶杯手作体验" /></label>
+      <label class="field"><text class="field-label">一句话介绍</text><input class="field-input" value="{{form.oneLiner}}" data-key="oneLiner" bindinput="field" maxlength="80" placeholder="顾客会优先看到这句话" /></label>
+      <view class="date-heading"><view><text class="field-label">可体验日期</text><text class="muted">请添加该体验项目可以接待顾客的日期</text></view></view>
+      <view class="schedule-add"><picker mode="date" value="{{scheduleDate}}" bindchange="scheduleDateChange"><view class="picker-field">{{scheduleDate || '选择一个可体验日期'}}</view></picker><button class="secondary-button" bindtap="addAvailableDate">添加</button></view>
+      <view class="chip-row"><button wx:for="{{form.availableDates}}" wx:key="*this" class="chip selected" data-date="{{item}}" bindtap="removeAvailableDate">{{item}} ×</button></view>
+      <view class="project-number-grid">
+        <label class="field"><text class="field-label">最少人数</text><input class="field-input" type="number" value="{{form.minPeople}}" data-key="minPeople" bindinput="field" maxlength="2" /></label>
+        <label class="field"><text class="field-label">最多人数</text><input class="field-input" type="number" value="{{form.maxPeople}}" data-key="maxPeople" bindinput="field" maxlength="2" /></label>
+        <label class="field"><text class="field-label">体验时长（分钟）</text><input class="field-input" type="number" value="{{form.durationMinutes}}" data-key="durationMinutes" bindinput="field" maxlength="4" /></label>
+        <label class="field"><text class="field-label">价格（分）</text><input class="field-input" type="number" value="{{form.priceCents}}" data-key="priceCents" bindinput="field" maxlength="8" /></label>
+      </view>
+      <view class="project-number-grid two"><label class="field"><text class="field-label">适合年龄</text><input class="field-input" value="{{form.ageRange}}" data-key="ageRange" bindinput="field" maxlength="40" placeholder="例如：8岁以上" /></label><label class="field"><text class="field-label">体验难度</text><picker mode="selector" range="{{difficultyOptions}}" value="{{form.difficulty === 'easy' ? 0 : form.difficulty === 'medium' ? 1 : 2}}" bindchange="difficultyChange"><view class="picker-field">{{form.difficulty === 'easy' ? '零基础友好' : form.difficulty === 'medium' ? '需要一点经验' : '进阶体验'}}</view></picker></label></view>
+      <picker mode="region" value="{{projectRegion}}" bindchange="locationChange"><view class="location-field"><view><text class="field-label">城市 / 区</text><text>{{form.city ? form.province + ' · ' + form.city + ' · ' + (form.district || '全城') : '选择省 / 市 / 区'}}</text></view><image class="field-chevron" src="/assets/icons/chevron-left-muted.svg" mode="aspectFit"/></view></picker>
+      <label class="field"><text class="field-label">具体地点（选填）</text><input class="field-input" value="{{form.addressHint}}" data-key="addressHint" bindinput="field" maxlength="120" /></label>
+      <label class="field"><text class="field-label">体验详情（选填，不超过2000字）</text><textarea class="field-textarea" value="{{form.description}}" data-key="description" bindinput="field" maxlength="2000" /></label>
+      <label class="field"><text class="field-label">安全提醒（选填）</text><textarea class="field-textarea compact" value="{{form.safetyNotes}}" data-key="safetyNotes" bindinput="field" maxlength="500" placeholder="如材料、工具、过敏或儿童陪同要求" /></label>
+      <view class="project-tags">
+        <view wx:for="{{projectTagGroups}}" wx:key="category" wx:for-item="group" class="project-tag-group">
+          <button class="project-tag-selector {{group.open ? 'open' : ''}}" data-category="{{group.category}}" bindtap="toggleProjectTagGroup"><view><text>{{group.label}}</text><text>{{group.selectedSummary}}</text></view><view><text wx:if="{{group.selectedCount}}">{{group.selectedCount}}</text><image src="{{group.open ? '/assets/icons/chevron-up-muted.svg' : '/assets/icons/chevron-down-muted.svg'}}" mode="aspectFit"/></view></button>
+          <view wx:if="{{group.open}}" class="project-tag-options">
+            <view wx:if="{{group.tags.length}}" class="chip-row"><button wx:for="{{group.tags}}" wx:key="id" wx:for-item="tag" data-id="{{tag.id}}" bindtap="toggleProjectTag" class="chip {{tag.selected ? 'selected' : ''}}">{{tag.label}}</button></view>
+            <text wx:elif="{{!group.applicationCategory}}" class="project-tag-empty">{{group.emptyHint}}</text>
+          </view>
+          <button wx:if="{{group.applicationCategory}}" class="application-tag-link" data-category="{{group.category}}" bindtap="openApplicationTagGroup"><text>{{group.applicationActionLabel}}</text><image src="/assets/icons/chevron-left-muted.svg" mode="aspectFit"/></button>
+        </view>
+      </view>
+      <view class="operation-section">
+        <view class="section-heading"><view><text class="serif section-title">推荐栏目申请</text><text class="muted">推荐栏目单独审核，不影响体验本身审核</text></view></view>
+        <view wx:if="{{firstLaunchRequest}}" class="operation-current"><text>首发尝鲜</text><text>{{firstLaunchRequest.status === 'pending' ? '审核中' : '已通过'}}</text></view>
+        <block wx:else>
+          <button class="operation-toggle {{form.requestFirstLaunch ? 'selected' : ''}}" data-key="requestFirstLaunch" bindtap="toggleOperation"><view><image wx:if="{{form.requestFirstLaunch}}" src="/assets/icons/check-active.svg" mode="aspectFit"/></view><view><text>申请首发尝鲜</text><text>适合首次在奇灯公开发布、未来30天可稳定参与的原创体验；通过后展示30天</text></view></button>
+          <view wx:if="{{form.requestFirstLaunch}}" class="operation-fields"><label class="field"><text class="field-label">申请理由</text><textarea class="field-textarea compact" value="{{form.firstLaunchReason}}" data-key="firstLaunchReason" bindinput="field" maxlength="300" placeholder="说明原创性、首次发布情况和可体验安排" /></label><button class="rule-ack {{form.firstLaunchAcknowledged ? 'selected' : ''}}" data-key="firstLaunchAcknowledged" bindtap="toggleOperation"><view><image wx:if="{{form.firstLaunchAcknowledged}}" src="/assets/icons/check-active.svg" mode="aspectFit"/></view><text>我确认资料真实，并接受平台审核和30天展示期限</text></button></view>
+        </block>
+        <view wx:if="{{limitedRequest}}" class="operation-current"><text>限时限量</text><text>{{limitedRequest.status === 'pending' ? '审核中' : '已通过'}}</text></view>
+        <block wx:else>
+          <button class="operation-toggle {{form.requestLimited ? 'selected' : ''}}" data-key="requestLimited" bindtap="toggleOperation"><view><image wx:if="{{form.requestLimited}}" src="/assets/icons/check-active.svg" mode="aspectFit"/></view><view><text>申请限时限量</text><text>只用于确有截止日期或明确数量上限的体验；到期后自动取消标签</text></view></button>
+          <view wx:if="{{form.requestLimited}}" class="operation-fields"><label class="field"><text class="field-label">申请理由</text><textarea class="field-textarea compact" value="{{form.limitedReason}}" data-key="limitedReason" bindinput="field" maxlength="300" placeholder="说明为什么属于限时或限量体验" /></label><button class="rule-ack {{form.limitedAcknowledged ? 'selected' : ''}}" data-key="limitedAcknowledged" bindtap="toggleOperation"><view><image wx:if="{{form.limitedAcknowledged}}" src="/assets/icons/check-active.svg" mode="aspectFit"/></view><text>我确认申请信息真实，并接受标签在最后一个可体验日期结束后自动失效</text></button></view>
+        </block>
+      </view>
+      <view class="project-image-section">
+        <view class="project-image-heading"><text class="field-label">体验项目封面</text><text class="muted">用于前台体验卡片和详情首图，显示为4:5竖图；上传一张不超过20MB的图片。如不上传图，则默认“申请代表图”作为封面对外展示。</text></view>
+        <view class="activity-image-line">
+          <button wx:if="{{projectImageUrl}}" class="project-image-preview" bindtap="previewProjectImage"><image src="{{projectImageUrl}}" mode="aspectFill" data-id="{{form.projectId}}" binderror="projectImageError" /><text wx:if="{{projectImageIsFallback}}" class="image-source-note">申请代表图</text></button><view wx:else class="project-image-placeholder">暂无图片</view>
+          <view class="project-image-actions"><button class="image-change-action" bindtap="chooseImage">{{projectImageIsFallback ? '上传体验项目封面' : projectImageUrl ? '更换封面' : '上传体验项目封面'}}</button><button wx:if="{{projectImageUrl}}" class="image-preview-action" bindtap="previewProjectImage">预览图片</button></view>
+        </view>
+      </view>
+      <view class="publish-actions"><button class="secondary-button" bindtap="preview">预览体验</button><button class="primary-button" loading="{{saving}}" bindtap="save">{{saving ? '正在保存' : (home.applicationStatus === 'active' || home.applicationStatus === 'legacy' ? '提交审核' : '保存草稿')}}</button></view>
+    </view>
+  </view>
+  <view wx:else class="empty-state">正在读取体验</view>
+  <creator-tabs active="project" reply-unread="{{home && home.replyUnreadCount}}" notice-unread="{{home && home.noticeUnreadCount}}" />
+</view>

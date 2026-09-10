@@ -1,0 +1,8 @@
+<button wx:if="{{card}}" class="poster-card {{featured ? 'featured' : ''}}" bindtap="open" hover-class="poster-card-active">
+  <image src="{{imageUrl}}" mode="aspectFill" lazy-load="{{!featured}}" binderror="imageError" />
+  <view class="poster-shade"></view>
+  <view class="poster-copy">
+    <text class="poster-title {{card.longTitle ? 'long' : ''}}">{{card.title}}</text>
+    <text class="poster-category">{{card.category}}</text>
+  </view>
+</button>

@@ -1,0 +1,35 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/self-play/self-play",
+    "pages/companion/companion",
+    "pages/explore/explore",
+    "pages/venue-detail/venue-detail",
+    "pages/kit-detail/kit-detail",
+    "pages/project-detail/project-detail",
+    "pages/mine/mine",
+    "pages/creator-register/creator-register",
+    "pages/creator-claim/creator-claim",
+    "pages/creator-profile/creator-profile",
+    "pages/creator-project/creator-project",
+    "pages/creator-project-preview/creator-project-preview",
+    "pages/creator-notices/creator-notices",
+    "pages/review-thread/review-thread",
+    "pages/creator-mine/creator-mine",
+    "pages/image-crop/image-crop",
+    "pages/legal/legal"
+  ],
+  "window": {
+    "navigationStyle": "custom",
+    "backgroundColor": "#ECEBE5",
+    "backgroundTextStyle": "dark"
+  },
+  "usingComponents": {
+    "brand-header": "/components/brand-header/brand-header",
+    "consumer-tabs": "/components/consumer-tabs/consumer-tabs",
+    "experience-card": "/components/experience-card/experience-card",
+    "poster-card": "/components/poster-card/poster-card"
+  },
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

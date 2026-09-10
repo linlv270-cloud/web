@@ -1,0 +1,10 @@
+@import "../venue-detail/venue-detail.wxss";
+.guide-step { min-height: 92rpx; display: grid; grid-template-columns: 58rpx 1fr; align-items: start; gap: 16rpx; }
+.guide-step > text { width: 48rpx; height: 48rpx; border: 1rpx solid var(--line-strong); border-radius: var(--radius-default); display: grid; place-items: center; background: var(--green-soft); color: var(--accent-pressed); font-size: var(--type-micro); font-weight: var(--weight-secondary); }
+.guide-step > view { display: grid; gap: 5rpx; }
+.guide-step strong { font-size: var(--type-body); }
+.guide-step view text { color: var(--ink-soft); font-size: var(--type-caption); line-height: 1.45; }
+.guide-step view button { justify-self: start; min-height: 56rpx; padding: 8rpx 16rpx; border: 1rpx solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); font-size: var(--type-micro); }
+.rule-copy, .safety-copy { font-size: var(--type-secondary); line-height: 1.65; }
+.safety-copy { padding: 18rpx; border: 1rpx solid var(--warning); border-radius: var(--radius-default); background: var(--warning-soft); }
+.feedback-button { width: 100%; margin-top: 4rpx; }

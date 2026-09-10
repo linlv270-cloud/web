@@ -1,0 +1,18 @@
+<view class="page review-page">
+  <brand-header />
+  <view class="review-content">
+    <view class="topbar"><button bindtap="back" aria-label="返回"><image src="/assets/icons/chevron-left-ink.svg" mode="aspectFit"/></button><view class="wordmark"><text>审核沟通</text></view><view></view></view>
+    <view wx:if="{{!loading && thread}}" class="review-stack">
+      <view class="thread-heading"><text>{{thread.subject}}</text><text>{{thread.reference}}</text></view>
+      <view class="message-list">
+        <view wx:for="{{thread.messages}}" wx:key="id" class="message {{item.senderType}}">
+          <view><text>{{item.senderType === 'creator' ? '我' : (item.senderLabel || '奇灯运营')}}</text><text>{{item.createdAt}}</text></view>
+          <text>{{item.body}}</text>
+        </view>
+      </view>
+      <view class="reply-box"><textarea value="{{body}}" bindinput="input" maxlength="1000" placeholder="补充资料或回复审核意见"/><button class="primary-button" bindtap="send" loading="{{sending}}" disabled="{{sending || !body}}">发送回复</button></view>
+    </view>
+    <view wx:else class="empty-state">正在读取审核沟通</view>
+  </view>
+  <creator-tabs active="notices" />
+</view>

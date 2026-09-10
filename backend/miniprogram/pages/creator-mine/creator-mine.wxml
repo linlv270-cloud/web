@@ -1,0 +1,5 @@
+<view class="page creator-mine-page">
+  <brand-header />
+  <view class="empty-state">正在打开我的资料</view>
+  <creator-tabs active="mine" />
+</view>

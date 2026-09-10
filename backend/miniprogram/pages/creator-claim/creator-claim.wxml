@@ -1,0 +1,13 @@
+<view class="page claim-page">
+  <brand-header />
+  <view class="claim-content">
+    <view class="topbar"><button bindtap="back" aria-label="返回"><image src="/assets/icons/chevron-left-ink.svg" mode="aspectFit"/></button><view class="wordmark"><text>认领新遇官身份</text></view><view></view></view>
+    <view class="claim-intro"><text>管理员已为你建立档案</text><text>输入管理员提供的8位认领码，并授权登记手机号。认领成功后直接使用微信登录，不设置密码。</text></view>
+    <label class="field"><text class="field-label">认领码</text><input class="claim-code" value="{{code}}" bindinput="codeInput" maxlength="8" placeholder="例如：7KQ9M2WX" /></label>
+    <button class="agreement-row {{agreed ? 'selected' : ''}}" bindtap="toggleAgreement"><view><image wx:if="{{agreed}}" src="/assets/icons/check-active.svg" mode="aspectFit"/></view><text>我确认认领本人档案，并同意奇灯处理授权手机号用于身份核验</text></button>
+    <button class="legal-link" bindtap="legal">查看隐私政策</button>
+    <button class="primary-button claim-button" open-type="getPhoneNumber" bindgetphonenumber="claim" disabled="{{!ready || submitting}}" loading="{{submitting}}">{{submitting ? '正在认领' : '授权手机号并认领'}}</button>
+    <text class="claim-note">认领码7天有效、只能使用一次；手机号不一致时请联系为你建档的管理员。</text>
+  </view>
+  <consumer-tabs />
+</view>

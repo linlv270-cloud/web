@@ -1,0 +1,28 @@
+<view class="page detail-page" wx:if="{{detail}}">
+  <view class="detail-hero venue-hero">
+    <image class="detail-hero-image" src="{{coverUrl}}" mode="aspectFill"/>
+    <view class="detail-hero-shade"></view>
+    <brand-header compact immersive />
+    <view class="detail-hero-toolbar"><button class="page-back" bindtap="back" aria-label="返回"><image src="/assets/icons/chevron-left-light.svg" mode="aspectFit"/></button><text>到店指引</text></view>
+    <view class="detail-hero-copy"><text>COCOC PLACE</text><text>{{detail.venue.name}}</text><text>{{detail.venue.city}} · {{detail.venue.district}} · {{detail.openingLabel}}</text></view>
+  </view>
+  <view class="detail-content">
+    <view class="info-card"><text class="detail-title serif">自在地点</text><text class="lead">{{detail.venue.businessArea || detail.venue.name}}</text></view>
+    <view class="info-card detail-facts">
+      <view><text>地址</text><text>{{detail.venue.address}}</text></view>
+      <view><text>路线</text><text>{{detail.venue.routeHint || '到达后按现场指引入场'}}</text></view>
+      <view><text>类型</text><text>{{detail.venue.kind === 'popup' ? '快闪体验点' : '工坊体验点'}}</text></view>
+    </view>
+    <view class="info-card story-block">
+      <text class="serif">可自在体验的内容</text>
+      <button wx:for="{{detail.venueKits}}" wx:key="kitId" class="inline-card" data-kit-id="{{item.kitId}}" bindtap="openKit">
+        <text>{{item.kit.title}}</text>
+        <text>{{item.openNow ? '营业中' : item.openingLabel}}</text>
+      </button>
+    </view>
+  </view>
+  <view class="detail-sticky single">
+    <button class="primary-button" bindtap="openMap">查看地址和路线</button>
+  </view>
+  <consumer-tabs active="self" />
+</view>

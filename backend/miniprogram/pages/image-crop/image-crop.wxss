@@ -1,0 +1,20 @@
+.crop-page { min-height: 100vh; background: var(--night); color: var(--on-dark); overflow: hidden; }
+.crop-topbar { height: 104rpx; padding: 0 28rpx; display: grid; grid-template-columns: 100rpx 1fr 100rpx; align-items: center; border-bottom: 1rpx solid var(--dark-hairline); }
+.crop-topbar button { min-width: 100rpx; min-height: 70rpx; border: 0; background: transparent; color: var(--white); }
+.crop-topbar .serif { justify-self: center; font-size: var(--type-card); }
+.topbar-spacer { width: 100rpx; height: 70rpx; }
+.crop-stage { position: relative; margin: 0 auto; overflow: hidden; background: var(--night); touch-action: none; }
+.crop-image { position: absolute; top: 0; left: 0; display: block; transform-origin: 0 0; will-change: transform; }
+.crop-border { position: absolute; z-index: 4; inset: 0; border: 1rpx solid var(--dark-text-soft); box-shadow: none; pointer-events: none; }
+.crop-footer { min-height: 272rpx; padding: 18rpx 32rpx calc(24rpx + env(safe-area-inset-bottom)); display: grid; align-content: center; gap: 12rpx; background: var(--night); }
+.ratio-mark { display: flex; align-items: center; gap: 10rpx; color: var(--dark-text-soft); font-family: var(--font-editorial); font-size: var(--type-micro); }
+.ratio-mark view { width: 46rpx; height: 1rpx; background: var(--dark-hairline); }
+.zoom-heading { min-height: 44rpx; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14rpx; color: var(--dark-text-soft); font-size: var(--type-micro); }
+.zoom-heading > text { font-variant-numeric: tabular-nums; font-weight: var(--weight-semibold); }
+.zoom-heading > button { justify-self: end; min-height: 44rpx; padding: 0 8rpx; border: 0; background: transparent; color: var(--dark-text-soft); font-size: var(--type-micro); text-decoration: underline; }
+.zoom-control { display: grid; grid-template-columns: 58rpx minmax(0, 1fr) 58rpx; align-items: center; gap: 8rpx; }
+.zoom-control > button { width: 58rpx; height: 58rpx; border: 1rpx solid var(--dark-hairline); border-radius: var(--radius-circle); display: flex; align-items: center; justify-content: center; background: transparent; color: var(--on-dark); font-size: var(--type-card); }
+.zoom-control > button image { width: 30rpx; height: 30rpx; }
+.zoom-control slider { margin: 0; }
+.crop-confirm { width: 100%; min-height: 88rpx; border: 1rpx solid var(--accent); border-radius: var(--radius-default); background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; font-size: var(--type-secondary); line-height: 1.2; font-weight: var(--weight-secondary); }
+.hidden-canvas { position: fixed; left: -10000px; top: -10000px; opacity: 0; pointer-events: none; }

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#FFE600">
+<title>TDE 主理人主页</title>
+<style>
+*,*::before,*::after{box-sizing:border-box}html,body{margin:0}body{font-family:-apple-system,BlinkMacSystemFont,"Noto Sans SC","Microsoft YaHei",sans-serif;background:#f7f5f0;color:#222;line-height:1.65}.topbar{height:60px;border-bottom:3px solid #ffe600;background:#fff;display:flex;align-items:center;padding:0 max(16px,env(safe-area-inset-left));position:sticky;top:0;z-index:10}.brand{display:flex;align-items:center;gap:10px;font-weight:900}.badge{width:38px;height:38px;border:2px solid #222;border-radius:50%;background:#ffe600;display:grid;place-items:center;font-size:12px}.page{width:min(860px,100%);margin:auto;padding:24px 16px 64px}.hero{border:2px solid #222;background:#fff}.hero-media{aspect-ratio:4/3;background:#e8e5de;overflow:hidden;display:grid;place-items:center}.hero-media img{width:100%;height:100%;object-fit:cover}.hero-copy{padding:24px}.location{font-size:12px;color:#666}.hero h1{font-size:32px;line-height:1.2;margin:5px 0 2px;overflow-wrap:anywhere}.slogan{font-weight:800}.intro{white-space:pre-line;color:#555;margin:16px 0 0}.tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:18px}.tags span{padding:6px 10px;border:1.5px solid #222;background:#fff3b0;font-size:12px}.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:18px}.gallery img{width:100%;aspect-ratio:4/3;object-fit:cover;border:2px solid #222;background:#e8e5de}.empty{text-align:center;padding:96px 20px;color:#666}.empty strong{display:block;color:#222;font-size:20px;margin-bottom:8px}@media(max-width:560px){.page{padding:14px 12px 48px}.hero-copy{padding:18px}.hero h1{font-size:26px}.gallery{grid-template-columns:1fr}.gallery img{aspect-ratio:4/3}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="brand"><span class="badge">TDE</span><span>TheDesignExpo</span></div></header>
+<main class="page" id="page"><div class="empty"><strong>正在加载主理人主页</strong><span>请稍候</span></div></main>
+<script>
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function init(){const id=new URLSearchParams(location.search).get('id'),page=document.getElementById('page');try{const res=await fetch('/api/public/creator?id='+encodeURIComponent(id||''),{cache:'no-store'}),data=await res.json();if(!res.ok)throw new Error(data.error||'主页不存在');const c=data.creator,images=c.imageUrls||[];document.title=(c.brandName||'主理人')+' - TDE';page.innerHTML=`<article class="hero"><div class="hero-media">${images[0]?`<img src="${esc(images[0])}" alt="${esc(c.brandName)} 代表图片">`:'<strong>TDE</strong>'}</div><div class="hero-copy"><div class="location">${esc([c.province,c.city,c.district].filter(Boolean).join(' · '))}</div><h1>${esc(c.brandName||'主理人')}</h1>${c.slogan?`<div class="slogan">${esc(c.slogan)}</div>`:''}<p class="intro">${esc(c.intro||'')}</p><div class="tags">${(c.tags||[]).map(tag=>`<span>${esc(tag.label)}</span>`).join('')}</div></div></article>${images.length>1?`<section class="gallery">${images.slice(1).map((url,index)=>`<img src="${esc(url)}" alt="${esc(c.brandName)} 图片 ${index+2}" loading="lazy">`).join('')}</section>`:''}` }catch(e){page.innerHTML=`<div class="empty"><strong>该主页暂未公开</strong><span>${esc(e.message||'请稍后再试')}</span></div>`}}
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<view class="page notices-page">
+  <brand-header />
+  <view class="topbar"><view class="wordmark"><text>通知</text><view class="wordmark-line"></view></view><text class="muted">{{messages.length}} 条</text></view>
+  <view class="notice-list" wx:if="{{!loading && messages.length}}">
+    <button wx:for="{{messages}}" wx:key="id" data-id="{{item.id}}" bindtap="read" class="{{item.readAt ? '' : 'unread'}}">
+      <view><text class="notice-title">{{item.subject}}</text><text>{{item.body}}</text><text class="muted">{{item.createdAt}}</text></view><view wx:if="{{!item.readAt}}" class="notice-indicator"></view>
+    </button>
+  </view>
+  <view wx:elif="{{!loading}}" class="empty-state">暂时没有新通知。</view>
+  <creator-tabs active="notices" reply-unread="{{home.replyUnreadCount}}" notice-unread="{{home.noticeUnreadCount}}"/>
+</view>

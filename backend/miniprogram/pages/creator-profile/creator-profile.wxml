@@ -1,0 +1,53 @@
+<view class="page creator-profile-page">
+  <brand-header />
+  <view class="topbar"><view class="wordmark"><text>我的</text><view class="wordmark-line"></view></view><text class="muted">{{home && home.applicationStatus === 'pending' ? '审核中' : home && home.applicationStatus === 'needs_changes' ? '需补充' : home && home.applicationStatus === 'rejected' ? '未通过' : home ? home.creator.profileCompleteness + '%' : ''}}</text></view>
+  <view wx:if="{{!loading}}" class="profile-shortcuts">
+    <button class="profile-shortcut project-shortcut" bindtap="openNewProject"><view><text class="serif">发布体验</text><text>创建新的城市体验</text></view><image class="shortcut-icon" src="/assets/icons/plus-active.svg" mode="aspectFit"/></button>
+  </view>
+  <view wx:if="{{!loading && home && home.applicationStatus !== 'active' && home.applicationStatus !== 'legacy'}}" class="form-stack creator-form">
+    <view class="section-block application-state"><view class="section-heading"><text class="serif section-title">奇灯新遇官申请</text><text>{{home.applicationStatus === 'pending' ? '审核中' : home.applicationStatus === 'needs_changes' ? '需补充' : '未通过'}}</text></view><text wx:if="{{home.applicationReviewNote}}" class="muted">{{home.applicationReviewNote}}</text><button class="primary-button" bindtap="editApplication">完善申请资料</button></view>
+  </view>
+  <view wx:elif="{{!loading}}" class="form-stack creator-form">
+    <view wx:if="{{applicationFields.representativeImage.enabled}}" class="section-block profile-photo-section">
+      <view class="section-heading"><view><text class="serif">{{applicationFields.representativeImage.label}}</text><text class="muted">{{applicationFields.representativeImage.hint}}</text></view><button bindtap="chooseImage" data-target="profile">更换</button></view>
+      <button class="profile-photo" bindtap="chooseImage" data-target="profile"><image wx:if="{{imageUrl}}" src="{{imageUrl}}" mode="aspectFill"/><view wx:else><image class="upload-icon" src="/assets/icons/plus-active.svg" mode="aspectFit"/><text>{{applicationFields.representativeImage.hint}}</text></view></button>
+    </view>
+    <view class="section-block">
+      <text class="serif section-title">基本档案</text>
+      <label wx:if="{{applicationFields.brandName.enabled}}" class="field"><text class="field-label">{{applicationFields.brandName.label}}{{applicationFields.brandName.required ? '' : '（选填）'}}</text><input class="field-input" value="{{form.brandName}}" data-key="brandName" bindinput="field" maxlength="40" placeholder="{{applicationFields.brandName.hint}}"/></label>
+      <picker wx:if="{{applicationFields.location.enabled}}" mode="region" value="{{region}}" bindchange="locationChange"><view class="location-field"><view><text class="field-label">{{applicationFields.location.label}}{{applicationFields.location.required ? '' : '（选填）'}}</text><text>{{form.city ? form.province + ' · ' + form.city + ' · ' + form.district : applicationFields.location.hint}}</text></view><image class="field-chevron" src="/assets/icons/chevron-left-muted.svg" mode="aspectFit"/></view></picker>
+      <label wx:if="{{applicationFields.intro.enabled}}" class="field"><text class="field-label">{{applicationFields.intro.label}}{{applicationFields.intro.required ? '' : '（选填）'}}</text><textarea class="field-textarea" value="{{form.intro}}" data-key="intro" bindinput="field" maxlength="2000" placeholder="{{applicationFields.intro.hint}}"/></label>
+    </view>
+    <view wx:if="{{home.applicationStatus !== 'legacy'}}" class="section-block contact-setting-section">
+      <view class="section-heading"><view><text class="serif section-title">消费者联系</text><text class="muted">注册手机号 {{home.contactPhoneMasked || '未设置'}}</text></view><text>{{home.phonePublicAuthorized ? '已开放' : '未开放'}}</text></view>
+      <label class="contact-consent"><checkbox-group bindchange="phoneAgreement"><checkbox value="yes" checked="{{form.phonePublicAuthorized}}" color="{{designColors.success}}"/></checkbox-group><text>同意将注册手机号向消费者展示，用于体验咨询</text></label>
+      <button class="secondary-button" loading="{{contactSaving}}" bindtap="saveContactConsent">{{contactSaving ? '正在保存' : '保存联系设置'}}</button>
+    </view>
+    <view wx:if="{{applicationFields.tags.enabled}}" class="section-block">
+      <view class="section-heading"><view><text class="serif section-title">{{applicationFields.tags.label}}</text><text class="muted">{{applicationFields.tags.hint}}</text></view><text>{{form.creatorTagIds.length}}</text></view>
+      <view wx:for="{{creatorTagGroups}}" wx:key="category" wx:for-item="group" class="tag-group">
+        <view class="tag-group-title"><text>{{group.category}}</text></view>
+        <view class="tag-group-content">
+          <view class="chip-row"><button wx:for="{{group.tags}}" wx:key="label" wx:for-item="tag" data-id="{{tag.id}}" bindtap="toggleCreatorTag" class="chip {{tag.selected ? 'selected' : ''}} {{tag.available ? '' : 'unavailable'}}">{{tag.label}}{{tag.status === 'pending' ? ' · 待复核' : ''}}</button></view>
+          <view wx:if="{{applicationFields.customTags.enabled}}" class="custom-tag-row"><input value="{{group.customLabel}}" data-category="{{group.category}}" bindinput="customInput" maxlength="7" placeholder="输入新标签"/><button data-category="{{group.category}}" bindtap="addCustomTag">新增标签</button></view>
+        </view>
+      </view>
+    </view>
+    <view wx:if="{{applicationFields.offlineExperience.enabled}}" class="section-block"><text class="serif section-title">{{applicationFields.offlineExperience.label}}{{applicationFields.offlineExperience.required ? '' : '（选填）'}}</text><text class="muted">{{applicationFields.offlineExperience.hint}}</text><view class="chip-row"><button wx:for="{{cooperationChoices}}" wx:key="label" data-value="{{item.label}}" bindtap="toggleOpportunity" class="chip {{item.selected ? 'selected' : ''}}">{{item.label}}</button></view></view>
+    <button class="primary-button save-button" loading="{{saving}}" bindtap="save">{{saving ? '正在保存' : '保存新遇官资料'}}</button>
+  </view>
+  <view wx:else class="empty-state">正在读取你的档案</view>
+  <view wx:if="{{!loading && applicationFields.busyPeriods.enabled}}" id="date-plan" class="date-plan-block section-block">
+    <text class="serif section-title">日期计划</text>
+    <text class="muted">填写你已安排的其他活动日期，避免我们在这些日期打扰你</text>
+    <button class="no-bookings-choice {{form.noBookings ? 'selected' : ''}}" bindtap="toggleNoBookings"><view class="choice-mark"><image wx:if="{{form.noBookings}}" src="/assets/icons/check-active.svg" mode="aspectFit"/></view><view><text>近期无其他活动安排</text><text>指奇灯以外的活动</text></view></button>
+    <view wx:if="{{!form.noBookings}}" class="busy-add"><picker mode="date" value="{{busyDate}}" bindchange="busyDateChange"><view class="picker-field">{{busyDate || '选择日期'}}</view></picker><button class="secondary-button" bindtap="addBusyDate">确认/添加</button></view>
+    <view wx:if="{{!form.noBookings}}" class="chip-row"><button wx:for="{{form.busyPeriods}}" wx:key="startDate" class="chip selected" data-index="{{index}}" bindtap="removeBusyDate">{{item.startDate}} ×</button></view>
+    <button class="primary-button" loading="{{datePlanSaving}}" bindtap="saveDatePlan">{{datePlanSaving ? '正在保存' : '保存日期计划'}}</button>
+  </view>
+  <view wx:if="{{!loading}}" class="recent-activity-block section-block">
+    <view class="section-heading"><text class="serif section-title">参与近期活动</text><text>待开放</text></view>
+    <view class="activity-empty">暂无可参与活动</view>
+  </view>
+  <creator-tabs active="mine" reply-unread="{{home && home.replyUnreadCount}}" notice-unread="{{home && home.noticeUnreadCount}}"/>
+</view>

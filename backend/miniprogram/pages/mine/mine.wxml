@@ -1,0 +1,37 @@
+<view class="page mine-page">
+  <brand-header />
+  <view class="mine-content" wx:if="{{!loading}}">
+    <view class="mine-section">
+      <view class="section-heading"><text>最近新遇</text><text>{{discoveries.length}}</text></view>
+      <view wx:if="{{discoveries.length}}" class="discovery-history">
+        <button wx:for="{{discoveries}}" wx:key="key" class="discovery-history-card" data-key="{{item.key}}" bindtap="openDiscovery">
+          <image src="{{item.imageUrl}}" mode="aspectFill" lazy-load />
+          <view><text>{{item.title}}</text><text>{{item.subtitle}}</text></view>
+          <image class="row-chevron" src="/assets/icons/chevron-left-muted.svg" mode="aspectFit"/>
+        </button>
+      </view>
+      <view wx:else class="empty-state compact-empty">还没有新遇</view>
+    </view>
+    <view class="mine-section">
+      <view class="section-heading"><text>我的收藏</text><text>{{favorites.length}}</text></view>
+      <view wx:if="{{favorites.length}}" class="favorite-list">
+        <view wx:for="{{favorites}}" wx:key="key" class="favorite-card">
+          <button class="favorite-main" data-key="{{item.key}}" bindtap="openFavorite"><image src="{{item.imageUrl}}" mode="aspectFill" lazy-load/><view><text>{{item.title}}</text><text>{{item.subtitle}}</text></view></button>
+          <view class="favorite-actions single"><button data-key="{{item.key}}" bindtap="removeFavorite">取消收藏</button></view>
+        </view>
+      </view>
+      <view wx:else class="empty-state compact-empty">暂无收藏</view>
+    </view>
+    <view class="mine-section identity-section">
+      <view class="section-heading"><text class="serif">{{roles && roles.creatorId ? '奇灯新遇官' : '申请奇灯新遇官'}}</text><text>{{roles && roles.creatorStatus === 'pending' ? '审核中' : roles && roles.creatorStatus === 'needs_changes' ? '需补充' : roles && roles.creatorStatus === 'rejected' ? '未通过' : roles && roles.creatorId ? '已开通' : '未申请'}}</text></view>
+      <button class="primary-button {{roles && roles.creatorId ? 'creator-identity-button' : ''}}" bindtap="creatorMode">{{roles && roles.creatorId ? '管理我的新遇官' : '申请成为奇灯新遇官'}}</button>
+      <button wx:if="{{!roles || !roles.creatorId}}" class="secondary-button claim-button" bindtap="claimCreator">管理员已建立档案？认领新遇官身份</button>
+    </view>
+    <view class="mine-section support-block">
+      <view class="section-heading"><text class="serif">联系奇灯</text></view>
+      <button class="secondary-button" bindtap="contact">查看联系方式</button>
+    </view>
+  </view>
+  <view wx:else class="empty-state">正在整理你的奇遇</view>
+  <consumer-tabs active="mine" />
+</view>

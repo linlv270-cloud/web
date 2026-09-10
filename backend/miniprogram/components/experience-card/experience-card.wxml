@@ -1,0 +1,28 @@
+<button wx:if="{{card}}" class="experience-card {{card.kind}} {{compact ? 'compact' : ''}}" bindtap="open">
+  <view wx:if="{{card.kind === 'companion'}}" class="creator-layout">
+    <view class="creator-avatar">
+      <image wx:if="{{card.imageUrl}}" src="{{card.imageUrl}}" mode="aspectFill" lazy-load />
+      <text wx:else>{{card.avatarText}}</text>
+    </view>
+    <view class="creator-copy">
+      <text class="card-title">{{card.title}}</text>
+      <text class="card-byline">{{card.byline}}</text>
+      <view class="card-tags">
+        <text wx:for="{{card.tags}}" wx:key="label" class="card-tag {{item.tone}}">{{item.label}}</text>
+      </view>
+      <view class="card-actions"><view></view><text class="card-action">{{card.action}}</text></view>
+    </view>
+  </view>
+
+  <view wx:else class="self-layout">
+    <text class="card-title">{{card.title}}</text>
+    <text class="card-description">{{card.description}}</text>
+    <view class="card-tags">
+      <text wx:for="{{card.tags}}" wx:key="label" class="card-tag {{item.tone}}">{{item.label}}</text>
+    </view>
+    <view class="card-facts">
+      <view wx:for="{{card.facts}}" wx:key="label"><text>{{item.label}}</text><strong>{{item.value}}</strong></view>
+    </view>
+    <view class="card-actions"><view></view><text class="card-action">{{card.action}}</text></view>
+  </view>
+</button>

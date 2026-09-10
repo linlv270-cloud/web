@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>主理人可邀约主页 — TheDesignExpo</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-family:'Space Grotesk','Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#222;line-height:1.6;overflow-x:hidden}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button,input,textarea,select{font-family:inherit}
+button{border:0;background:none;cursor:pointer;color:inherit}
+ul{list-style:none}
+:root{
+  --yellow:#FFE600;--yellow-light:#FFF3B0;--yellow-deep:#F5D000;
+  --pink:#FFCDD2;--pink-deep:#F8BBD0;--blue:#283593;--blue-light:#3949AB;
+  --red:#E53935;--green-grad-1:#DCE775;--green-grad-2:#A5D6A7;
+  --purple:#7B1FA2;--orange:#FB8C00;--teal:#00897B;--pink-btn:#C2185B;--brown:#6D4C41;
+  --text:#222222;--text-light:#555555;--border:#e0e0e0;--paper:#fffdf2;
+}
+.topbar{position:fixed;top:0;left:0;right:0;height:64px;background:#fff;z-index:1000;border-bottom:3px solid var(--yellow);box-shadow:0 2px 8px rgba(0,0,0,.06);display:flex;align-items:center;justify-content:center}
+.topbar-inner{width:100%;max-width:1320px;padding:0 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.hamburger-btn{width:56px;height:54px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px}
+.hamburger-btn span{width:28px;height:3px;background:#222;border-radius:2px}
+.hamburger-btn b{font-size:11px;font-weight:700;letter-spacing:.1em;line-height:1}
+.topbar-logo{display:flex;align-items:center;gap:11px}
+.topbar-logo .badge{width:48px;height:48px;border-radius:50%;background:var(--yellow);border:3px solid var(--text);display:grid;place-items:center;font-weight:900;font-size:14px;flex:none}
+.topbar-logo .logo-text{display:flex;flex-direction:column;line-height:1.08}
+.topbar-logo .logo-sub{font-size:10px;font-weight:700;letter-spacing:.25em;color:var(--text-light)}
+.topbar-logo .logo-main{font-size:22px;font-weight:900;letter-spacing:0}
+.drawer-mask{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1200;opacity:0;visibility:hidden;transition:.2s}
+.drawer-mask.show{opacity:1;visibility:visible}
+.drawer{position:fixed;top:0;bottom:0;left:0;width:300px;background:#fff;z-index:1300;border-right:3px solid #222;box-shadow:8px 0 0 rgba(0,0,0,.18);transform:translateX(-104%);transition:.24s ease;padding:22px}
+.drawer.show{transform:translateX(0)}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.drawer-title{font-weight:900;font-size:18px}
+.drawer-close{width:38px;height:38px;border:3px solid #222;border-radius:8px;font-size:22px;font-weight:900;background:var(--yellow);box-shadow:0 3px 0 #222}
+.drawer a{display:block;border:2px solid #222;border-radius:8px;padding:12px 14px;margin-bottom:10px;font-weight:800;background:#fff;box-shadow:0 3px 0 #222}
+.drawer a:nth-child(3n){background:var(--yellow-light)}
+.drawer a:nth-child(3n+1){background:var(--pink)}
+.drawer a:nth-child(3n+2){background:var(--green-grad-1)}
+.section{padding:84px 22px}
+.inner{max-width:1220px;margin:0 auto}
+.btn-festa,.format-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:3px solid #222;border-radius:8px;padding:16px 40px;font-size:15px;font-weight:700;box-shadow:0 4px 0 #222;transition:.16s ease;line-height:1.2;text-align:center}
+.btn-festa:hover,.format-btn:hover{transform:translateY(-2px);box-shadow:0 2px 0 #222}
+.btn-festa.primary{background:var(--red);color:#fff}
+.btn-festa.secondary{background:#fff;color:#222}
+.btn-festa.yellow{background:var(--yellow);color:#222}
+.btn-festa.blue{background:var(--blue);color:#fff}
+.hero{min-height:calc(100vh - 20px);padding:104px 22px 58px;background:linear-gradient(135deg,var(--pink) 0%,var(--yellow) 42%,#ead2ff 66%,#c9d8ff 100%);position:relative;overflow:hidden;display:flex;align-items:center}
+.hero::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,rgba(255,255,255,.35) 0,rgba(255,255,255,.35) 2px,transparent 2px,transparent 16px);pointer-events:none}
+.hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) 430px;gap:46px;align-items:end}
+.hero-badge{width:118px;height:118px;border-radius:50%;background:var(--yellow);border:3px solid #222;display:grid;place-items:center;text-align:center;font-weight:900;line-height:1;box-shadow:7px 7px 0 #222;transform:rotate(-5deg);margin-bottom:28px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.25em;text-transform:uppercase;margin-bottom:12px}
+.hero h1{font-size:clamp(42px,9vw,110px);font-weight:900;line-height:.95;letter-spacing:-.03em;max-width:820px}
+.hero h1 mark{background:var(--yellow);border:3px solid #222;padding:0 .08em;color:#222}
+.hero-sub{font-size:clamp(17px,2vw,24px);font-weight:700;line-height:1.6;max-width:760px;margin:26px 0 30px;color:#222}
+.hero-actions{display:flex;flex-wrap:wrap;gap:14px}
+.scroll-tip{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);font-size:11px;font-weight:700;letter-spacing:.25em;display:flex;flex-direction:column;align-items:center;gap:8px}
+.scroll-tip i{width:18px;height:28px;border:2px solid #222;border-radius:999px;position:relative}
+.scroll-tip i::before{content:"";position:absolute;left:50%;top:5px;width:4px;height:4px;border-radius:50%;background:#222;transform:translateX(-50%);animation:scrollDot 1.4s infinite}
+@keyframes scrollDot{0%{top:5px;opacity:1}70%{top:15px;opacity:.25}100%{top:5px;opacity:1}}
+.profile-ticket{background:#fff;border:3px solid #222;border-radius:12px;box-shadow:8px 8px 0 #222;overflow:hidden}
+.ticket-top{background:var(--blue);color:#fff;padding:18px;border-bottom:3px solid #222}
+.ticket-top .mini{font-size:11px;font-weight:700;letter-spacing:.2em}
+.ticket-top h2{font-size:30px;font-weight:900;line-height:1.08;margin-top:8px}
+.ticket-body{padding:18px}
+.creator-photo{aspect-ratio:16/10;border:3px solid #222;border-radius:8px;overflow:hidden;margin-bottom:14px;background:var(--yellow-light)}
+.creator-photo img{width:100%;height:100%;object-fit:cover}
+.ticket-tags{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.ticket-tag{font-size:12px;font-weight:800;padding:6px 10px;border:2px solid #222;border-radius:999px;background:var(--yellow-light)}
+.ticket-row{display:flex;border-top:2px dashed var(--border);padding:11px 0;gap:12px;font-size:14px;font-weight:700}
+.ticket-row b{width:84px;flex:none}
+.card{background:#fff;border:3px solid #222;border-radius:12px;box-shadow:6px 6px 0 rgba(0,0,0,.1)}
+.card-titlebar{background:var(--yellow);border-bottom:3px solid #222;padding:15px 20px;font-size:20px;font-weight:900}
+.event-info-row{display:flex;border-bottom:2px solid #f0f0f0}
+.event-info-row:last-child{border-bottom:0}
+.event-info-row .label{width:140px;background:var(--yellow-light);display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;border-right:2px solid #f0f0f0;padding:18px 12px}
+.event-info-row .value{flex:1;padding:18px 24px;font-weight:600}
+.intro{background:#fff}
+.intro-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,440px);gap:28px;align-items:start}
+.section-title{font-size:clamp(28px,6vw,56px);font-weight:900;line-height:1.02;letter-spacing:0;margin-bottom:16px}
+.blue-lead{font-size:20px;font-weight:900;color:var(--blue);line-height:1.65;margin-bottom:16px}
+.body-copy{font-size:16px;font-weight:600;color:#444;line-height:1.9}
+.builder{background:var(--pink)}
+.builder-shell{display:grid;grid-template-columns:260px minmax(0,1fr) 360px;gap:22px;align-items:start}
+.step-rail{position:sticky;top:84px;background:#fff;border:3px solid #222;border-radius:12px;box-shadow:6px 6px 0 rgba(0,0,0,.1);padding:14px}
+.progress{height:16px;border:3px solid #222;border-radius:999px;overflow:hidden;background:#fff;margin-bottom:14px}
+.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--orange),var(--yellow),var(--teal),var(--blue))}
+.step-btn{width:100%;display:grid;grid-template-columns:36px 1fr;gap:10px;text-align:left;align-items:center;border:2px solid #222;border-radius:8px;padding:10px;margin-bottom:8px;background:#fff;font-weight:800;box-shadow:0 3px 0 #222}
+.step-btn .num{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--yellow);border:2px solid #222;font-weight:900}
+.step-btn small{display:block;color:var(--text-light);font-size:11px;font-weight:700;margin-top:2px}
+.step-btn.active{background:var(--yellow-light)}
+.step-btn.done{background:var(--green-grad-1)}
+.question-card{display:none;background:#fff;border:3px solid #222;border-radius:12px;box-shadow:8px 8px 0 #222;overflow:hidden}
+.question-card.active{display:block}
+.q-head{padding:22px 24px;background:var(--yellow);border-bottom:3px solid #222}
+.q-head .kicker{font-size:12px;font-weight:700;letter-spacing:.2em;margin-bottom:8px}
+.q-head h2{font-size:clamp(24px,4vw,38px);font-weight:900;line-height:1.1}
+.q-body{padding:24px}
+.choice-group{margin-bottom:24px}
+.group-label{display:flex;justify-content:space-between;gap:12px;align-items:flex-end;font-size:14px;font-weight:900;letter-spacing:.08em;margin-bottom:10px;text-transform:uppercase}
+.group-label span{font-size:12px;font-weight:700;color:var(--text-light);letter-spacing:0;text-transform:none}
+.chips{display:flex;flex-wrap:wrap;gap:9px}
+.chip{border:2px solid #222;border-radius:999px;padding:9px 14px;background:#fff;font-size:13px;font-weight:800;transition:.14s ease;box-shadow:0 2px 0 #222}
+.chip:hover{transform:translateY(-1px)}
+.chip.selected{background:var(--yellow)}
+.chip.red.selected{background:var(--red);color:#fff}
+.chip.blue.selected{background:var(--blue);color:#fff}
+.chip.purple.selected{background:var(--purple);color:#fff}
+.chip.orange.selected{background:var(--orange);color:#fff}
+.chip.teal.selected{background:var(--teal);color:#fff}
+.chip.pink.selected{background:var(--pink-btn);color:#fff}
+.input-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:14px;font-weight:900;margin-bottom:7px}
+.field input,.field textarea,.field select{width:100%;border:3px solid #222;border-radius:8px;padding:13px 14px;font-size:15px;font-weight:600;background:#fff;outline:none;box-shadow:0 3px 0 #222}
+.field textarea{min-height:88px;resize:vertical;line-height:1.7}
+.field input:focus,.field textarea:focus,.field select:focus{background:var(--yellow-light)}
+.micro-hint{font-size:12px;color:var(--text-light);font-weight:600;margin-top:7px;line-height:1.7}
+.calendar-box{border:3px solid #222;border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 4px 0 #222}
+.cal-head{display:flex;align-items:center;justify-content:space-between;background:var(--blue);color:#fff;border-bottom:3px solid #222;padding:12px 14px;font-weight:900}
+.cal-head button{width:34px;height:34px;border:2px solid #fff;border-radius:8px;color:#fff;font-size:20px;font-weight:900}
+.week{display:grid;grid-template-columns:repeat(7,1fr);background:var(--yellow-light);border-bottom:2px solid #222}
+.week span{font-size:11px;font-weight:900;text-align:center;padding:8px 0}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:0}
+.day{min-height:58px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:5px;display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center;font-size:12px;font-weight:900;transition:.12s;background:#fff}
+.day:nth-child(7n){border-right:0}
+.day:hover{background:var(--yellow-light)}
+.day.other{color:#bbb;background:#fafafa}
+.day .state{font-size:10px;font-weight:900;border-radius:999px;padding:2px 5px;background:#eee;color:#555}
+.day.off{background:var(--red);color:#fff}
+.day.online{background:var(--yellow)}
+.day.onsite{background:var(--green-grad-1)}
+.day.private{background:var(--blue);color:#fff}
+.day.off .state,.day.private .state{background:#fff;color:#222}
+.status-buttons{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.status-buttons button{border:2px solid #222;border-radius:8px;padding:10px 8px;font-size:12px;font-weight:900;box-shadow:0 2px 0 #222}
+.status-buttons [data-mode="off"]{background:var(--red);color:#fff}
+.status-buttons [data-mode="online"]{background:var(--yellow)}
+.status-buttons [data-mode="onsite"]{background:var(--green-grad-1)}
+.status-buttons [data-mode="private"]{background:var(--blue);color:#fff}
+.media-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.media-slot{aspect-ratio:4/3;border:3px dashed #222;border-radius:12px;background:var(--yellow-light);display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;font-weight:900;font-size:13px;position:relative;overflow:hidden}
+.media-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.media-slot.selected{border-style:solid}
+.builder-nav{display:flex;justify-content:space-between;gap:12px;margin-top:18px}
+.preview-panel{position:sticky;top:84px;background:#fff;border:3px solid #222;border-radius:12px;box-shadow:8px 8px 0 #222;overflow:hidden}
+.preview-title{background:var(--blue);color:#fff;border-bottom:3px solid #222;padding:14px 16px;font-weight:900;font-size:18px}
+.preview-body{padding:16px}
+.meter{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.meter div{border:2px solid #222;border-radius:8px;padding:8px;background:var(--yellow-light);text-align:center;font-weight:900;font-size:12px}
+.meter b{display:block;font-size:22px;line-height:1;color:var(--red)}
+.preview-copy{border:2px solid #222;border-radius:8px;background:#fffdf2;padding:14px;font-size:14px;font-weight:600;line-height:1.75;min-height:260px;white-space:pre-wrap}
+.formats{background:linear-gradient(180deg,var(--green-grad-1),var(--green-grad-2))}
+.slash-title{display:flex;align-items:center;justify-content:center;gap:16px;text-align:center;margin-bottom:34px}
+.slash-title::before,.slash-title::after{content:"";width:min(14vw,120px);height:5px;background:#222;transform:skewX(-25deg)}
+.format-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
+.format-card{background:#fff;border:3px solid #222;border-radius:12px;box-shadow:8px 8px 0 rgba(0,0,0,.1);overflow:hidden;display:flex;flex-direction:column}
+.format-card .pic{aspect-ratio:16/9;background:var(--yellow-light);overflow:hidden;border-bottom:3px solid #222}
+.format-card .pic img{width:100%;height:100%;object-fit:cover}
+.format-card .content{padding:18px;display:flex;flex-direction:column;gap:10px;flex:1}
+.format-card .no{display:inline-flex;width:max-content;background:var(--yellow);border:2px solid #222;border-radius:999px;padding:3px 9px;font-weight:900;font-size:12px}
+.format-card h3{font-size:clamp(22px,3vw,30px);font-weight:900;line-height:1.1}
+.format-card p{font-size:15px;font-weight:600;color:#444;line-height:1.75;flex:1}
+.format-btn{padding:14px 24px;color:#fff;width:100%}
+.format-btn.red{background:var(--red)}.format-btn.blue{background:var(--blue)}.format-btn.purple{background:var(--purple)}.format-btn.orange{background:var(--orange)}.format-btn.teal{background:var(--teal)}.format-btn.pink{background:var(--pink-btn)}.format-btn.brown{background:var(--brown)}
+.data{background:var(--blue);color:#fff}
+.data-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.data-item{text-align:center;border:3px solid #fff;border-radius:12px;padding:28px 18px}
+.data-item .num{font-size:clamp(40px,6vw,72px);font-weight:900;line-height:1;color:var(--yellow)}
+.data-item p{font-size:16px;font-weight:700;line-height:1.7;margin-top:10px}
+.public-home{background:var(--yellow-light)}
+.home-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,460px);gap:28px;align-items:start}
+.homepage-card{background:#fff;border:3px solid #222;border-radius:12px;box-shadow:8px 8px 0 #222;overflow:hidden}
+.homepage-hero{background:var(--pink);padding:18px;border-bottom:3px solid #222}
+.homepage-hero img{width:100%;aspect-ratio:16/9;object-fit:cover;border:3px solid #222;border-radius:8px;margin-bottom:14px}
+.homepage-hero h3{font-size:34px;font-weight:900;line-height:1.05}
+.homepage-body{padding:18px}
+.home-section{border-top:2px dashed var(--border);padding:14px 0}
+.home-section:first-child{border-top:0;padding-top:0}
+.home-section b{display:block;margin-bottom:7px}
+.home-section p,.home-section li{font-size:14px;font-weight:600;color:#444;line-height:1.8}
+.home-section ul{display:grid;gap:5px}
+.matching{background:#fff}
+.visitor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.visitor-btn{background:var(--yellow-light);border:2px solid var(--yellow-deep);border-radius:12px;padding:18px 24px;font-size:17px;font-weight:700;display:flex;align-items:center;gap:12px;transition:.16s;text-align:left}
+.visitor-btn:hover{background:#fff;transform:translateX(4px)}
+.visitor-btn.highlight{background:var(--yellow-deep);border-color:#222}
+.feedback{background:var(--pink)}
+.contact-grid{display:grid;grid-template-columns:360px minmax(0,1fr);gap:26px}
+.info-card{background:var(--yellow);border:3px solid #222;border-radius:12px;box-shadow:8px 8px 0 #222;padding:24px}
+.info-card h2{font-size:34px;font-weight:900;line-height:1.1;margin-bottom:14px}
+.info-card p{font-size:16px;font-weight:700;line-height:1.8}
+.form-card{background:#fff;border:3px solid #222;border-radius:12px;box-shadow:8px 8px 0 #222;padding:24px}
+.toast{position:fixed;right:18px;bottom:18px;background:#222;color:#fff;border:3px solid #222;border-radius:8px;box-shadow:0 4px 0 #000;padding:13px 16px;font-weight:800;z-index:2000;opacity:0;transform:translateY(8px);transition:.18s;max-width:min(360px,calc(100vw - 36px))}
+.toast.show{opacity:1;transform:translateY(0)}
+.footer{background:#222;color:#fff;padding:56px 22px 28px}
+.footer-grid{max-width:1220px;margin:0 auto;display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:28px}
+.footer h3{color:var(--yellow);font-size:16px;font-weight:900;margin-bottom:12px}
+.footer p,.footer a{display:block;color:#ddd;font-size:14px;font-weight:600;line-height:1.9}
+.copyright{max-width:1220px;margin:28px auto 0;padding-top:18px;border-top:1px solid #555;color:#aaa;font-size:12px;font-weight:700}
+@media(max-width:1100px){
+  .hero-grid,.builder-shell,.intro-grid,.home-grid,.contact-grid{grid-template-columns:1fr}
+  .profile-ticket,.preview-panel,.step-rail{position:static}
+  .builder-shell{gap:18px}
+  .step-rail{display:block}
+  .format-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:900px){
+  .section{padding:64px 18px}
+  .data-grid{grid-template-columns:1fr}
+  .visitor-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  .topbar{height:56px}
+  .topbar-inner{padding:0 12px}
+  .topbar-logo .badge{width:40px;height:40px;font-size:12px;border-width:2px}
+  .topbar-logo .logo-sub{font-size:8px;letter-spacing:.16em}
+  .topbar-logo .logo-main{font-size:16px}
+  .hamburger-btn{width:48px;height:48px}
+  .hamburger-btn span{width:25px}
+  .hero{padding-top:86px;min-height:auto}
+  .hero-grid{gap:28px}
+  .hero-badge{width:92px;height:92px;font-size:13px;margin-bottom:20px}
+  .hero-sub{font-size:16px}
+  .btn-festa,.format-btn{width:100%;padding:15px 18px}
+  .event-info-row .label{width:100px;padding:16px 8px;font-size:13px}
+  .event-info-row .value{padding:16px 14px;font-size:14px}
+  .input-row,.status-buttons,.media-grid{grid-template-columns:1fr}
+  .format-grid{grid-template-columns:1fr;gap:24px}
+  .day{min-height:48px;font-size:11px;padding:4px 2px}
+  .day .state{font-size:9px}
+  .meter{grid-template-columns:1fr}
+  .builder-nav{flex-direction:column}
+  .footer-grid{grid-template-columns:1fr}
+  .drawer{width:min(300px,86vw)}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <button class="hamburger-btn" id="openDrawer" type="button" aria-label="打开菜单"><span></span><span></span><span></span><b>MENU</b></button>
+    <a class="topbar-logo" href="index.html" aria-label="TheDesignExpo 首页">
+      <span class="badge">TDE</span>
+      <span class="logo-text"><span class="logo-sub">INTERNATIONAL ART EVENT</span><span class="logo-main">THEDESIGN EXPO</span></span>
+    </a>
+  </div>
+</header>
+<div class="drawer-mask" id="drawerMask"></div>
+<nav class="drawer" id="drawer" aria-label="站点菜单">
+  <div class="drawer-head"><div class="drawer-title">TDE MENU</div><button class="drawer-close" id="closeDrawer" type="button">×</button></div>
+  <a href="#builder">生成我的主页</a>
+  <a href="#calendar">设置邀约档期</a>
+  <a href="#public-home">预览公开主页</a>
+  <a href="#matching">活动方如何匹配</a>
+  <a href="#feedback">我要提意见</a>
+</nav>
+
+<main>
+  <section class="hero" id="top">
+    <div class="inner hero-grid">
+      <div>
+        <div class="hero-badge">INVITE<br>READY</div>
+        <div class="eyebrow">INTERNATIONAL ART EVENT</div>
+        <h1>让想邀请我的人，<mark>先看懂我</mark></h1>
+        <p class="hero-sub">这是我的可邀约主页：我适合什么活动、哪天不能被邀请、我有哪些真实作品和现场证据、我希望如何被介绍。少解释，少误会，多一点真正合适的邀约。</p>
+        <div class="hero-actions">
+          <a class="btn-festa primary" href="#builder">生成我的可邀约主页</a>
+          <a class="btn-festa secondary" href="#public-home">先看别人会怎样读懂我</a>
+        </div>
+      </div>
+      <aside class="profile-ticket" aria-label="主页示例">
+        <div class="ticket-top"><div class="mini">CURATOR PUBLIC PAGE</div><h2 id="ticketName">我不是来站台的，我来带来真实内容。</h2></div>
+        <div class="ticket-body">
+          <div class="creator-photo"><img src="posters/category-4.jpg" alt="主理人现场内容示意"></div>
+          <div class="ticket-tags" id="ticketTags"><span class="ticket-tag">品牌共创</span><span class="ticket-tag">圆桌分享</span><span class="ticket-tag">现场工作坊</span></div>
+          <div class="ticket-row"><b>可约</b><span id="ticketOpen">10 月 8 天可线下，6 天可线上</span></div>
+          <div class="ticket-row"><b>不接</b><span id="ticketNo">纯站台 / 无预算 / 临时救场</span></div>
+          <div class="ticket-row"><b>介绍语</b><span id="ticketIntro">适合需要真实经验、审美判断和社群连接的活动。</span></div>
+        </div>
+      </aside>
+    </div>
+    <div class="scroll-tip">SCROLL<i></i></div>
+  </section>
+
+  <section class="section intro">
+    <div class="inner intro-grid">
+      <div>
+        <h2 class="section-title">不是让我填资料，<br>是帮我掌控被邀请的方式。</h2>
+        <p class="blue-lead">站在主理人第一人称：我想被准确理解，我想挡掉不合适邀约，我想把真实作品、档期和边界公开给值得合作的人。</p>
+        <p class="body-copy">所以页面不从大段自我介绍开始，而从选择开始。标签帮我收敛，日历帮我说清楚什么时候不可约，图片和过往内容帮我建立可信度，AI 只负责把我的选择整理成像我的介绍语、主页和分享卡片。</p>
+      </div>
+      <div class="card">
+        <div class="card-titlebar">我的邀约页会替我回答</div>
+        <div class="event-info-row"><div class="label">适合我</div><div class="value">活动方可以一眼看懂我适合分享、共创、主持、工作坊还是品牌合作。</div></div>
+        <div class="event-info-row"><div class="label">别邀请</div><div class="value">纯站台、无明确主题、无预算、价值观不合的邀约会被提前过滤。</div></div>
+        <div class="event-info-row"><div class="label">哪天不行</div><div class="value">我能用日历标记已安排、可线上、可线下、只接熟人推荐。</div></div>
+        <div class="event-info-row"><div class="label">凭什么信</div><div class="value">作品图、现场图、内容链接、过往合作会成为活动方判断的证据。</div></div>
+        <div class="event-info-row"><div class="label">我有意见</div><div class="value">我可以随时告诉平台：这个标签不像我，这类推荐不要再来。</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section builder" id="builder">
+    <div class="inner">
+      <h2 class="section-title">5 分钟生成我的可邀约主页</h2>
+      <p class="blue-lead">尽量少写字。先选，再确认，最后只改一句最不像我的话。</p>
+      <div class="builder-shell">
+        <aside class="step-rail">
+          <div class="progress"><span id="progressBar"></span></div>
+          <div id="steps"></div>
+        </aside>
+
+        <section>
+          <article class="question-card active" data-step="0">
+            <div class="q-head"><div class="kicker">STEP 01 / FIRST PERSON</div><h2>别人邀请我前，最应该先看懂我哪一面？</h2></div>
+            <div class="q-body">
+              <div class="choice-group">
+                <div class="group-label">我能带来的价值 <span>最多选 5 个</span></div>
+                <div class="chips" data-key="values" data-max="5">
+                  <button class="chip red" type="button">真实经验</button><button class="chip blue" type="button">审美判断</button><button class="chip purple" type="button">社群影响力</button><button class="chip orange" type="button">现场共创</button><button class="chip teal" type="button">内容表达</button><button class="chip pink" type="button">品牌连接</button><button class="chip" type="button">议题策划</button><button class="chip" type="button">长期陪伴</button>
+                </div>
+              </div>
+              <div class="choice-group">
+                <div class="group-label">我希望别人怎样介绍我 <span>选一个主语气</span></div>
+                <div class="chips single" data-key="tone" data-max="1">
+                  <button class="chip selected" type="button">真诚克制</button><button class="chip" type="button">锋利专业</button><button class="chip" type="button">热闹有感染力</button><button class="chip" type="button">朋友式邀请</button>
+                </div>
+              </div>
+              <div class="input-row">
+                <div class="field"><label for="curatorName">我的称呼</label><input id="curatorName" data-field="name" value="阿也" placeholder="例如：阿也"></div>
+                <div class="field"><label for="brandName">我的品牌 / 项目</label><input id="brandName" data-field="brand" value="慢慢开张" placeholder="例如：慢慢开张"></div>
+              </div>
+              <div class="field"><label for="oneLine">如果只保留一句，我希望别人记住</label><textarea id="oneLine" data-field="oneLine" placeholder="不想写也可以先跳过，AI 会根据你的选择生成。"></textarea><div class="micro-hint">这不是作文题。你可以只写一句不想被误解的话。</div></div>
+            </div>
+          </article>
+
+          <article class="question-card" data-step="1" id="calendar">
+            <div class="q-head"><div class="kicker">STEP 02 / AVAILABILITY</div><h2>哪些日期我已经安排好，不能被邀请？</h2></div>
+            <div class="q-body">
+              <div class="calendar-box">
+                <div class="cal-head"><button id="prevMonth" type="button">‹</button><span id="monthTitle">2026 年 9 月</span><button id="nextMonth" type="button">›</button></div>
+                <div class="week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+                <div class="days" id="days"></div>
+              </div>
+              <div class="status-buttons">
+                <button type="button" data-mode="off">已满</button><button type="button" data-mode="online">可线上</button><button type="button" data-mode="onsite">可线下</button><button type="button" data-mode="private">熟人推荐</button>
+              </div>
+              <div class="choice-group" style="margin-top:24px">
+                <div class="group-label">固定不方便 <span>点选即可</span></div>
+                <div class="chips" data-key="weekly">
+                  <button class="chip" type="button">周一上午</button><button class="chip" type="button">工作日晚间</button><button class="chip" type="button">周末全天</button><button class="chip" type="button">节假日</button><button class="chip" type="button">提前 7 天内</button>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="question-card" data-step="2">
+            <div class="q-head"><div class="kicker">STEP 03 / FIT FILTER</div><h2>我适合哪些邀约？哪些不要来消耗我？</h2></div>
+            <div class="q-body">
+              <div class="choice-group">
+                <div class="group-label">我愿意接 <span>活动方会用这些标签匹配</span></div>
+                <div class="chips" data-key="accepts">
+                  <button class="chip red" type="button">品牌共创</button><button class="chip blue" type="button">圆桌分享</button><button class="chip purple" type="button">课程工作坊</button><button class="chip orange" type="button">现场主持</button><button class="chip teal" type="button">播客访谈</button><button class="chip pink" type="button">内容联名</button><button class="chip" type="button">展览开幕</button><button class="chip" type="button">产品发布</button>
+                </div>
+              </div>
+              <div class="choice-group">
+                <div class="group-label">我不接受 <span>帮我挡掉不合适的邀请</span></div>
+                <div class="chips" data-key="rejects">
+                  <button class="chip red" type="button">纯站台</button><button class="chip blue" type="button">无明确主题</button><button class="chip purple" type="button">无预算</button><button class="chip orange" type="button">临时救场</button><button class="chip teal" type="button">过度商业背书</button><button class="chip pink" type="button">价值观不合</button><button class="chip" type="button">长期免费投入</button>
+                </div>
+              </div>
+              <div class="input-row">
+                <div class="field"><label for="city">我方便出现的城市</label><select id="city" data-field="city"><option>上海 / 杭州 / 苏州</option><option>北京 / 上海 / 广州 / 深圳</option><option>只接受本地</option><option>全国可飞</option></select></div>
+                <div class="field"><label for="leadTime">至少提前多久邀请我</label><select id="leadTime" data-field="leadTime"><option>提前 14 天</option><option>提前 7 天</option><option>提前 30 天</option><option>只接受长期计划</option></select></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="question-card" data-step="3">
+            <div class="q-head"><div class="kicker">STEP 04 / CONTENT PROOF</div><h2>用文字、图片和标签，让活动方相信我。</h2></div>
+            <div class="q-body">
+              <div class="media-grid">
+                <button class="media-slot selected" type="button"><img src="posters/category-1.jpg" alt="作品图"><span>作品图</span></button>
+                <button class="media-slot selected" type="button"><img src="posters/category-3.jpg" alt="活动现场"><span>现场图</span></button>
+                <button class="media-slot" type="button">+ 内容截图</button>
+                <button class="media-slot" type="button">+ 合作案例</button>
+              </div>
+              <div class="choice-group" style="margin-top:22px">
+                <div class="group-label">我的可信证据 <span>选择已有，不强迫上传</span></div>
+                <div class="chips" data-key="proofs">
+                  <button class="chip red" type="button">过往活动照片</button><button class="chip blue" type="button">媒体报道</button><button class="chip purple" type="button">成员反馈</button><button class="chip orange" type="button">小红书内容</button><button class="chip teal" type="button">作品集链接</button><button class="chip pink" type="button">品牌合作案例</button>
+                </div>
+              </div>
+              <div class="field"><label for="introText">AI 已经会写介绍，我只补充一个最重要的事实</label><textarea id="introText" data-field="fact" placeholder="例如：过去一年，我组织过 12 场线下小桌会，参与者大多是独立品牌和内容主理人。"></textarea></div>
+            </div>
+          </article>
+
+          <article class="question-card" data-step="4">
+            <div class="q-head"><div class="kicker">STEP 05 / SHARE & FEEDBACK</div><h2>生成主页后，我还能随时提意见、更新和传播。</h2></div>
+            <div class="q-body">
+              <div class="choice-group">
+                <div class="group-label">我想生成 <span>维护一次，得到多个传播资产</span></div>
+                <div class="chips" data-key="outputs">
+                  <button class="chip red selected" type="button">公开主页</button><button class="chip blue selected" type="button">活动方简介</button><button class="chip purple" type="button">朋友圈文案</button><button class="chip orange" type="button">小红书标题</button><button class="chip teal" type="button">邀约二维码卡片</button><button class="chip pink" type="button">英文介绍</button>
+                </div>
+              </div>
+              <div class="field"><label for="feedbackText">这个主页哪里不像我？</label><textarea id="feedbackText" data-field="feedback" placeholder="例如：不要把我写得太商业；不要推荐母婴类活动；我的介绍可以更松弛一点。"></textarea><div class="micro-hint">这是主理人在训练自己的邀约画像，不是客服意见箱。</div></div>
+              <button class="btn-festa primary" id="generateBtn" type="button">生成并预览我的主页</button>
+            </div>
+          </article>
+
+          <div class="builder-nav">
+            <button class="btn-festa secondary" id="prevStep" type="button">上一步</button>
+            <button class="btn-festa yellow" id="nextStep" type="button">下一步</button>
+          </div>
+        </section>
+
+        <aside class="preview-panel">
+          <div class="preview-title">AI 正在替我整理</div>
+          <div class="preview-body">
+            <div class="meter"><div><b id="fitScore">37</b>匹配清晰度</div><div><b id="proofScore">2</b>可信证据</div><div><b id="shareScore">3</b>传播素材</div></div>
+            <div class="preview-copy" id="previewCopy"></div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <section class="section formats">
+    <div class="inner">
+      <div class="slash-title"><h2 class="section-title">活动方可以这样邀请我</h2></div>
+      <div class="format-grid">
+        <article class="format-card"><div class="pic"><img src="posters/category-2.jpg" alt="品牌共创"></div><div class="content"><span class="no">01</span><h3>品牌共创</h3><p>适合需要主理人真实经验、内容判断和产品语境的合作。</p><button class="format-btn red" type="button">我愿意被这样邀请</button></div></article>
+        <article class="format-card"><div class="pic"><img src="posters/category-5.jpg" alt="圆桌分享"></div><div class="content"><span class="no">02</span><h3>圆桌分享</h3><p>我更适合有明确议题的对谈，而不是泛泛而谈的露出。</p><button class="format-btn blue" type="button">匹配圆桌邀约</button></div></article>
+        <article class="format-card"><div class="pic"><img src="posters/category-6.jpg" alt="工作坊"></div><div class="content"><span class="no">03</span><h3>工作坊</h3><p>我可以带参与者现场共创，输出方法、样本和下一步行动。</p><button class="format-btn purple" type="button">生成工作坊简介</button></div></article>
+        <article class="format-card"><div class="pic"><img src="posters/category-7.jpg" alt="现场主持"></div><div class="content"><span class="no">04</span><h3>现场主持</h3><p>适合需要控节奏、串联嘉宾、让普通人也能进入话题的现场。</p><button class="format-btn orange" type="button">标记主持能力</button></div></article>
+        <article class="format-card"><div class="pic"><img src="posters/category-8.jpg" alt="播客访谈"></div><div class="content"><span class="no">05</span><h3>播客访谈</h3><p>活动方可以提前看到我的议题边界和可展开故事。</p><button class="format-btn teal" type="button">生成访谈提纲</button></div></article>
+        <article class="format-card"><div class="pic"><img src="posters/category-9.jpg" alt="内容联名"></div><div class="content"><span class="no">06</span><h3>内容联名</h3><p>不只看粉丝量，也看我和哪类人群、场景、价值观真正相连。</p><button class="format-btn pink" type="button">匹配内容合作</button></div></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section data">
+    <div class="inner data-grid">
+      <div class="data-item"><div class="num" id="dataDays">14</div><p>天内可被准确邀约的档期</p></div>
+      <div class="data-item"><div class="num" id="dataRejects">3</div><p>类不合适邀约会被提前过滤</p></div>
+      <div class="data-item"><div class="num" id="dataAssets">6</div><p>个可直接传播的主页资产</p></div>
+    </div>
+  </section>
+
+  <section class="section public-home" id="public-home">
+    <div class="inner home-grid">
+      <div>
+        <h2 class="section-title">这是我愿意分享出去的主页。</h2>
+        <p class="blue-lead">它不像简历，也不像平台后台。它是一张清楚、有边界、有证据的邀请名片。</p>
+        <p class="body-copy">活动方看见的是“是否适合邀请我”，主理人看见的是“我正在变得更容易被准确理解”。每次更新都会带来新版主页、分享文案、介绍语和匹配信号。</p>
+        <div class="hero-actions" style="margin-top:24px"><button class="btn-festa primary" id="copyShare" type="button">复制主页分享文案</button><button class="btn-festa secondary" id="refreshHome" type="button">刷新主页预览</button></div>
+      </div>
+      <aside class="homepage-card">
+        <div class="homepage-hero"><img id="homeImage" src="posters/category-1.jpg" alt="公开主页图片"><h3 id="homeTitle">阿也｜慢慢开张主理人</h3></div>
+        <div class="homepage-body">
+          <div class="home-section"><b>一句话介绍</b><p id="homeOneLine">我适合出现在需要真实经验、审美判断和现场共创的场合，而不是只做一次性的流量露出。</p></div>
+          <div class="home-section"><b>适合邀请我</b><ul id="homeAccepts"><li>品牌共创</li><li>圆桌分享</li><li>课程工作坊</li></ul></div>
+          <div class="home-section"><b>请不要邀请我</b><ul id="homeRejects"><li>纯站台</li><li>无明确主题</li><li>无预算</li></ul></div>
+          <div class="home-section"><b>最近可约状态</b><p id="homeDates">我已标记不可约日期，优先接受提前 14 天的明确邀约。</p></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="section matching" id="matching">
+    <div class="inner">
+      <h2 class="section-title">平台也能更精准匹配邀约。</h2>
+      <div class="visitor-grid">
+        <button class="visitor-btn highlight" type="button"><span>🎯</span>活动方先看匹配标签，再发邀约</button>
+        <button class="visitor-btn" type="button"><span>📅</span>自动避开我已经安排好的日期</button>
+        <button class="visitor-btn" type="button"><span>🖼️</span>用图文证据判断我是否适合现场</button>
+        <button class="visitor-btn" type="button"><span>🚫</span>不合适条件提前过滤，不再消耗沟通</button>
+        <button class="visitor-btn" type="button"><span>✍️</span>活动方复制我确认过的介绍语</button>
+        <button class="visitor-btn" type="button"><span>🔁</span>我每次更新，匹配画像都会更像我</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="section feedback" id="feedback">
+    <div class="inner contact-grid">
+      <div class="info-card">
+        <h2>我可以持续训练这个主页。</h2>
+        <p>主理人的反馈不只是意见，而是画像校准：哪些词不像我，哪些邀约不要来，哪些标签要加强，哪些照片更能证明我。</p>
+      </div>
+      <div class="form-card">
+        <div class="field"><label for="finalFeedback">我对主页或匹配有意见</label><textarea id="finalFeedback" placeholder="例如：我的主页应该更偏生活方式，不要把我推荐给纯商业发布会。"></textarea></div>
+        <div class="input-row">
+          <div class="field"><label for="updateCycle">提醒我多久更新一次</label><select id="updateCycle"><option>每 7 天</option><option selected>每 14 天</option><option>每 30 天</option></select></div>
+          <div class="field"><label for="visibility">主页可见范围</label><select id="visibility"><option>公开分享</option><option>仅邀约方可见</option><option>仅 TDE 匹配可见</option></select></div>
+        </div>
+        <button class="btn-festa primary" id="sendFeedback" type="button">提交我的意见</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-grid">
+    <div><h3>THEDESIGN EXPO</h3><p>一个让主理人被准确看见、被合适邀请、被长期维护的艺术与设计活动平台。</p></div>
+    <div><h3>主理人</h3><a href="#builder">生成主页</a><a href="#calendar">维护档期</a><a href="#feedback">反馈画像</a></div>
+    <div><h3>活动方</h3><a href="#public-home">查看主页</a><a href="#matching">精准匹配</a><a href="#matching">复制介绍</a></div>
+    <div><h3>分享</h3><a href="#public-home">公开主页</a><a href="#builder">传播素材</a><a href="#top">返回顶部</a></div>
+  </div>
+  <div class="copyright">© TheDesignExpo Curator Invite Page</div>
+</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=(id)=>document.getElementById(id);
+const state={
+  step:0,mode:'off',monthOffset:0,
+  fields:{name:'阿也',brand:'慢慢开张',city:'上海 / 杭州 / 苏州',leadTime:'提前 14 天'},
+  tags:{values:['真实经验','审美判断','现场共创'],tone:['真诚克制'],weekly:[],accepts:['品牌共创','圆桌分享','课程工作坊'],rejects:['纯站台','无明确主题','无预算'],proofs:['过往活动照片','成员反馈'],outputs:['公开主页','活动方简介']},
+  dates:{'2026-09-10':'off','2026-09-18':'onsite','2026-09-21':'online','2026-09-26':'private'}
+};
+const steps=[
+  ['我是谁','价值、语气、称呼'],
+  ['我哪天可约','已满、线上、线下'],
+  ['我接什么','适合与不适合'],
+  ['凭什么信','图片、案例、证据'],
+  ['生成分享','主页、反馈、传播']
+];
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2200)}
+function save(){localStorage.setItem('tde_curator_invite_page',JSON.stringify(state))}
+function load(){try{const saved=JSON.parse(localStorage.getItem('tde_curator_invite_page')||'null');if(saved)Object.assign(state,saved)}catch(e){}}
+function activeTags(key){return state.tags[key]||[]}
+function progress(){
+  const tagCount=Object.values(state.tags).reduce((sum,arr)=>sum+arr.length,0);
+  const fieldCount=Object.values(state.fields).filter(Boolean).length;
+  const dateCount=Object.keys(state.dates).length;
+  return Math.min(100,Math.round((tagCount+fieldCount+dateCount)/28*100));
+}
+function renderSteps(){
+  $('steps').innerHTML=steps.map((s,i)=>`<button class="step-btn ${i===state.step?'active':''} ${i<state.step?'done':''}" type="button" data-step="${i}"><span class="num">${i<state.step?'✓':i+1}</span><span>${s[0]}<small>${s[1]}</small></span></button>`).join('');
+}
+function ymd(date){
+  const m=String(date.getMonth()+1).padStart(2,'0');
+  const d=String(date.getDate()).padStart(2,'0');
+  return `${date.getFullYear()}-${m}-${d}`;
+}
+function renderCalendar(){
+  const base=new Date(2026,8+state.monthOffset,1);
+  $('monthTitle').textContent=`${base.getFullYear()} 年 ${base.getMonth()+1} 月`;
+  const start=new Date(base);
+  const weekday=(start.getDay()+6)%7;
+  start.setDate(start.getDate()-weekday);
+  const labels={off:'已满',online:'线上',onsite:'线下',private:'熟人'};
+  $('days').innerHTML='';
+  for(let i=0;i<42;i++){
+    const day=new Date(start);day.setDate(start.getDate()+i);
+    const key=ymd(day),mode=state.dates[key]||'',btn=document.createElement('button');
+    btn.type='button';btn.className=`day ${day.getMonth()===base.getMonth()?'':'other'} ${mode}`;
+    btn.dataset.date=key;
+    btn.innerHTML=`<span>${day.getDate()}</span><span class="state">${labels[mode]||'可约'}</span>`;
+    $('days').appendChild(btn);
+  }
+}
+function copyText(){
+  const name=state.fields.name||'我';
+  const brand=state.fields.brand||'我的项目';
+  const values=activeTags('values').join('、')||'真实经验、内容判断';
+  const accepts=activeTags('accepts').join('、')||'明确议题的活动';
+  const rejects=activeTags('rejects').join('、')||'不合适邀约';
+  const tone=activeTags('tone')[0]||'真诚克制';
+  const fact=state.fields.fact?`\n\n我希望活动方额外知道：${state.fields.fact}`:'';
+  return `我是 ${name}，${brand} 的主理人。\n\n我适合被邀请到需要${values}的场合，尤其是：${accepts}。\n\n请不要邀请我参加：${rejects}。我更愿意把时间留给主题清楚、彼此尊重、能产生真实内容的合作。\n\n我的介绍语气请保持${tone}。${state.fields.oneLine||'如果只保留一句话：我不是来做一次性露出，我来带来可被相信的内容和现场连接。'}${fact}`;
+}
+function renderPreview(){
+  const p=progress();
+  $('progressBar').style.width=p+'%';
+  $('fitScore').textContent=p;
+  $('proofScore').textContent=activeTags('proofs').length;
+  $('shareScore').textContent=activeTags('outputs').length+4;
+  $('previewCopy').textContent=copyText();
+  $('ticketName').textContent=state.fields.oneLine||'我不是来站台的，我来带来真实内容。';
+  $('ticketTags').innerHTML=activeTags('values').slice(0,5).map(t=>`<span class="ticket-tag">${t}</span>`).join('')||'<span class="ticket-tag">真实经验</span>';
+  const dateModes=Object.values(state.dates);
+  $('ticketOpen').textContent=`${state.fields.city||'上海'} · 已设置 ${dateModes.length} 个档期状态`;
+  $('ticketNo').textContent=activeTags('rejects').join(' / ')||'纯站台 / 无预算';
+  $('ticketIntro').textContent=`适合${activeTags('accepts').join('、')||'圆桌分享、品牌共创'}。`;
+  $('dataDays').textContent=14+activeTags('weekly').length;
+  $('dataRejects').textContent=activeTags('rejects').length;
+  $('dataAssets').textContent=activeTags('outputs').length+4;
+  $('homeTitle').textContent=`${state.fields.name||'主理人'}｜${state.fields.brand||'我的项目'}主理人`;
+  $('homeOneLine').textContent=state.fields.oneLine||'我适合出现在需要真实经验、审美判断和现场共创的场合，而不是只做一次性的流量露出。';
+  $('homeAccepts').innerHTML=activeTags('accepts').map(t=>`<li>${t}</li>`).join('')||'<li>明确议题的活动</li>';
+  $('homeRejects').innerHTML=activeTags('rejects').map(t=>`<li>${t}</li>`).join('')||'<li>纯站台</li>';
+  $('homeDates').textContent=`我方便出现在 ${state.fields.city||'本地'}，请至少${state.fields.leadTime||'提前 14 天'}联系；已标记 ${Object.keys(state.dates).length} 个日期状态。`;
+}
+function render(){
+  document.querySelectorAll('.question-card').forEach((card,i)=>card.classList.toggle('active',i===state.step));
+  document.querySelectorAll('.chip').forEach(chip=>{
+    const group=chip.closest('.chips'); if(!group||!group.dataset.key)return;
+    chip.classList.toggle('selected',activeTags(group.dataset.key).includes(chip.textContent.trim()));
+  });
+  document.querySelectorAll('[data-field]').forEach(el=>{if(state.fields[el.dataset.field]!==undefined&&el.value!==state.fields[el.dataset.field])el.value=state.fields[el.dataset.field]});
+  renderSteps();renderCalendar();renderPreview();
+  $('prevStep').style.visibility=state.step===0?'hidden':'visible';
+  $('nextStep').textContent=state.step===steps.length-1?'生成主页':'下一步';
+}
+function setStep(i){state.step=Math.max(0,Math.min(steps.length-1,i));save();render()}
+document.addEventListener('click',async(e)=>{
+  const drawer=$('drawer'),mask=$('drawerMask');
+  if(e.target.closest('#openDrawer')){drawer.classList.add('show');mask.classList.add('show')}
+  if(e.target.closest('#closeDrawer')||e.target===mask||e.target.closest('.drawer a')){drawer.classList.remove('show');mask.classList.remove('show')}
+  const step=e.target.closest('.step-btn'); if(step)setStep(Number(step.dataset.step));
+  if(e.target.closest('#prevStep'))setStep(state.step-1);
+  if(e.target.closest('#nextStep')){state.step===steps.length-1?(toast('主页已生成，可以分享给活动方。'),document.querySelector('#public-home').scrollIntoView({behavior:'smooth'})):setStep(state.step+1)}
+  const chip=e.target.closest('.chip');
+  if(chip){
+    const group=chip.closest('.chips'),key=group?.dataset.key; if(!key)return;
+    const text=chip.textContent.trim(),arr=activeTags(key),max=Number(group.dataset.max||99);
+    if(arr.includes(text)) state.tags[key]=arr.filter(x=>x!==text);
+    else state.tags[key]=group.classList.contains('single')?[text]:arr.length>=max?[...arr.slice(1),text]:[...arr,text];
+    save();render();
+  }
+  const day=e.target.closest('.day');
+  if(day&&!day.classList.contains('other')){
+    const key=day.dataset.date;
+    if(state.dates[key]===state.mode) delete state.dates[key]; else state.dates[key]=state.mode;
+    save();render();
+  }
+  const mode=e.target.closest('[data-mode]'); if(mode){state.mode=mode.dataset.mode;toast('接下来点日期会标记为：'+mode.textContent.trim())}
+  if(e.target.closest('.media-slot')){e.target.closest('.media-slot').classList.toggle('selected');toast('已更新图片证据状态')}
+  if(e.target.closest('#prevMonth')){state.monthOffset--;save();render()}
+  if(e.target.closest('#nextMonth')){state.monthOffset++;save();render()}
+  if(e.target.closest('#generateBtn')){toast('已生成主页预览');document.querySelector('#public-home').scrollIntoView({behavior:'smooth'})}
+  if(e.target.closest('#refreshHome')){const imgs=['category-1.jpg','category-3.jpg','category-4.jpg','category-8.jpg'];$('homeImage').src='posters/'+imgs[Math.floor(Math.random()*imgs.length)];toast('主页预览已刷新')}
+  if(e.target.closest('#copyShare')){await navigator.clipboard.writeText(copyText());toast('已复制主页分享文案')}
+  if(e.target.closest('#sendFeedback')){const btn=$('sendFeedback');btn.textContent='已发送';btn.style.background='var(--teal)';toast('收到，我会把这条意见用于校准你的邀约画像');setTimeout(()=>{btn.textContent='提交我的意见';btn.style.background='var(--red)'},2000)}
+});
+document.addEventListener('input',(e)=>{if(e.target.dataset.field){state.fields[e.target.dataset.field]=e.target.value;save();renderPreview()}});
+document.addEventListener('change',(e)=>{if(e.target.dataset.field){state.fields[e.target.dataset.field]=e.target.value;save();renderPreview()}});
+load();render();
+</script>
+</body>
+</html>

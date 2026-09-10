@@ -1,0 +1,26 @@
+<view class="crop-page">
+  <view class="safe-top"></view>
+  <view class="crop-topbar"><button bindtap="cancel">取消</button><text class="serif">调整画面</text><view class="topbar-spacer"></view></view>
+  <view
+    class="crop-stage"
+    style="width:{{areaWidth}}px;height:{{areaHeight}}px"
+    catchtouchstart="touchStart"
+    catchtouchmove="touchMove"
+    catchtouchend="touchEnd"
+    catchtouchcancel="touchEnd"
+  >
+    <image
+      class="crop-image"
+      src="{{src}}"
+      mode="scaleToFill"
+      style="width:{{baseWidth}}px;height:{{baseHeight}}px;transform:translate3d({{x}}px,{{y}}px,0) scale({{scale}})"
+    />
+    <view class="crop-border"></view>
+  </view>
+  <view class="crop-footer">
+    <view class="zoom-heading"><view class="ratio-mark"><text>{{target === 'registerLogo' ? '1' : '4'}}</text><view></view><text>{{target === 'registerLogo' ? '1' : '5'}}</text></view><text>{{scaleText}}</text><button bindtap="reset">重置</button></view>
+    <view class="zoom-control"><button data-delta="-5" bindtap="nudgeScale" aria-label="缩小"><image src="/assets/icons/minus-light.svg" mode="aspectFit"/></button><slider min="100" max="400" step="1" value="{{scalePercent}}" activeColor="{{designColors.accent}}" backgroundColor="{{designColors.muted}}" block-color="{{designColors.surface}}" block-size="22" bindchanging="sliderScale" bindchange="sliderScale" /><button data-delta="5" bindtap="nudgeScale" aria-label="放大"><image src="/assets/icons/plus-light.svg" mode="aspectFit"/></button></view>
+    <button class="crop-confirm" bindtap="confirm" loading="{{saving}}">{{saving ? '正在保存' : '确认使用'}}</button>
+  </view>
+  <canvas canvas-id="cropCanvas" class="hidden-canvas" style="width:{{areaWidth}}px;height:{{areaHeight}}px"></canvas>
+</view>

@@ -1,0 +1,21 @@
+<view class="page project-preview-page" wx:if="{{preview}}">
+  <view class="preview-hero">
+    <image class="preview-photo" src="{{preview.imageUrl}}" mode="aspectFill" binderror="imageError" />
+    <view class="preview-shade"></view>
+    <brand-header compact immersive />
+    <view class="preview-titlebar"><button class="page-back" bindtap="back" aria-label="返回"><image src="/assets/icons/chevron-left-light.svg" mode="aspectFit"/></button><text>体验预览</text></view>
+    <view class="preview-hero-copy"><text>COCOC HOST</text><text>{{preview.oneLiner || preview.projectTitle || '未命名体验'}}</text><text>{{preview.creatorName}}</text></view>
+  </view>
+  <view class="preview-content">
+    <view class="preview-section preview-intro"><text class="preview-title">体验介绍</text><text class="preview-description">{{preview.description || '体验介绍待补充'}}</text><view class="preview-tags"><text wx:for="{{preview.tags}}" wx:key="*this">{{item}}</text></view></view>
+    <view class="preview-section preview-facts">
+      <view class="preview-date-fact"><text>可体验日期</text><view wx:if="{{preview.availableDates.length}}" class="preview-dates"><text wx:for="{{preview.availableDates}}" wx:key="*this">{{item}}</text></view><text wx:else>待添加</text></view>
+      <view><text>人数与时长</text><text>{{preview.peopleLabel}}</text></view>
+      <view><text>价格</text><text>{{preview.priceLabel}}</text></view>
+      <view><text>适龄与难度</text><text>{{preview.ageRange || '未设置'}} · {{preview.difficultyLabel}}</text></view>
+      <view><text>位置</text><text>{{preview.addressHint || preview.city + preview.district}}</text></view>
+    </view>
+    <view wx:if="{{preview.safetyNotes}}" class="preview-section preview-notice"><text>安全提醒</text><text>{{preview.safetyNotes}}</text></view>
+  </view>
+  <creator-tabs active="project" />
+</view>

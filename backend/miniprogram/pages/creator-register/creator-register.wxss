@@ -1,0 +1,62 @@
+.register-page {
+  background-color: var(--paper);
+  background-image: url("/assets/backgrounds/new1-mist-meadow.jpg");
+  color: var(--text);
+}
+
+.register-content {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: var(--space-6) var(--layout-page-gutter) 170rpx;
+  display: grid;
+  gap: var(--space-5);
+  overflow-x: hidden;
+  background: var(--surface-translucent);
+}
+
+.register-heading { display: grid; gap: var(--space-1); }
+.register-heading > text:first-child { color: var(--muted); font-size: var(--type-micro); line-height: var(--line-micro); }
+.register-title { color: var(--ink); font-family: var(--font-editorial); font-size: var(--type-display); line-height: var(--line-display); font-weight: var(--weight-display); }
+.register-form { min-width: 0; max-width: 100%; display: grid; gap: var(--space-6); }
+.register-state { min-height: 420rpx; display: grid; place-content: center; justify-items: center; gap: var(--space-3); color: var(--ink-soft); }
+.register-state .secondary-button { min-width: 180rpx; }
+
+.application-review-note { display: grid; gap: 8rpx; padding: var(--space-3); border: 1rpx solid var(--danger); border-radius: var(--radius-default); background: var(--danger-soft); font-size: var(--type-secondary); line-height: var(--line-secondary); }
+.application-review-note text:first-child { font-weight: var(--weight-card); }
+.application-review-note.pending { border-color: var(--warning); background: var(--warning-soft); }
+.phone-pair { min-width: 0; max-width: 100%; display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--space-4); }
+
+.representative-image { width: 240rpx; max-width: 100%; height: 300rpx; padding: 0; border: 1rpx solid var(--line-strong); border-radius: var(--radius-default); overflow: hidden; background: var(--surface-soft); }
+.representative-image image { width: 100%; height: 100%; }
+.representative-image view { height: 100%; display: grid; place-content: center; gap: 8rpx; color: var(--ink); font-weight: var(--weight-card); }
+.representative-image .upload-icon { width: 44rpx; height: 44rpx; margin: 0 auto; }
+.representative-image.logo-image { width: 200rpx; height: 200rpx; }
+.field-label-row { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 18rpx; }
+.field-count { color: var(--ink-soft); font-size: var(--type-micro); font-weight: var(--weight-card); }
+
+.tag-application, .tag-group, .section-block { min-width: 0; max-width: 100%; display: grid; gap: var(--space-2); }
+.section-heading, .tag-group-title { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+.section-heading text:first-child, .section-title { color: var(--ink); font-family: var(--font-editorial); font-size: var(--type-section); line-height: var(--line-section); font-weight: var(--weight-section); }
+.tag-group { padding: 0 0 var(--space-3); border-bottom: 1rpx solid var(--line); }
+.tag-group.focused { scroll-margin-top: 220rpx; border-bottom-color: var(--accent); }
+.tag-group-content { display: grid; gap: var(--space-2); }
+.tag-group-title { width: 100%; min-height: 72rpx; padding: 0; border: 0; background: transparent; color: var(--ink); font-size: var(--type-body); line-height: var(--line-body); font-weight: var(--weight-card); text-align: left; }
+.tag-group .chip.unavailable { opacity: .48; }
+.custom-tag-row { display: grid; grid-template-columns: minmax(0, 1fr) 150rpx; gap: 8rpx; }
+.custom-tag-row input, .custom-tag-row button { min-width: 0; min-height: 72rpx; padding: 0 12rpx; border: 1rpx solid var(--line-strong); border-radius: var(--radius-default); display: flex; align-items: center; justify-content: center; background: var(--white); font-size: var(--type-caption); line-height: 1.2; }
+
+.busy-add { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) 150rpx; gap: 12rpx; }
+.busy-add .secondary-button { min-height: 88rpx; }
+.no-bookings-choice { width: 100%; min-height: 96rpx; padding: 16rpx 18rpx; border: 1rpx solid var(--line-strong); border-radius: var(--radius-default); background: var(--white); color: var(--ink); display: grid; grid-template-columns: 48rpx minmax(0, 1fr); align-items: center; gap: 14rpx; text-align: left; }
+.no-bookings-choice.selected { border-color: var(--warning); background: var(--warning-soft); box-shadow: none; }
+.choice-mark { width: 40rpx; height: 40rpx; border: 1rpx solid var(--line-strong); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; background: var(--white); }
+.choice-mark image { width: 28rpx; height: 28rpx; }
+.no-bookings-choice > view:last-child { min-width: 0; display: grid; gap: 5rpx; }
+.no-bookings-choice > view:last-child text:first-child { font-size: var(--type-secondary); line-height: var(--line-secondary); font-weight: var(--weight-card); }
+.no-bookings-choice > view:last-child text:last-child { color: var(--ink-soft); font-size: var(--type-micro); line-height: var(--line-micro); }
+
+.agreement { min-height: 64rpx; display: flex; flex-wrap: wrap; align-items: center; gap: 4rpx; color: var(--ink-soft); font-size: var(--type-caption); line-height: var(--line-caption); }
+.agreement checkbox-group { width: 54rpx; flex: none; }
+.agreement button { width: auto; min-height: 52rpx; margin: 0; padding: 0 2rpx; border: 0; background: transparent; color: var(--highlight); font-size: var(--type-caption); line-height: 52rpx; }
+.agreement button::after { border: 0; }

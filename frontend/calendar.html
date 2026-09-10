@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TDE·活动日历 · TheDesignExpo</title>
+<style>
+:root{
+  --yellow:#FFE600;--yellow-light:#FFF3B0;
+  --pink:#FFCDD2;--pink-light:#FCE4EC;
+  --blue:#283593;--blue-light:#E8EAF6;
+  --red:#E53935;--red-light:#FFEBEE;
+  --green:#4CAF50;--green-light:#E8F5E9;
+  --orange:#FB8C00;--orange-light:#FFF3E0;
+  --purple:#7B1FA2;--purple-light:#F3E5F5;
+  --text:#222;--text-light:#666;--border:#e8e5de;--bg:#F7F5F0;--card:#fff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.6;min-height:100vh;}
+
+/* Topbar */
+.topbar{position:sticky;top:0;z-index:100;background:var(--yellow);border-bottom:3px solid var(--text);padding:10px 20px;display:flex;align-items:center;gap:16px;}
+.logo{font-weight:900;font-size:22px;letter-spacing:1px;cursor:pointer;}
+.logo span{color:var(--blue);}
+.topbar-nav{display:flex;gap:8px;margin-left:20px;}
+.topbar-nav a{text-decoration:none;color:var(--text);font-weight:600;padding:6px 14px;border-radius:999px;font-size:13px;transition:all .2s;}
+.topbar-nav a:hover,.topbar-nav a.active{background:var(--text);color:var(--yellow);}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.user-avatar{width:34px;height:34px;border-radius:50%;background:var(--pink);border:2px solid var(--text);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;cursor:pointer;overflow:hidden;}
+.user-avatar img{width:100%;height:100%;object-fit:cover;}
+.login-btn{border:2px solid var(--text);background:var(--card);border-radius:999px;padding:6px 16px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer;text-decoration:none;}
+
+.container{max-width:1200px;margin:0 auto;padding:20px;}
+
+/* Filter Bar */
+.filter-bar{background:var(--card);border:2px solid var(--text);border-radius:14px;padding:16px 20px;margin-bottom:16px;overflow:visible;}
+.filter-row{display:flex;gap:10px;flex-wrap:nowrap;align-items:center;}
+.filter-label{font-size:11px;color:var(--text-light);letter-spacing:2px;font-weight:700;min-width:40px;}
+.loc-select{border:2px solid var(--text);border-radius:999px;background:var(--card);color:var(--text);font-family:inherit;font-size:13px;font-weight:600;padding:7px 16px;cursor:pointer;transition:all .2s;min-width:140px;max-width:200px;}
+.loc-select:hover{background-color:var(--yellow-light);}
+.loc-select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-light);}
+
+/* Custom Select */
+.custom-select{position:relative;display:inline-block;min-width:140px;z-index:100;}
+.select-trigger{border:2px solid var(--text);border-radius:999px;background:var(--card);padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:all .2s;user-select:none;min-width:120px;}
+.select-trigger:hover{background-color:var(--yellow-light);}
+.select-trigger.open{background-color:var(--yellow);border-color:var(--text);}
+.select-arrow{font-size:10px;transition:transform .2s;}
+.select-trigger.open .select-arrow{transform:rotate(180deg);}
+.select-dropdown{position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card);border:2px solid var(--text);border-radius:12px;overflow:hidden;display:none;z-index:200;box-shadow:0 4px 12px rgba(0,0,0,0.15);max-height:240px;overflow-y:auto;}
+.select-dropdown.show{display:block;}
+.select-option{padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border-bottom:1px solid var(--border);}
+.select-option:last-child{border-bottom:none;}
+.select-option:hover{background-color:var(--yellow-light);}
+.select-option.selected{background-color:var(--yellow);font-weight:700;}
+.fchips{display:flex;flex-wrap:wrap;gap:6px 8px;}
+.fchip{display:inline-block;font-size:12px;padding:4px 12px;border-radius:999px;cursor:pointer;user-select:none;transition:all .2s;border:2px solid transparent;font-weight:600;}
+.fchip:hover{transform:scale(1.05);}
+.fchip.on{background:var(--text)!important;color:var(--yellow)!important;border-color:var(--text);}
+.clear-btn{margin-left:auto;border:none;background:transparent;color:var(--text-light);font-family:inherit;font-size:12px;cursor:pointer;text-decoration:underline;}
+
+/* Layout */
+.layout{display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start;}
+
+/* Calendar Card */
+.cal-card{background:var(--card);border:2px solid var(--text);border-radius:14px;padding:18px;position:sticky;top:80px;}
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.cal-title{font-weight:900;font-size:18px;}
+.cal-nav{display:flex;gap:6px;}
+.cal-nav button{width:28px;height:28px;border:2px solid var(--text);border-radius:50%;background:var(--card);cursor:pointer;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.cal-nav button:hover{background:var(--yellow);}
+.cal-sub{font-size:11px;color:var(--text-light);margin-bottom:12px;}
+.week-row{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;color:var(--text-light);margin-bottom:4px;font-weight:700;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
+.cal-day{position:relative;text-align:center;padding:8px 0;font-size:13px;border-radius:8px;color:var(--text-light);transition:transform .15s;border:2px solid transparent;cursor:default;}
+.cal-day.has{cursor:pointer;color:var(--text);font-weight:600;}
+.cal-day.has:hover{transform:scale(1.1);}
+.cal-day.sel{outline:2px solid var(--text);outline-offset:1px;}
+.cal-day.has-event{background:var(--green-light);}
+.cal-day.has-event.full{background:var(--orange-light);}
+.cal-day.has-event.ended{background:var(--border);color:var(--text-light);}
+.cal-day .dot{position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:var(--green);}
+.cal-day .n{position:absolute;top:1px;right:3px;font-size:8px;color:var(--text-light);font-weight:700;}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:11px;color:var(--text-light);}
+.legend span{display:flex;align-items:center;gap:4px;}
+.legend i{width:10px;height:10px;border-radius:3px;display:inline-block;}
+
+/* Event List */
+.event-list{display:flex;flex-direction:column;gap:16px;}
+.event-card{background:var(--card);border:2px solid var(--text);border-radius:14px;overflow:hidden;transition:all .2s;}
+.event-card:hover{transform:translateY(-2px);box-shadow:0 4px 0 var(--text);}
+.event-cover{height:160px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.event-cover img{width:100%;height:100%;object-fit:cover;}
+.event-cover .event-date-badge{position:absolute;top:12px;left:12px;background:var(--yellow);border:2px solid var(--text);border-radius:10px;padding:6px 12px;font-weight:900;text-align:center;}
+.event-cover .event-date-badge .day{font-size:24px;line-height:1;}
+.event-cover .event-date-badge .month{font-size:11px;}
+.event-status{position:absolute;top:12px;right:12px;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700;border:2px solid var(--text);}
+.event-status.recruiting{background:var(--green);color:#fff;}
+.event-status.full{background:var(--orange);color:#fff;}
+.event-status.ended{background:var(--text-light);color:#fff;}
+.event-body{padding:16px 20px;}
+.event-title{font-size:18px;font-weight:900;margin-bottom:4px;}
+.event-intro{font-size:13px;color:var(--text-light);margin-bottom:10px;}
+.event-meta{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text-light);margin-bottom:10px;}
+.event-meta span{display:flex;align-items:center;gap:4px;}
+.event-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+.event-tag{font-size:11px;padding:3px 10px;border-radius:999px;background:var(--yellow-light);font-weight:600;}
+.event-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.event-slots{font-size:12px;color:var(--text-light);}
+.event-slots b{color:var(--red);font-weight:700;}
+.event-btn{border:2px solid var(--text);background:var(--yellow);border-radius:999px;padding:8px 20px;font-size:13px;font-weight:700;color:var(--text);cursor:pointer;font-family:inherit;transition:all .2s;text-decoration:none;display:inline-block;}
+.event-btn:hover{background:var(--text);color:var(--yellow);}
+.event-btn.registered{background:var(--blue-light);color:var(--blue);}
+
+.empty{text-align:center;padding:60px 20px;}
+.empty .face{font-size:48px;font-weight:900;color:var(--text-light);}
+.empty h3{font-size:20px;margin:14px 0 6px;}
+.empty p{color:var(--text-light);font-size:14px;}
+
+/* Toast */
+.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--yellow);padding:10px 22px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:all .3s;z-index:200;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(max-width:860px){
+  .layout{grid-template-columns:1fr;}
+  .cal-card{position:static;}
+  .topbar-nav{display:none;}
+  .event-cover{height:120px;}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo" onclick="location.href='index.html'">TDE<span>·</span>活动日历</div>
+  <nav class="topbar-nav">
+    <a href="index.html">首页</a>
+    <a href="calendar.html" class="active">活动日历</a>
+    <a href="profile.html">个人中心</a>
+  </nav>
+  <div class="topbar-right" id="topbarRight">
+    <a href="login.html" class="login-btn">登录</a>
+  </div>
+</header>
+
+<div class="container">
+  <!-- Filter Bar -->
+  <section class="filter-bar">
+    <div class="filter-row">
+      <span class="filter-label">省份</span>
+      <div class="custom-select" id="provinceSelectWrap">
+        <div class="select-trigger" id="provinceTrigger">
+          <span id="provinceLabel">全部省份</span>
+          <span class="select-arrow">▾</span>
+        </div>
+        <div class="select-dropdown" id="provinceDropdown"></div>
+      </div>
+      <span class="filter-label">城市</span>
+      <div class="custom-select" id="citySelectWrap">
+        <div class="select-trigger" id="cityTrigger">
+          <span id="cityLabel">全部城市</span>
+          <span class="select-arrow">▾</span>
+        </div>
+        <div class="select-dropdown" id="cityDropdown"></div>
+      </div>
+      <span class="filter-label">状态</span>
+      <div class="custom-select" id="statusSelectWrap">
+        <div class="select-trigger" id="statusTrigger">
+          <span id="statusLabel">招募中</span>
+          <span class="select-arrow">▾</span>
+        </div>
+        <div class="select-dropdown" id="statusDropdown">
+          <div class="select-option" data-value="recruiting">招募中</div>
+          <div class="select-option" data-value="all">全部</div>
+          <div class="select-option" data-value="full">已满员</div>
+          <div class="select-option" data-value="ended">已结束</div>
+        </div>
+      </div>
+      <button class="clear-btn" id="clearBtn">清除筛选</button>
+    </div>
+  </section>
+
+  <div class="layout">
+    <!-- Calendar -->
+    <aside class="cal-card">
+      <div class="cal-head">
+        <div class="cal-title" id="calTitle">2026年9月</div>
+        <div class="cal-nav">
+          <button id="prevMonth">‹</button>
+          <button id="nextMonth">›</button>
+        </div>
+      </div>
+      <div class="cal-sub">有活动的日期已标记</div>
+      <div class="week-row"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="legend">
+        <span><i style="background:var(--green-light)"></i>有活动</span>
+        <span><i style="background:var(--orange-light)"></i>即将满员</span>
+        <span><i style="background:var(--border)"></i>已结束</span>
+      </div>
+    </aside>
+
+    <!-- Event List -->
+    <main>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <h2 style="font-size:18px;font-weight:900" id="listTitle">近期活动</h2>
+        <span style="font-size:12px;color:var(--text-light)" id="eventCount"></span>
+      </div>
+      <div class="event-list" id="eventList"></div>
+      <div class="empty" id="emptyState" style="display:none">
+        <div class="face">📅</div>
+        <h3>暂无活动</h3>
+        <p>当前筛选条件下没有活动，换个城市或品类看看吧</p>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let curYear = 2026, curMonth = 8;
+let selDay = null;
+let allEvents = [];
+let filteredEvents = [];
+let myTags = new Set();
+const $ = id => document.getElementById(id);
+
+/* ===== Auth ===== */
+function checkLogin(){
+  const token = localStorage.getItem('tde_token');
+  const creator = localStorage.getItem('tde_creator');
+  if(token && creator){
+    try{
+      const c = JSON.parse(creator);
+      $('topbarRight').innerHTML = `<div class="user-avatar" onclick="location.href='profile.html'">${c.logoImageUrl ? `<img src="${c.logoImageUrl}">` : (c.brandName||'主').charAt(0)}</div>`;
+      // 获取主理人标签用于推荐
+      fetch('/api/web/profile', { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(r => r.json())
+        .then(data => {
+          const tags = data.application?.tags || [];
+          myTags = new Set(tags.map(t => t.label || t));
+        })
+        .catch(() => {});
+      return true;
+    }catch(e){}
+  }
+  return false;
+}
+
+/* ===== Load Events ===== */
+let selectedProvince = '';
+let selectedCity = '';
+let selectedStatus = 'recruiting';
+
+async function loadEvents(){
+  const province = selectedProvince;
+  const city = selectedCity;
+  const status = selectedStatus;
+  let url = `/api/web/events?status=${status}`;
+  if(province) url += `&province=${encodeURIComponent(province)}`;
+  if(city) url += `&city=${encodeURIComponent(city)}`;
+  try{
+    const res = await fetch(url);
+    const data = await res.json();
+    allEvents = data.events || [];
+    applyFilters();
+  }catch(e){
+    console.error('加载活动失败', e);
+    allEvents = [];
+    applyFilters();
+  }
+}
+
+function applyFilters(){
+  filteredEvents = [...allEvents];
+  // 如果选了日期，筛选当天活动
+  if(selDay){
+    const dateStr = `${curYear}-${String(curMonth+1).padStart(2,'0')}-${String(selDay).padStart(2,'0')}`;
+    filteredEvents = filteredEvents.filter(e => e.start_date <= dateStr && e.end_date >= dateStr);
+  }
+  // 按开始日期排序
+  filteredEvents.sort((a,b) => a.start_date.localeCompare(b.start_date));
+  renderCalendar();
+  renderEventList();
+}
+
+/* ===== City Select ===== */
+function initLocationSelect(){
+  // 收集所有省份和对应城市
+  const provinceCityMap = {};
+  allEvents.forEach(e => {
+    if(e.province && e.city){
+      if(!provinceCityMap[e.province]) provinceCityMap[e.province] = new Set();
+      provinceCityMap[e.province].add(e.city);
+    }
+  });
+
+  // 渲染省份下拉
+  const provinceDropdown = $('provinceDropdown');
+  provinceDropdown.innerHTML = '<div class="select-option" data-value="">全部省份</div>' +
+    Object.keys(provinceCityMap).map(p => `<div class="select-option" data-value="${p}">${p}</div>`).join('');
+
+  // 渲染城市下拉（根据选中省份过滤）
+  renderCityDropdown(provinceCityMap);
+
+  // 绑定省份点击
+  provinceDropdown.querySelectorAll('.select-option').forEach(opt => {
+    opt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectedProvince = opt.dataset.value;
+      $('provinceLabel').textContent = opt.textContent;
+      selectedCity = '';
+      $('cityLabel').textContent = '全部城市';
+      closeAllDropdowns();
+      renderCityDropdown(provinceCityMap);
+      updateSelectedStyles();
+      selDay = null;
+      loadEvents();
+    });
+  });
+}
+
+function renderCityDropdown(provinceCityMap){
+  const cityDropdown = $('cityDropdown');
+  let cities = [];
+  if(selectedProvince){
+    cities = [...(provinceCityMap[selectedProvince] || [])];
+  }else{
+    // 全部省份时，显示所有城市
+    cities = [...new Set(allEvents.map(e => e.city).filter(Boolean))];
+  }
+  cityDropdown.innerHTML = '<div class="select-option" data-value="">全部城市</div>' +
+    cities.map(c => `<div class="select-option" data-value="${c}">${c}</div>`).join('');
+
+  // 绑定城市点击
+  cityDropdown.querySelectorAll('.select-option').forEach(opt => {
+    opt.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectedCity = opt.dataset.value;
+      $('cityLabel').textContent = opt.textContent;
+      closeAllDropdowns();
+      updateSelectedStyles();
+      selDay = null;
+      loadEvents();
+    });
+  });
+}
+
+/* ===== Calendar ===== */
+function renderCalendar(){
+  const grid = $('calGrid'); grid.innerHTML = '';
+  const firstDay = new Date(curYear, curMonth, 1).getDay();
+  const lead = (firstDay + 6) % 7;
+  const daysInMonth = new Date(curYear, curMonth+1, 0).getDate();
+  $('calTitle').textContent = `${curYear}年${curMonth+1}月`;
+
+  // 计算每天的活动
+  const dayEvents = {};
+  allEvents.forEach(e => {
+    const start = new Date(e.start_date);
+    const end = new Date(e.end_date);
+    for(let d = new Date(start); d <= end; d.setDate(d.getDate()+1)){
+      if(d.getFullYear() === curYear && d.getMonth() === curMonth){
+        const day = d.getDate();
+        if(!dayEvents[day]) dayEvents[day] = [];
+        dayEvents[day].push(e);
+      }
+    }
+  });
+
+  for(let i=0; i<lead; i++) grid.appendChild(document.createElement('span'));
+  for(let d=1; d<=daysInMonth; d++){
+    const el = document.createElement('div');
+    el.className = 'cal-day'; el.textContent = d;
+    const events = dayEvents[d] || [];
+    if(events.length){
+      const hasRecruiting = events.some(e => e.status === 'recruiting');
+      const isFull = events.every(e => e.status === 'full');
+      const isEnded = events.every(e => e.status === 'ended');
+      el.classList.add('has', 'has-event');
+      if(isFull) el.classList.add('full');
+      if(isEnded) el.classList.add('ended');
+      if(d === selDay) el.classList.add('sel');
+      const n = document.createElement('span'); n.className = 'n'; n.textContent = events.length;
+      el.appendChild(n);
+      const dot = document.createElement('span'); dot.className = 'dot';
+      el.appendChild(dot);
+      el.addEventListener('click', () => {
+        selDay = (selDay === d) ? null : d;
+        renderCalendar(); applyFilters();
+      });
+    }
+    grid.appendChild(el);
+  }
+}
+
+/* ===== Event List ===== */
+function renderEventList(){
+  const list = $('eventList');
+  const empty = $('emptyState');
+  if(filteredEvents.length === 0){
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    $('eventCount').textContent = '';
+    $('listTitle').textContent = selDay ? `${curMonth+1}月${selDay}日活动` : '近期活动';
+    return;
+  }
+  empty.style.display = 'none';
+  $('eventCount').textContent = `共 ${filteredEvents.length} 场活动`;
+  $('listTitle').textContent = selDay ? `${curMonth+1}月${selDay}日活动` : '近期活动';
+
+  list.innerHTML = filteredEvents.map(e => {
+    const start = new Date(e.start_date);
+    const end = new Date(e.end_date);
+    const dateStr = start.getMonth()+1 + '/' + start.getDate() + (e.end_date !== e.start_date ? ' - ' + (end.getMonth()+1) + '/' + end.getDate() : '');
+    const statusText = {recruiting:'招募中', full:'已满员', ended:'已结束', cancelled:'已取消'}[e.status] || e.status;
+    const matchedTags = e.categoryTags.filter(t => myTags.has(t));
+    const isMatch = matchedTags.length > 0;
+    const tagsHtml = e.categoryTags.slice(0,5).map(t => `<span class="event-tag" style="${myTags.has(t) ? 'background:var(--green);color:#fff;font-weight:700' : ''}">${t}${myTags.has(t)?' ✓':''}</span>`).join('');
+    const matchBadge = isMatch ? `<span style="position:absolute;bottom:12px;left:12px;background:var(--green);color:#fff;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;border:2px solid var(--text)">匹配你的品类 ${matchedTags.length}个</span>` : '';
+    const slotsHtml = e.max_participants
+      ? `剩余 <b>${e.remaining}</b> / ${e.max_participants} 个名额`
+      : '名额不限';
+    return `
+      <div class="event-card" style="${isMatch ? 'border-color:var(--green);box-shadow:0 0 0 3px var(--green-light)' : ''}">
+        <div class="event-cover" style="position:relative">
+          ${e.coverUrl ? `<img src="${e.coverUrl}" alt="${e.title}">` : `<div style="font-size:40px;font-weight:900;color:var(--blue)">TDE</div>`}
+          <div class="event-date-badge">
+            <div class="day">${start.getDate()}</div>
+            <div class="month">${start.getMonth()+1}月</div>
+          </div>
+          <div class="event-status ${e.status}">${statusText}</div>
+          ${matchBadge}
+        </div>
+        <div class="event-body">
+          <div class="event-title">${e.title}</div>
+          <div class="event-intro">${e.short_intro}</div>
+          <div class="event-meta">
+            <span>📍 ${e.city} ${e.district || ''}</span>
+            <span>📅 ${dateStr}</span>
+            <span>🏢 ${e.organizer || 'TDE官方'}</span>
+          </div>
+          <div class="event-tags">${tagsHtml}</div>
+          <div class="event-footer">
+            <span class="event-slots">${slotsHtml}</span>
+            <a href="event.html?id=${e.id}" class="event-btn">查看详情 / 报名</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ===== Events ===== */
+/* ===== Custom Dropdown ===== */
+function closeAllDropdowns(){
+  document.querySelectorAll('.select-dropdown').forEach(d => d.classList.remove('show'));
+  document.querySelectorAll('.select-trigger').forEach(t => t.classList.remove('open'));
+}
+
+function toggleDropdown(id){
+  const dropdown = $(id + 'Dropdown');
+  const trigger = $(id + 'Trigger');
+  const isOpen = dropdown.classList.contains('show');
+  closeAllDropdowns();
+  if(!isOpen){
+    dropdown.classList.add('show');
+    trigger.classList.add('open');
+  }
+}
+
+function updateSelectedStyles(){
+  document.querySelectorAll('.select-dropdown').forEach(dd => {
+    dd.querySelectorAll('.select-option').forEach(opt => {
+      let val = '';
+      if(dd.id === 'provinceDropdown') val = selectedProvince;
+      else if(dd.id === 'cityDropdown') val = selectedCity;
+      else val = selectedStatus;
+      opt.classList.toggle('selected', opt.dataset.value === val);
+    });
+  });
+}
+
+$('provinceTrigger').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('province'); });
+$('cityTrigger').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('city'); });
+$('statusTrigger').addEventListener('click', (e) => { e.stopPropagation(); toggleDropdown('status'); });
+
+// 状态选项点击
+$('statusDropdown').querySelectorAll('.select-option').forEach(opt => {
+  opt.addEventListener('click', (e) => {
+    e.stopPropagation();
+    selectedStatus = opt.dataset.value;
+    $('statusLabel').textContent = opt.textContent;
+    closeAllDropdowns();
+    updateSelectedStyles();
+    selDay = null;
+    loadEvents();
+  });
+});
+
+// 点击外部关闭
+document.addEventListener('click', closeAllDropdowns);
+
+$('clearBtn').addEventListener('click', () => {
+  selDay = null;
+  selectedProvince = '';
+  selectedCity = '';
+  selectedStatus = 'recruiting';
+  $('provinceLabel').textContent = '全部省份';
+  $('cityLabel').textContent = '全部城市';
+  $('statusLabel').textContent = '招募中';
+  // 重新渲染城市下拉（全部省份）
+  const provinceCityMap = {};
+  allEvents.forEach(e => {
+    if(e.province && e.city){
+      if(!provinceCityMap[e.province]) provinceCityMap[e.province] = new Set();
+      provinceCityMap[e.province].add(e.city);
+    }
+  });
+  renderCityDropdown(provinceCityMap);
+  updateSelectedStyles();
+  loadEvents();
+});
+$('prevMonth').addEventListener('click', () => {
+  curMonth--; if(curMonth<0){curMonth=11;curYear--;}
+  selDay = null; applyFilters();
+});
+$('nextMonth').addEventListener('click', () => {
+  curMonth++; if(curMonth>11){curMonth=0;curYear++;}
+  selDay = null; applyFilters();
+});
+
+/* ===== Toast ===== */
+let toastTimer = null;
+function toast(msg){
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+/* ===== Init ===== */
+checkLogin();
+loadEvents().then(() => {
+  initLocationSelect();
+});
+</script>
+</body>
+</html>

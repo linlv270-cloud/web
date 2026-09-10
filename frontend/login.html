@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 — TheDesignExpo</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Space+Grotesk:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Space Grotesk','Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif;background:#F7F5F0;color:#222;line-height:1.6;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+:root{--yellow:#FFE600;--yellow-light:#FFF3B0;--pink:#FFCDD2;--blue:#283593;--red:#E53935;--text:#222;--text-light:#666;--border:#e8e5de}
+.login-card{background:#fff;border:3px solid var(--text);border-radius:20px;padding:40px 32px;max-width:420px;width:100%;box-shadow:0 8px 0 var(--text);text-align:center}
+.logo-badge{width:64px;height:64px;border-radius:50%;background:var(--yellow);border:3px solid var(--text);display:inline-flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;margin-bottom:16px;box-shadow:0 4px 0 rgba(0,0,0,0.15)}
+.login-card h1{font-size:24px;font-weight:900;letter-spacing:-0.02em;margin-bottom:6px}
+.login-card .subtitle{font-size:13px;color:var(--text-light);margin-bottom:28px}
+.field{margin-bottom:16px;text-align:left}
+.field-label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+.field-input{width:100%;padding:12px 14px;border:2px solid var(--text);border-radius:10px;font-family:inherit;font-size:14px;background:#fff;outline:none;transition:0.2s}
+.field-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(40,53,147,0.1)}
+.tde-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:14px 24px;border:3px solid var(--text);border-radius:10px;font-size:15px;font-weight:800;background:var(--yellow);color:var(--text);box-shadow:0 4px 0 var(--text);transition:0.15s;cursor:pointer;width:100%;margin-top:8px}
+.tde-btn:hover{transform:translateY(-2px);box-shadow:0 2px 0 var(--text)}
+.tde-btn:active{transform:translateY(2px);box-shadow:0 0 0 var(--text)}
+.tde-btn:disabled{opacity:0.5;cursor:not-allowed}
+.tde-btn.secondary{background:#fff;margin-top:12px}
+.divider{display:flex;align-items:center;gap:12px;margin:24px 0;color:var(--text-light);font-size:12px}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.links{display:flex;justify-content:space-between;margin-top:16px;font-size:12px}
+.links a{color:var(--blue);font-weight:600;text-decoration:none}
+.home-btn{position:absolute;top:20px;left:20px;padding:6px 14px;background:#fff;border:2px solid var(--text);border-radius:16px;font-size:12px;font-weight:700;color:var(--text);text-decoration:none;transition:0.15s}
+.home-btn:hover{background:var(--yellow);transform:translateY(-1px)}
+.toast{position:fixed;top:30px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;z-index:2000;opacity:0;transition:0.3s;box-shadow:0 4px 12px rgba(0,0,0,0.2)}
+.toast.show{opacity:1;top:40px}
+.toast.error{background:var(--red)}
+.toast.success{background:#00897B}
+</style>
+</head>
+<body>
+<a href="index.html" class="home-btn">← 首页</a>
+<div class="login-card">
+  <div class="logo-badge" onclick="location.href='index.html'" style="cursor:pointer">TDE</div>
+  <h1 id="title">登录 TheDesignExpo</h1>
+  <p class="subtitle" id="subtitle">出展创作者登录入口</p>
+  <div class="field">
+    <label class="field-label" id="phoneLabel">手机号</label>
+    <input class="field-input" type="tel" id="phone" maxlength="11" placeholder="11位手机号">
+  </div>
+  <div class="field">
+    <label class="field-label" id="passwordLabel">密码</label>
+    <div style="position:relative">
+      <input class="field-input" type="password" id="password" placeholder="请输入密码" style="padding-right:44px">
+      <span class="pwd-toggle" onclick="togglePwd('password',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);cursor:pointer;font-size:18px;user-select:none;line-height:1">👁️</span>
+    </div>
+  </div>
+  <button class="tde-btn" id="loginBtn" onclick="doLogin()">登录</button>
+  <div class="links">
+    <a href="#" onclick="event.preventDefault();showToast('请联系管理员重置密码')" id="forgotLink">忘记密码？</a>
+    <a href="index.html" id="backLink">返回首页</a>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+type;setTimeout(()=>t.classList.remove('show'),2500);}
+async function doLogin(){
+  const btn=document.getElementById('loginBtn');
+  btn.disabled=true;btn.textContent='...';
+  try{
+    const phone=document.getElementById('phone').value.trim();
+    const password=document.getElementById('password').value;
+    if(!/^1\d{10}$/.test(phone))throw new Error('请填写正确的手机号');
+    if(!password)throw new Error('请输入密码');
+    const res=await fetch('/api/web/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,password})});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'登录失败');
+    localStorage.setItem('tde_token',data.session.token);
+    localStorage.setItem('tde_creator',JSON.stringify(data.creator));
+    showToast('登录成功','success');
+    setTimeout(()=>location.href='profile.html',800);
+  }catch(e){
+    showToast(e.message,'error');
+  }finally{
+    btn.disabled=false;btn.textContent='登录';
+  }
+}
+document.getElementById('password').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+
+function togglePwd(id,el){
+  const input=document.getElementById(id);
+  if(input.type==='password'){input.type='text';el.textContent='🙈'}
+  else{input.type='password';el.textContent='👁️'}
+}
+</script>
+</body>
+</html>

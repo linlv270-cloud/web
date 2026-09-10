@@ -1,0 +1,37 @@
+<view class="page detail-page" wx:if="{{detail}}">
+  <view class="detail-hero">
+    <image class="detail-hero-image" src="{{coverUrl}}" mode="aspectFill" binderror="coverError"/>
+    <view class="detail-hero-shade"></view>
+    <brand-header compact immersive />
+    <view class="detail-hero-toolbar"><button class="page-back" bindtap="back" aria-label="返回"><image src="/assets/icons/chevron-left-light.svg" mode="aspectFit"/></button><text>结伴体验</text></view>
+    <view class="detail-hero-copy"><text>COCOC HOST</text><text>{{detail.project.oneLiner}}</text><text>{{detail.project.creatorName}}</text></view>
+  </view>
+  <view class="detail-content">
+    <view class="info-card"><text class="detail-title serif">体验介绍</text><text class="lead">{{detail.project.description || detail.project.title}}</text><view class="chip-row"><text class="chip" wx:for="{{detail.project.tags}}" wx:key="id">{{item.label}}</text></view></view>
+    <view class="info-card detail-facts">
+      <view><text>奇灯新遇官</text><text>{{detail.project.creatorName}}</text></view>
+      <view><text>人数</text><text>{{detail.project.minPeople}}-{{detail.project.maxPeople}} 人 · {{detail.project.durationMinutes || '-'}} 分钟</text></view>
+      <view><text>位置</text><text>{{detail.project.addressHint || detail.project.city + detail.project.district}}</text></view>
+    </view>
+    <view class="info-card creator-public-card">
+      <view class="creator-public-head"><image wx:if="{{creatorLogoUrl}}" class="creator-logo" src="{{creatorLogoUrl}}" mode="aspectFill" binderror="creatorLogoError"/><image wx:elif="{{creatorImageUrl}}" src="{{creatorImageUrl}}" mode="aspectFill" binderror="creatorImageError"/><view><text>奇灯新遇官</text><text class="creator-public-name">{{detail.creatorPublic.name}}</text><text wx:if="{{detail.creatorPublic.intro}}">{{detail.creatorPublic.intro}}</text></view></view>
+      <view class="chip-row"><text class="chip" wx:for="{{creatorTags}}" wx:key="id">{{item.label}}</text></view>
+      <text class="muted" wx:if="{{opportunityText}}">{{opportunityText}}</text>
+    </view>
+  </view>
+  <view class="detail-sticky double">
+    <button class="secondary-button" bindtap="favorite">{{favorited ? '已收藏' : '收藏'}}</button>
+    <button class="primary-button contact-creator-button" disabled="{{!contactAvailable}}" bindtap="consult">{{contactLabel}}</button>
+  </view>
+  <view wx:if="{{contactOpen}}" class="contact-backdrop" bindtap="closeContact">
+    <view class="contact-sheet" catchtap="keepContactOpen">
+      <view class="contact-sheet-handle"></view>
+      <view class="contact-sheet-heading"><view><text>DIRECT CONTACT</text><text class="serif">联系新遇官</text></view><button bindtap="closeContact" aria-label="关闭"><image src="/assets/icons/close-ink.svg" mode="aspectFit"/></button></view>
+      <view class="contact-reminder"><text>{{contactReminder}}</text></view>
+      <view class="contact-phone"><text>注册手机号</text><text>{{contactPhone || maskedPhone}}</text></view>
+      <button wx:if="{{!contactPhone}}" class="primary-button" loading="{{revealingContact}}" disabled="{{revealingContact}}" bindtap="revealContact">{{revealingContact ? '正在读取' : '查看号码'}}</button>
+      <view wx:else class="contact-actions"><button class="secondary-button" bindtap="copyPhone">复制号码</button><button class="primary-button" bindtap="callPhone">拨打电话</button></view>
+    </view>
+  </view>
+  <consumer-tabs active="companion" />
+</view>

@@ -1,0 +1,57 @@
+.brand-header-host,
+.brand-header,
+.brand-safe,
+.brand-main,
+.brand-home,
+.brand-name,
+.brand-wordmark,
+.brand-city-picker,
+.brand-city { box-sizing: border-box; }
+
+.brand-header-host {
+  --brand-safe-height: 64px;
+  --brand-main-height: var(--layout-mini-header);
+  display: block;
+  width: 100%;
+  height: calc(var(--brand-safe-height) + var(--brand-main-height));
+  flex: none;
+  position: relative;
+  z-index: 9999;
+  background: var(--paper);
+}
+
+.brand-header {
+  width: 100%;
+  height: calc(var(--brand-safe-height) + var(--brand-main-height));
+  padding: 0 var(--layout-page-gutter);
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  right: 0;
+  left: 0;
+  background: var(--paper);
+  border-bottom: 1rpx solid var(--line);
+  transform: translateZ(0);
+}
+
+.brand-safe { height: var(--brand-safe-height); }
+.brand-main { width: 100%; height: var(--brand-main-height); display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: var(--space-3); }
+.brand-home { min-width: 0; height: 100%; padding: 0; border: 0; display: flex; align-items: center; background: transparent; color: var(--ink); text-align: left; }
+.brand-home::after { border: 0; }
+.brand-name { min-width: 0; display: grid; gap: 4rpx; }
+.brand-wordmark { min-width: 0; display: flex; align-items: baseline; gap: 12rpx; }
+.brand-wordmark text:first-child { overflow: hidden; color: var(--ink); font-family: var(--font-editorial); font-size: var(--type-section); line-height: 1.1; font-weight: var(--weight-section); white-space: nowrap; text-overflow: ellipsis; }
+.brand-wordmark text:last-child { color: var(--muted); font-size: var(--type-micro); line-height: 1; font-weight: var(--weight-body); white-space: nowrap; }
+.brand-tagline { overflow: hidden; color: var(--muted); font-family: var(--font-editorial); font-size: var(--type-micro); line-height: 1.35; font-weight: var(--weight-caption); white-space: nowrap; text-overflow: ellipsis; }
+.brand-city-picker { flex: none; }
+.brand-city { min-width: 142rpx; min-height: var(--layout-touch-target); padding-left: 10rpx; display: flex; align-items: center; justify-content: flex-end; gap: 8rpx; color: var(--text); font-size: var(--type-secondary); line-height: var(--line-secondary); font-weight: var(--weight-secondary); white-space: nowrap; }
+.city-pin { width: 32rpx; height: 32rpx; }
+.city-arrow { width: 28rpx; height: 28rpx; }
+.brand-action-space { width: 1rpx; height: 88rpx; }
+.compact { --brand-main-height: 108rpx; }
+.immersive { background: var(--night); }
+.immersive .brand-header { border-bottom-color: var(--dark-hairline); background: var(--night); }
+.immersive .brand-wordmark text:first-child,
+.immersive .brand-city { color: var(--on-dark); }
+.immersive .brand-wordmark text:last-child,
+.immersive .brand-tagline { color: var(--dark-text-soft); }

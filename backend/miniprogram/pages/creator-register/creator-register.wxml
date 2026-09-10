@@ -1,0 +1,47 @@
+<view class="page register-page atmosphere-page">
+  <brand-header immersive />
+  <view class="register-content">
+    <view class="register-heading"><text>COCOC HOST</text><text class="register-title">{{existingApplication ? '完善奇灯新遇官申请' : '申请成为奇灯新遇官'}}</text></view>
+    <view wx:if="{{applicationStatus === 'needs_changes' || applicationStatus === 'rejected'}}" class="application-review-note">
+      <text>{{applicationStatus === 'needs_changes' ? '请补充资料' : '申请未通过'}}</text>
+      <text>{{reviewNote}}</text>
+    </view>
+    <view wx:elif="{{applicationStatus === 'pending'}}" class="application-review-note pending"><text>审核中，可继续补充资料</text></view>
+    <view wx:if="{{initializing}}" class="register-state"><text>正在连接</text></view>
+    <view wx:elif="{{loadFailed}}" class="register-state"><text>暂时无法连接</text><button class="secondary-button" bindtap="retryLoad">重试</button></view>
+    <view wx:else class="register-form">
+      <label wx:if="{{creatorInvitationsEnabled}}" class="field"><text class="field-label">邀请码</text><input class="field-input" disabled="{{existingApplication}}" value="{{form.inviteCode}}" data-key="inviteCode" bindinput="field" maxlength="8"/></label>
+      <view class="phone-pair"><label class="field"><text class="field-label">手机号</text><input class="field-input" disabled="{{existingApplication}}" type="number" value="{{form.phone}}" data-key="phone" bindinput="field" maxlength="11"/></label><label class="field"><text class="field-label">再次输入手机号</text><input class="field-input" disabled="{{existingApplication}}" type="number" value="{{form.confirmPhone}}" data-key="confirmPhone" bindinput="field" maxlength="11"/></label></view>
+      <label wx:if="{{applicationFields.brandName.enabled}}" class="field"><text class="field-label">{{applicationFields.brandName.label}}{{applicationFields.brandName.required ? '' : '（选填）'}}</text><input class="field-input" value="{{form.brandName}}" data-key="brandName" bindinput="field" maxlength="40" placeholder="{{applicationFields.brandName.hint}}"/></label>
+      <view wx:if="{{applicationFields.location.enabled}}" class="field"><text class="field-label">{{applicationFields.location.label}}{{applicationFields.location.required ? '' : '（选填）'}}</text><picker mode="region" value="{{region}}" bindchange="locationChange"><view class="picker-field">{{form.city ? form.province + ' · ' + form.city + ' · ' + form.district : applicationFields.location.hint}}</view></picker></view>
+      <view wx:if="{{applicationFields.representativeImage.enabled}}" class="field"><text class="field-label">{{applicationFields.representativeImage.label}}{{applicationFields.representativeImage.required ? '' : '（选填）'}}</text><text class="muted">前台显示为4:5竖图，建议1080×1350；上传一张不超过20MB的图片</text><button class="representative-image" bindtap="chooseImage"><image wx:if="{{representativeImage}}" src="{{representativeImage}}" mode="aspectFill"/><view wx:else><image class="upload-icon" src="/assets/icons/plus-active.svg" mode="aspectFit"/><text>选择并裁切图片</text></view></button></view>
+      <view class="field"><text class="field-label">品牌 / 工作室 Logo（选填）</text><text class="muted">前台显示为1:1方图，建议800×800；上传一张不超过20MB的图片</text><button class="representative-image logo-image" bindtap="chooseLogo"><image wx:if="{{logoImage}}" src="{{logoImage}}" mode="aspectFill"/><view wx:else><image class="upload-icon" src="/assets/icons/plus-active.svg" mode="aspectFit"/><text>选择并裁切Logo</text></view></button></view>
+      <label wx:if="{{applicationFields.intro.enabled}}" class="field"><view class="field-label-row"><text class="field-label">{{applicationFields.intro.label}}{{applicationFields.intro.required ? '' : '（选填）'}}</text><text class="field-count">{{introCount}}/2000</text></view><text class="muted">不超过2000字</text><textarea class="field-textarea" value="{{form.intro}}" data-key="intro" bindinput="field" maxlength="2000" placeholder="{{applicationFields.intro.hint}}"/></label>
+
+      <view wx:if="{{applicationFields.tags.enabled}}" class="tag-application">
+        <view class="section-heading"><view><text>{{applicationFields.tags.label}}</text><text class="muted">{{applicationFields.tags.hint}}</text></view><text>{{form.tagIds.length + customTags.length}}</text></view>
+        <view wx:for="{{tagGroups}}" wx:key="category" wx:for-item="group" id="creator-tag-{{index}}" class="tag-group {{focusCategory === group.category ? 'focused' : ''}}">
+          <view class="tag-group-title"><text>{{group.category}}</text></view>
+          <view class="tag-group-content">
+            <view class="chip-row"><button wx:for="{{group.tags}}" wx:key="label" wx:for-item="tag" data-id="{{tag.id}}" data-category="{{group.category}}" bindtap="toggleTag" class="chip {{tag.selected ? 'selected' : ''}} {{tag.available ? '' : 'unavailable'}}">{{tag.label}}</button></view>
+            <view wx:if="{{applicationFields.customTags.enabled}}" class="custom-tag-row"><input value="{{group.customLabel}}" data-category="{{group.category}}" bindinput="customInput" maxlength="7" placeholder="输入新标签"/><button data-category="{{group.category}}" bindtap="addCustomTag">新增标签</button></view>
+            <view class="chip-row" wx:if="{{group.customTags.length}}"><button wx:for="{{group.customTags}}" wx:key="label" wx:for-item="customTag" data-category="{{group.category}}" data-label="{{customTag.label}}" bindtap="removeCustomTag" class="chip selected">{{customTag.label}} · 待复核 ×</button></view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{applicationFields.offlineExperience.enabled}}" class="section-block"><text class="section-title">{{applicationFields.offlineExperience.label}}{{applicationFields.offlineExperience.required ? '' : '（选填）'}}</text><text class="muted">{{applicationFields.offlineExperience.hint}}</text><view class="chip-row"><button wx:for="{{offlineChoices}}" wx:key="label" data-value="{{item.label}}" bindtap="toggleOffline" class="chip {{item.selected ? 'selected' : ''}}">{{item.label}}</button></view></view>
+      <view wx:if="{{applicationFields.busyPeriods.enabled}}" class="section-block date-choice-section">
+        <text class="section-title">{{applicationFields.busyPeriods.label}}</text>
+        <text class="muted">{{applicationFields.busyPeriods.hint}}</text>
+        <button class="no-bookings-choice {{form.noBookings ? 'selected' : ''}}" bindtap="toggleNoBookings"><view class="choice-mark"><image wx:if="{{form.noBookings}}" src="/assets/icons/check-active.svg" mode="aspectFit"/></view><view><text>近期无其他活动安排</text><text>指奇灯以外的活动</text></view></button>
+        <view wx:if="{{!form.noBookings}}" class="busy-add"><picker mode="date" value="{{busyDate}}" bindchange="busyDateChange"><view class="picker-field">{{busyDate || '选择日期'}}</view></picker><button class="secondary-button" bindtap="addBusyDate">添加</button></view>
+        <view wx:if="{{!form.noBookings}}" class="chip-row"><button wx:for="{{form.busyPeriods}}" wx:key="startDate" class="chip selected" data-index="{{index}}" bindtap="removeBusyDate">{{item.startDate}} ×</button></view>
+      </view>
+
+      <view class="agreement"><checkbox-group bindchange="agreement"><checkbox value="yes" checked="{{form.agreed}}" color="{{designColors.accent}}"/></checkbox-group><text>已阅读并同意</text><button bindtap="openAgreement">《用户协议》</button><text>和</text><button bindtap="openPrivacy">《隐私政策》</button></view>
+      <button class="primary-button" loading="{{loading}}" bindtap="submit">{{existingApplication ? '重新提交审核' : '提交申请'}}</button>
+    </view>
+  </view>
+  <consumer-tabs active="mine" />
+</view>

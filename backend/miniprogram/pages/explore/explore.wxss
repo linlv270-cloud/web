@@ -1,0 +1,2 @@
+@import "../../styles/content-list.wxss";
+.explore-list-page { background-image: url("/assets/backgrounds/new1-city-in-motion.jpg"); }

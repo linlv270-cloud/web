@@ -1,0 +1,55 @@
+<view class="page content-home atmosphere-page">
+  <brand-header immersive show-city city-label="{{cityText}}" city-columns="{{cityColumns}}" city-indexes="{{cityIndexes}}" bind:citycolumnchange="cityColumnChange" bind:citychange="selectCity" />
+
+  <view class="home-content">
+    <view class="discovery-filters">
+      <button wx:for="{{operationTabs}}" wx:key="value" class="{{operation === item.value ? 'active' : ''}}" data-value="{{item.value}}" bindtap="selectOperation"><image class="operation-icon" src="{{operation === item.value ? item.activeIcon : item.icon}}" mode="aspectFit"/><text>{{item.label}}</text></button>
+    </view>
+
+    <view wx:if="{{!loading && !cityEmpty && featuredCards.length}}" class="content-section featured-section">
+      <view class="section-heading"><text>本周精选</text></view>
+      <scroll-view class="featured-viewport" scroll-x enhanced enable-flex enable-passive show-scrollbar="{{false}}">
+        <view class="featured-track">
+          <view wx:for="{{featuredCards}}" wx:key="key" class="featured-card-wrap"><poster-card card="{{item}}" featured bind:open="openCard" /></view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view wx:if="{{!cityEmpty}}" class="content-section explore-section">
+      <view class="section-heading"><text>兴趣筛选</text><button bindtap="openFilter"><image class="filter-icon" src="/assets/icons/filter-active.svg" mode="aspectFit"/><text>更多探索</text><text wx:if="{{filterCount}}" class="filter-count">{{filterCount}}</text></button></view>
+      <view class="quick-filters">
+        <button wx:for="{{sceneOptions}}" wx:key="value" class="{{scene === item.value ? 'active' : ''}}" data-value="{{item.value}}" bindtap="selectQuickScene"><image class="quick-icon" src="{{scene === item.value ? item.activeIcon : item.icon}}" mode="aspectFit"/><text>{{item.label}}</text></button>
+      </view>
+    </view>
+
+    <view wx:if="{{!loading && !cityEmpty}}" class="content-section today-section">
+      <view class="section-heading"><text>今日发现</text></view>
+      <view class="poster-grid"><view wx:for="{{todayCards}}" wx:key="key" class="grid-card"><poster-card card="{{item}}" bind:open="openCard" /></view></view>
+      <view wx:if="{{!featuredCards.length && !todayCards.length}}" class="inline-empty">暂时没有匹配的体验</view>
+    </view>
+
+    <view wx:if="{{!loading && cityEmpty}}" class="city-empty">
+      <text>这里还没有奇灯</text>
+      <strong>请帮我们找到这座城市的奇灯新遇官</strong>
+      <button class="primary-action" bindtap="applyCreator">申请奇灯新遇官</button>
+      <button class="secondary-action" bindtap="contact">联系奇灯</button>
+    </view>
+    <view wx:if="{{loading}}" class="inline-empty">正在更新城市体验</view>
+  </view>
+
+  <view wx:if="{{filterOpen}}" class="filter-backdrop" bindtap="closeFilter">
+    <view class="filter-sheet" catchtap="keepSheetOpen">
+      <view class="sheet-handle"></view>
+      <view class="sheet-heading"><view><text>更多探索</text><strong>这次想怎么体验？</strong></view><button bindtap="closeFilter" aria-label="关闭"><image src="/assets/icons/close-ink.svg" mode="aspectFit"/></button></view>
+      <scroll-view class="sheet-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+        <view class="filter-group"><text>体验方式</text><view class="filter-options"><button class="{{mode === 'all' ? 'active' : ''}}" data-value="all" bindtap="selectMode">全部</button><button class="{{mode === 'self' ? 'active' : ''}}" data-value="self" bindtap="selectMode">自在</button><button class="{{mode === 'companion' ? 'active' : ''}}" data-value="companion" bindtap="selectMode">结伴</button></view></view>
+        <view class="filter-group"><text>使用场景</text><view class="filter-options"><button wx:for="{{sceneChoices}}" wx:key="*this" class="{{scene === item ? 'active' : ''}}" data-value="{{item}}" bindtap="selectFilterScene">{{item}}</button></view></view>
+        <view class="filter-group"><text>体验日期</text><view class="date-option"><picker mode="date" value="{{date}}" bindchange="dateChange"><view>{{date || '默认未来有日期'}}</view></picker><button wx:if="{{date}}" bindtap="clearDate">清除</button></view></view>
+        <view wx:if="{{interestChoices.length}}" class="filter-group"><text>或许喜欢的</text><view class="filter-options"><button wx:for="{{interestChoices}}" wx:key="*this" class="{{interest === item ? 'active' : ''}}" data-value="{{item}}" bindtap="selectInterest">{{item}}</button></view></view>
+      </scroll-view>
+      <view class="sheet-actions"><button class="sheet-secondary" bindtap="clearFilters">清除</button><button class="sheet-primary" bindtap="applyFilters">发现新遇</button></view>
+    </view>
+  </view>
+
+  <consumer-tabs active="home" immersive />
+</view>
