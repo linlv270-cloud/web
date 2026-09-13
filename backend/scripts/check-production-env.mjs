@@ -17,7 +17,13 @@ for (const key of required) {
 if (process.env.DATA_DIR !== "/opt/tde/data") failures.push("DATA_DIR 必须为 /opt/tde/data");
 if (!/^https:\/\/tde\.thedesignexpo\.org\.cn\/?$/.test(process.env.PUBLIC_SITE_URL || ""))
   failures.push("PUBLIC_SITE_URL 必须为 https://tde.thedesignexpo.org.cn");
-if ((process.env.ADMIN_PASSWORD || "").length < 12) failures.push("ADMIN_PASSWORD 长度至少 12 位");
+if ((process.env.ADMIN_PASSWORD || "").length < 12) {
+  if (process.env.TDE_ALLOW_EXISTING_ADMIN_PASSWORD === "YES") {
+    warnings.push("沿用现有 PM2 管理员密码：长度少于 12 位；本次未修改凭据，后续应更换为至少 12 位密码");
+  } else {
+    failures.push("ADMIN_PASSWORD 长度至少 12 位");
+  }
+}
 if (process.env.ADMIN_PASSWORD === "admin123456" || process.env.ADMIN_PASSWORD === "test123456")
   failures.push("ADMIN_PASSWORD 仍是旧示例密码，必须在服务器环境变量中更换");
 

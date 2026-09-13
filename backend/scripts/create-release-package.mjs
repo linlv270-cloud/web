@@ -8,7 +8,7 @@ const root = process.cwd();
 const packageJson = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
 const releaseDir = path.join(root, ".release");
 
-const sourceDirectories = ["app", "deploy", "design-system", "docs", "lib", "miniprogram", "public", "scripts", "tests"];
+const sourceDirectories = ["app", "chandiduan", "deploy", "design-system", "docs", "lib", "miniprogram", "public", "scripts", "tests"];
 const sourceFiles = [
   ".env.example",
   ".gitignore",
@@ -52,6 +52,8 @@ function shanghaiTimestamp() {
 
 function shouldCopy(source) {
   const relative = path.relative(root, source);
+  if (relative === "scripts/local-project-center-seed.mjs") return false;
+  if (relative === "tests/screenshots" || relative.startsWith("tests/screenshots/")) return false;
   if (!relative) return true;
   const segments = relative.split(path.sep);
   const name = path.basename(source);

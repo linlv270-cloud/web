@@ -2854,6 +2854,9 @@ export function searchCreators(filters: Record<string, unknown>, managerAdminId?
   const accountStatus = cleanText(filters.accountStatus, 20) || "active";
   const startDate = cleanText(filters.startDate, 10);
   const endDate = cleanText(filters.endDate, 10);
+  const tagLabels = Array.isArray(filters.tagLabels)
+    ? [...new Set(filters.tagLabels.map((value) => cleanText(value, 60)).filter(Boolean))]
+    : [];
   const tagIds = Array.isArray(filters.tagIds)
     ? [...new Set(filters.tagIds.map(Number).filter(Number.isInteger))]
     : [];
@@ -2882,6 +2885,7 @@ export function searchCreators(filters: Record<string, unknown>, managerAdminId?
     if (douyinLinkStatus === "filled" && !creator.douyinUrl) return false;
     if (douyinLinkStatus === "empty" && creator.douyinUrl) return false;
     if (tagIds.length && !tagIds.every((id) => creator.tags.some((tag) => tag.id === id))) return false;
+    if (tagLabels.length && !tagLabels.some((label) => creator.tags.some((tag) => tag.status === "active" && tag.label === label))) return false;
     if (startDate || endDate) {
       const from = startDate || endDate;
       const to = endDate || startDate;

@@ -51,10 +51,11 @@ export async function POST(request: Request) {
       district: creator.district,
       logoUrl: creator.logoUrl,
       workUrls: creator.workUrls,
-      tags: creator.tags,
+      tags: creator.tags.filter((tag) => tag.status === "active"),
       opportunityTypes: creator.opportunityTypes,
       busyPeriods: creator.busyPeriods,
       noBookings: creator.noBookings,
+      scheduleConfirmedAt: creator.scheduleConfirmedAt,
     }));
 
     return Response.json({ creators: safeCreators });

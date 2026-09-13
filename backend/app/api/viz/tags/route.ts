@@ -1,5 +1,5 @@
 import { getVisualizationSession } from "../../../../lib/visualization";
-import { listTags } from "../../../../lib/repository";
+import { listVisibleVisualizationTags } from "../../../../lib/visualization-planning";
 
 const COOKIE_NAME = "viz_session";
 
@@ -17,7 +17,17 @@ export async function GET(request: Request) {
       return Response.json({ error: "请先登录" }, { status: 401 });
     }
 
-    const tags = listTags(false);
+    const url = new URL(request.url);
+    let province = url.searchParams.get("province") || "";
+    let city = url.searchParams.get("city") || "";
+    if (user.accessScope === "city") {
+      province = user.province;
+      city = user.city;
+    } else if (user.accessScope === "province") {
+      province = user.province;
+      city = "";
+    }
+    const tags = listVisibleVisualizationTags({ province, city });
     return Response.json({ tags });
   } catch (error) {
     return Response.json({ error: error instanceof Error ? error.message : "获取标签失败" }, { status: 500 });

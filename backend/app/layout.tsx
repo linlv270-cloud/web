@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./VizPreview.css";
+import "./Chandiduan.css";
 import { QIDENG_COLORS } from "./design-system-values";
 
 export const metadata: Metadata = {

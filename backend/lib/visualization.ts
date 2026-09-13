@@ -4,6 +4,32 @@ import type { VisualizationUser, VisualizationAccessEvent } from "./types";
 
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7天
 
+export type VizInterfaceSettings = {
+  landingTitle: string;
+  landingSubtitle: string;
+  loginButtonLabel: string;
+  contactButtonLabel: string;
+  loginTitle: string;
+  loginSubtitle: string;
+  headerName: string;
+  headerSubtitle: string;
+  pageTitle: string;
+};
+
+export const DEFAULT_VIZ_INTERFACE_SETTINGS: VizInterfaceSettings = {
+  landingTitle: "TDE",
+  landingSubtitle: "小众&创意主理人名录可视化平台",
+  loginButtonLabel: "登录",
+  contactButtonLabel: "联络TDE",
+  loginTitle: "TDE",
+  loginSubtitle: "可视化用户登录",
+  headerName: "TDE",
+  headerSubtitle: "主理人名录可视化平台",
+  pageTitle: "TDE主理人名录可视化平台",
+};
+
+const VIZ_INTERFACE_SETTINGS_KEY = "viz_interface_settings";
+
 function hashPassword(password: string, salt: string): string {
   return crypto.pbkdf2Sync(password, salt, 100000, 64, "sha512").toString("hex");
 }
@@ -330,6 +356,44 @@ export function setVizContactText(text: string): void {
     text,
     new Date().toISOString(),
   );
+}
+
+export function getVizInterfaceSettings(): VizInterfaceSettings {
+  const row = one(
+    "SELECT value FROM platform_settings WHERE key = ?",
+    VIZ_INTERFACE_SETTINGS_KEY,
+  ) as { value: string } | undefined;
+  if (!row) return { ...DEFAULT_VIZ_INTERFACE_SETTINGS };
+  try {
+    const parsed = JSON.parse(row.value) as Partial<VizInterfaceSettings>;
+    return Object.fromEntries(
+      Object.entries(DEFAULT_VIZ_INTERFACE_SETTINGS).map(([key, fallback]) => [
+        key,
+        typeof parsed[key as keyof VizInterfaceSettings] === "string" &&
+        parsed[key as keyof VizInterfaceSettings]?.trim()
+          ? String(parsed[key as keyof VizInterfaceSettings]).trim()
+          : fallback,
+      ]),
+    ) as VizInterfaceSettings;
+  } catch {
+    return { ...DEFAULT_VIZ_INTERFACE_SETTINGS };
+  }
+}
+
+export function setVizInterfaceSettings(input: Partial<VizInterfaceSettings>): VizInterfaceSettings {
+  const next = Object.fromEntries(
+    Object.entries(DEFAULT_VIZ_INTERFACE_SETTINGS).map(([key, fallback]) => {
+      const value = input[key as keyof VizInterfaceSettings];
+      return [key, typeof value === "string" && value.trim() ? value.trim().slice(0, 80) : fallback];
+    }),
+  ) as VizInterfaceSettings;
+  run(
+    `INSERT INTO platform_settings(key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP`,
+    VIZ_INTERFACE_SETTINGS_KEY,
+    JSON.stringify(next),
+  );
+  return next;
 }
 
 // ========== 有效期检查 ==========

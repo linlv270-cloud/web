@@ -1,0 +1,609 @@
+/* Venue-facing visualization workspace */
+.viz-shell-header {
+  min-height: 64px;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.viz-shell-main {
+  width: min(1440px, 100%);
+  margin: 0 auto;
+  padding: 20px 20px 48px;
+}
+
+.viz-primary-filter {
+  border: 1px solid var(--line);
+}
+
+.viz-mode-switch {
+  width: min(100%, 420px);
+  min-height: 50px;
+  margin: 0 auto 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: hidden;
+}
+
+.viz-mode-switch button {
+  min-width: 0;
+  min-height: 48px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.viz-mode-switch button:last-child { border-right: 0; }
+
+.viz-mode-switch button[aria-selected="true"] {
+  background: var(--night);
+  color: var(--surface);
+}
+
+.viz-mode-switch button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -4px;
+}
+
+.viz-mode-panel[hidden] { display: none; }
+
+.viz-filter-tags {
+  margin: 2px 0 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--soft-line);
+}
+
+.venue-planning {
+  margin-bottom: 20px;
+  color: var(--ink);
+}
+
+.venue-planning-location {
+  margin-bottom: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-raised, #fff);
+}
+
+.venue-planning-location .venue-location-selector {
+  width: min(100%, 420px);
+}
+
+.venue-discovery-panel,
+.venue-calendar-panel,
+.venue-inspiration-panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-raised, #fff);
+}
+
+.venue-discovery-panel {
+  padding: 18px 20px 20px;
+  margin-bottom: 16px;
+}
+
+.venue-tag-row + .venue-tag-row {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--soft-line);
+}
+
+.venue-tag-row > header {
+  min-height: 30px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.venue-tag-row > header > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.venue-tag-row > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.venue-tag-row button:not(.venue-tag-toggle) {
+  min-height: 34px;
+  padding: 6px 13px;
+  border: 1px solid transparent;
+  border-radius: 17px;
+  color: #39403b;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: border-color 120ms ease, box-shadow 120ms ease, transform 120ms ease;
+}
+
+.venue-tag-row button:not(.venue-tag-toggle):hover {
+  border-color: #777d77;
+  transform: translateY(-1px);
+}
+
+.venue-tag-row button.selected {
+  border-color: #343d35;
+  box-shadow: inset 0 0 0 1px #343d35;
+}
+.venue-tag-row .tag-selection-mark { width: 13px; flex: 0 0 13px; opacity: 0; }
+.venue-tag-row button.selected .tag-selection-mark { opacity: 1; }
+
+.venue-tag-row .tone-0 { background: #f7e8bd; }
+.venue-tag-row .tone-1 { background: #ddeaf4; }
+.venue-tag-row .tone-2 { background: #dcefe6; }
+.venue-tag-row .tone-3 { background: #f3dfe6; }
+
+.venue-tag-toggle {
+  min-height: 30px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.venue-tag-toggle svg { transition: transform 120ms ease; }
+.venue-tag-toggle svg.expanded { transform: rotate(180deg); }
+.venue-tag-row small { color: var(--muted); font-size: 13px; }
+
+.venue-planning-grid {
+  display: grid;
+  grid-template-columns: minmax(340px, .78fr) minmax(0, 1.72fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.venue-calendar-panel,
+.venue-inspiration-panel {
+  min-width: 0;
+  padding: 20px;
+}
+
+.venue-calendar-title,
+.venue-calendar-title > div,
+.venue-calendar-nav,
+.venue-inspiration-topline {
+  display: flex;
+  align-items: center;
+}
+
+.venue-calendar-title,
+.venue-inspiration-topline {
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.venue-calendar-title > div:first-child { gap: 9px; }
+.venue-calendar-title h2 { margin: 0; font-size: 18px; }
+.venue-calendar-nav { gap: 6px; }
+
+.venue-calendar-nav button {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.venue-calendar-week,
+.venue-calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.venue-calendar-week { margin-bottom: 6px; }
+.venue-calendar-week span { text-align: center; color: var(--muted); font-size: 11px; }
+
+.venue-calendar-grid button {
+  position: relative;
+  aspect-ratio: 1 / 1.06;
+  min-width: 0;
+  padding: 4px 2px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  cursor: pointer;
+}
+
+.venue-calendar-grid button.ample { background: #dcefe6; }
+.venue-calendar-grid button.tight { background: #f7e8bd; }
+.venue-calendar-grid button.low { background: #f3dfe6; }
+.venue-calendar-grid button.has-plan { background: #dcefe6; }
+.venue-calendar-grid button.empty { background: #f1f1ed; }
+.venue-calendar-grid button.outside { opacity: .35; }
+.venue-calendar-grid button.selected { border-color: #343d35; box-shadow: inset 0 0 0 1px #343d35; opacity: 1; }
+.venue-calendar-grid button small { min-height: 13px; color: var(--muted); font-size: 9px; line-height: 1; }
+.venue-calendar-grid button span { font-size: 14px; line-height: 1.2; }
+.venue-calendar-grid button i { width: 5px; height: 5px; border-radius: 50%; background: #6fc59e; }
+.venue-calendar-grid button.tight i { background: #e7ad42; }
+.venue-calendar-grid button.low i { background: #df7798; }
+.venue-calendar-grid button.empty i { background: #b8bbb5; }
+
+.venue-calendar-legend {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+}
+
+.venue-calendar-legend span { display: flex; align-items: center; gap: 5px; color: var(--muted); font-size: 11px; }
+.venue-calendar-legend i { width: 8px; height: 8px; border-radius: 50%; }
+.venue-calendar-legend i.ample { background: #6fc59e; }
+.venue-calendar-legend i.tight { background: #e7ad42; }
+.venue-calendar-legend i.low { background: #df7798; }
+
+.venue-inspiration-panel { padding: 24px 28px; }
+.venue-inspiration-topline > div { display: flex; align-items: baseline; gap: 12px; }
+.venue-inspiration-topline > div > span { font-family: "Qideng Editorial", serif; font-size: 30px; font-weight: 600; }
+.venue-location-selector { position: relative; flex: 0 1 300px; min-width: 0; }
+.venue-location-button {
+  width: 100%;
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.venue-location-button:disabled { background: var(--surface-soft); cursor: default; }
+.venue-location-button span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.venue-location-button svg:last-child { margin-left: auto; flex: 0 0 auto; transition: transform 120ms ease; }
+.venue-location-button svg.expanded { transform: rotate(180deg); }
+.venue-location-popover {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  right: 0;
+  width: min(320px, calc(100vw - 48px));
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(30, 36, 31, .14);
+  display: grid;
+  gap: 10px;
+}
+.venue-location-field > span { display: block; margin-bottom: 4px; color: var(--muted); font-size: 12px; }
+
+.venue-supply-status { padding: 6px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; }
+.venue-supply-status.ready { background: #dcefe6; color: #276c4e; }
+.venue-supply-status.waiting { background: #f1f1ed; color: var(--muted); }
+
+.venue-plan-loading {
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.venue-plan-empty {
+  min-height: 320px;
+  border-top: 1px solid var(--line);
+  margin-top: 18px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.venue-logo-wall {
+  min-height: 390px;
+  border-top: 1px solid var(--line);
+  margin-top: 18px;
+  padding-top: 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.venue-logo-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--logo-columns, 6), minmax(0, 1fr));
+  gap: 12px;
+}
+
+.venue-logo-entry {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--ink);
+  display: grid;
+  grid-template-rows: auto 2.7em;
+  gap: 7px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.venue-logo-tile {
+  min-width: 0;
+  aspect-ratio: 1;
+  border: 1px solid var(--soft-line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  user-select: none;
+}
+
+.venue-logo-entry:hover .venue-logo-tile { border-color: var(--ink); }
+.venue-logo-entry:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
+
+.venue-logo-entry > strong {
+  min-width: 0;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.venue-logo-tile img {
+  width: 72%;
+  height: 72%;
+  object-fit: contain;
+}
+
+.venue-logo-tile span {
+  color: var(--ink);
+  font-family: "Qideng Editorial", serif;
+  font-size: 26px;
+  font-weight: 600;
+}
+
+.venue-logo-pagination {
+  min-height: 36px;
+  margin-top: auto;
+  padding-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.venue-logo-pagination button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  padding: 0;
+  background: #fff;
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.venue-logo-pagination button:disabled { opacity: .35; cursor: default; }
+.venue-logo-pagination span { min-width: 44px; color: var(--muted); font-size: 11px; text-align: center; }
+
+.venue-creator-preview-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  padding: 24px;
+  background: rgba(31, 35, 32, .62);
+  display: grid;
+  place-items: center;
+}
+
+.venue-creator-preview {
+  position: relative;
+  width: min(860px, 100%);
+  height: min(90dvh, 820px);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 18px 60px rgba(20, 24, 21, .24);
+}
+
+.venue-creator-preview iframe { width: 100%; height: 100%; border: 0; background: #fff; }
+
+.venue-creator-preview-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+  padding: 0;
+  background: #fff;
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(20, 24, 21, .12);
+}
+
+.venue-creator-preview-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.venue-plan-selector {
+  margin-top: 18px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+
+.venue-plan-selector > span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.venue-plan-selector > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.venue-plan-selector button {
+  min-height: 44px;
+  max-width: min(100%, 280px);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 7px 10px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.venue-plan-selector button small {
+  border-right: 1px solid var(--line);
+  padding-right: 8px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.venue-plan-selector button strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.venue-plan-selector button.selected {
+  border-color: var(--night);
+  box-shadow: inset 0 0 0 1px var(--night);
+}
+
+.venue-inspiration-title { margin: 38px 0 18px; display: flex; align-items: flex-start; gap: 12px; }
+.venue-inspiration-title > svg { margin-top: 5px; color: #b78c2e; }
+.venue-inspiration-title span { display: block; margin-bottom: 5px; color: var(--muted); font-size: 11px; font-weight: 600; }
+.venue-inspiration-title h2 { margin: 0; font-family: "Qideng Editorial", serif; font-size: 30px; font-weight: 600; }
+.venue-inspiration-summary { max-width: 780px; margin: 0 0 24px; color: var(--text, #5c625d); font-size: 15px; line-height: 1.8; }
+.venue-filtered-count { margin: 0 0 24px; color: var(--muted); font-size: 12px; }
+
+.venue-category-supply { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 24px; }
+.venue-category-supply > div { min-width: 0; display: grid; grid-template-columns: minmax(72px, auto) minmax(50px, 1fr) auto; align-items: center; gap: 10px; font-size: 12px; }
+.venue-category-supply > div > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.venue-category-supply > div > i { height: 7px; overflow: hidden; border-radius: 4px; background: #e8e5dc; }
+.venue-category-supply b { height: 100%; border-radius: inherit; display: block; background: #6fc59e; }
+.venue-category-supply strong { white-space: nowrap; }
+.venue-empty-insight { padding: 20px; background: #f4f4f0; color: var(--muted); font-size: 13px; text-align: center; }
+
+.venue-insight-tags { margin-top: 24px; padding-top: 18px; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.venue-insight-tags span { color: var(--muted); font-size: 11px; }
+.venue-insight-tags p { margin: 5px 0 0; font-size: 13px; }
+.venue-method-note { margin: 24px 0 0; color: var(--muted); font-size: 11px; }
+
+.venue-planning-export {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.venue-planning-export button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 6px;
+  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: var(--night);
+  color: var(--surface);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.venue-planning-export button:disabled { opacity: .45; cursor: not-allowed; }
+
+.venue-planning-export small { color: var(--muted); font-size: 11px; }
+.venue-planning-export small.error { color: var(--danger); }
+
+@media (max-width: 900px) {
+  .venue-planning-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .viz-shell-header { padding: 12px 14px; align-items: flex-start; flex-direction: column; }
+  .viz-shell-header > div:last-child { width: 100%; justify-content: flex-end; flex-wrap: wrap; }
+  .viz-shell-main { padding: 14px 12px 36px; }
+  .viz-mode-switch { width: 100%; min-height: 52px; margin-bottom: 14px; }
+  .viz-mode-switch button { min-height: 50px; }
+  .venue-planning-location { padding: 12px; }
+  .venue-planning-location .venue-location-selector { width: 100%; }
+  .venue-discovery-panel, .venue-calendar-panel, .venue-inspiration-panel { padding: 16px; }
+  .venue-calendar-title h2 { font-size: 20px; }
+  .venue-calendar-grid, .venue-calendar-week { gap: 4px; }
+  .venue-calendar-grid button { min-height: 44px; aspect-ratio: auto; }
+  .venue-inspiration-topline { align-items: flex-start; flex-direction: column; }
+  .venue-inspiration-topline > div { align-items: flex-start; flex-direction: column; gap: 2px; }
+  .venue-location-selector { width: 100%; flex-basis: auto; }
+  .venue-inspiration-topline > div > span, .venue-inspiration-title h2 { font-size: 24px; }
+  .venue-inspiration-title { margin-top: 28px; }
+  .venue-logo-wall { min-height: 0; }
+  .venue-creator-preview-backdrop { padding: 0; }
+  .venue-creator-preview { width: 100%; height: 100dvh; border: 0; border-radius: 0; }
+  .venue-creator-preview-close { top: max(10px, env(safe-area-inset-top)); right: max(10px, env(safe-area-inset-right)); }
+  .venue-plan-empty { min-height: 180px; }
+  .venue-plan-selector > div { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+  .venue-plan-selector button { min-width: 220px; }
+  .venue-planning-export { align-items: stretch; flex-direction: column; }
+  .venue-planning-export button { width: 100%; }
+  .venue-category-supply, .venue-insight-tags { grid-template-columns: 1fr; }
+  .viz-selection-toolbar { padding: 10px !important; align-items: flex-start !important; flex-wrap: wrap !important; gap: 8px !important; }
+  .viz-export-footer { padding: 10px !important; align-items: stretch !important; flex-direction: column !important; gap: 10px !important; }
+  .viz-export-actions { width: 100%; display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px !important; }
+  .viz-export-actions > button { min-width: 0; justify-content: center; }
+  .viz-export-format { grid-column: 1 / -1; margin-right: 0 !important; flex-wrap: wrap; }
+}

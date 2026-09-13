@@ -65,6 +65,12 @@ const nextConfig = {
       { source: "/studio", headers: noStoreHeaders },
       { source: "/admin", headers: noStoreHeaders },
       { source: "/admin/:path*", headers: noStoreHeaders },
+      { source: "/viz", headers: noStoreHeaders },
+      { source: "/viz/:path*", headers: noStoreHeaders },
+      { source: "/vizv2", headers: noStoreHeaders },
+      { source: "/vizv2/:path*", headers: noStoreHeaders },
+      { source: "/chandiduan", headers: noStoreHeaders },
+      { source: "/chandiduan/:path*", headers: noStoreHeaders },
       { source: "/(.*)", headers: securityHeaders },
       {
         source: "/index.html",

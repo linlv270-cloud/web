@@ -1187,6 +1187,101 @@ function schema(db: DatabaseSync) {
     );
     CREATE INDEX IF NOT EXISTS viz_access_events_user_idx ON visualization_access_events(viz_user_id, created_at DESC);
 
+    CREATE TABLE IF NOT EXISTS visualization_downloads (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      viz_user_id INTEGER REFERENCES visualization_users(id) ON DELETE SET NULL,
+      viz_user_name TEXT NOT NULL DEFAULT '',
+      viz_user_phone TEXT NOT NULL DEFAULT '',
+      download_type TEXT NOT NULL CHECK(download_type IN ('inspiration', 'creator_filter')),
+      file_name TEXT NOT NULL DEFAULT '',
+      plan_id INTEGER REFERENCES visualization_plans(id) ON DELETE SET NULL,
+      creator_snapshots TEXT NOT NULL DEFAULT '[]',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS visualization_downloads_time_idx ON visualization_downloads(created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS visualization_tag_settings (
+      tag_id INTEGER PRIMARY KEY REFERENCES tags(id) ON DELETE CASCADE,
+      visible INTEGER NOT NULL DEFAULT 1,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      updated_by TEXT NOT NULL DEFAULT '',
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS visualization_plans (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      plan_date TEXT NOT NULL,
+      start_date TEXT NOT NULL DEFAULT '',
+      end_date TEXT NOT NULL DEFAULT '',
+      province TEXT NOT NULL DEFAULT '',
+      city TEXT NOT NULL,
+      source TEXT NOT NULL DEFAULT 'manual' CHECK(source IN ('manual', 'ai', 'resource')),
+      title TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft', 'published', 'archived')),
+      resource_project_id TEXT,
+      ai_run_id INTEGER,
+      created_by_admin_id INTEGER REFERENCES admin_accounts(id) ON DELETE SET NULL,
+      created_by_label TEXT NOT NULL DEFAULT '',
+      published_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS visualization_plans_lookup_idx
+      ON visualization_plans(city, plan_date, status, source, created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS visualization_ai_settings (
+      id INTEGER PRIMARY KEY CHECK(id = 1),
+      enabled INTEGER NOT NULL DEFAULT 0,
+      prompt_template TEXT NOT NULL DEFAULT '',
+      min_creator_count INTEGER NOT NULL DEFAULT 20,
+      schedule_weekday INTEGER NOT NULL DEFAULT 1 CHECK(schedule_weekday BETWEEN 1 AND 7),
+      schedule_hour INTEGER NOT NULL DEFAULT 9 CHECK(schedule_hour BETWEEN 0 AND 23),
+      horizon_days INTEGER NOT NULL DEFAULT 90,
+      require_review INTEGER NOT NULL DEFAULT 1,
+      max_candidates_per_run INTEGER NOT NULL DEFAULT 20,
+      last_auto_run_at TEXT,
+      updated_by TEXT NOT NULL DEFAULT '',
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE TABLE IF NOT EXISTS visualization_ai_providers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      provider TEXT NOT NULL DEFAULT 'openai-compatible',
+      model TEXT NOT NULL,
+      base_url TEXT NOT NULL,
+      api_key_env TEXT NOT NULL,
+      priority INTEGER NOT NULL DEFAULT 100,
+      weight INTEGER NOT NULL DEFAULT 1,
+      max_concurrency INTEGER NOT NULL DEFAULT 1,
+      enabled INTEGER NOT NULL DEFAULT 1,
+      last_status TEXT NOT NULL DEFAULT 'unused' CHECK(last_status IN ('unused', 'healthy', 'error')),
+      last_error TEXT NOT NULL DEFAULT '',
+      last_used_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS visualization_ai_providers_route_idx
+      ON visualization_ai_providers(enabled, priority, last_status, weight);
+
+    CREATE TABLE IF NOT EXISTS visualization_ai_runs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      trigger_type TEXT NOT NULL DEFAULT 'manual' CHECK(trigger_type IN ('manual', 'scheduled')),
+      status TEXT NOT NULL DEFAULT 'queued' CHECK(status IN ('queued', 'running', 'completed', 'no_candidates', 'failed')),
+      scope_json TEXT NOT NULL DEFAULT '{}',
+      candidate_count INTEGER NOT NULL DEFAULT 0,
+      generated_count INTEGER NOT NULL DEFAULT 0,
+      provider_summary TEXT NOT NULL DEFAULT '{}',
+      error TEXT NOT NULL DEFAULT '',
+      requested_by TEXT NOT NULL DEFAULT '',
+      started_at TEXT,
+      finished_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS visualization_ai_runs_queue_idx
+      ON visualization_ai_runs(status, created_at);
+
     -- 设计策划模块（在线矢量海报）
     CREATE TABLE IF NOT EXISTS design_solar_terms (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1269,6 +1364,15 @@ function schema(db: DatabaseSync) {
     CREATE INDEX IF NOT EXISTS design_drafts_session_idx ON design_drafts(session_id, version DESC);
   `);
 
+  db.prepare(
+    `INSERT OR IGNORE INTO visualization_ai_settings(
+      id, prompt_template, min_creator_count, schedule_weekday, schedule_hour, horizon_days,
+      require_review, max_candidates_per_run
+    ) VALUES (1, ?, 20, 1, 9, 90, 1, 20)`,
+  ).run(
+    "你是TDE线下活动策划助手。请结合城市、日期、节气或积极节日、可邀约主理人数量及作品/体验/客群/风格标签，生成一个克制、具体、可执行的活动主题和简介。只输出JSON：{\"title\":\"不超过30字\",\"description\":\"不超过300字\"}。",
+  );
+
   // 迁移：visualization_users 表添加 access_scope 字段（旧数据库兼容）
   try {
     const columns = db.prepare("PRAGMA table_info(visualization_users)").all() as { name: string }[];
@@ -1277,6 +1381,23 @@ function schema(db: DatabaseSync) {
     }
   } catch {
     // 表不存在时忽略，schema 已包含该字段
+  }
+
+  // 迁移：方案投放从单日扩展为起止日期，旧方案保持原日期不变。
+  try {
+    const columns = db.prepare("PRAGMA table_info(visualization_plans)").all() as { name: string }[];
+    if (!columns.some((col) => col.name === "start_date")) {
+      db.exec("ALTER TABLE visualization_plans ADD COLUMN start_date TEXT NOT NULL DEFAULT ''");
+    }
+    if (!columns.some((col) => col.name === "end_date")) {
+      db.exec("ALTER TABLE visualization_plans ADD COLUMN end_date TEXT NOT NULL DEFAULT ''");
+    }
+    db.exec(`UPDATE visualization_plans
+      SET start_date = CASE WHEN start_date = '' THEN plan_date ELSE start_date END,
+          end_date = CASE WHEN end_date = '' THEN plan_date ELSE end_date END`);
+    db.exec("CREATE INDEX IF NOT EXISTS visualization_plans_range_idx ON visualization_plans(city, start_date, end_date, status)");
+  } catch {
+    // 表不存在时忽略，schema 已包含这些字段
   }
 
   const trendAutomationMigration = db.prepare(
