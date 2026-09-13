@@ -11,6 +11,7 @@ import {
   ChevronRight,
   ChevronDown,
   Download,
+  FolderKanban,
   Image as ImageIcon,
   ImagePlus,
   KeyRound,
@@ -60,9 +61,10 @@ import { CreatorVisualization } from "./CreatorVisualization";
 import { CustomSelect } from "./CustomSelect";
 import { VizManagement } from "./VizManagement";
 import { DesignPlannerClient } from "./DesignPlannerClient";
+import { ProjectCenter } from "./ProjectCenter";
 import { QIDENG_COLORS } from "../design-system-values";
 
-type AdminSection = "overview" | "resources" | "creators" | "mini" | "admins" | "tags" | "invites" | "messages" | "writer" | "redbook" | "trends" | "viz" | "events" | "venue" | "design";
+type AdminSection = "overview" | "resources" | "creators" | "mini" | "admins" | "tags" | "invites" | "messages" | "writer" | "redbook" | "trends" | "viz" | "events" | "venue" | "design" | "projects";
 type LocationProvince = { code: string; name: string; cities: Array<{ code: string; name: string; districts?: Array<{ code: string; name: string }> }> };
 type CreatorImageSlotKey = "representative" | "logo" | "product" | "booth" | "history";
 type CreatorImageSlot = {
@@ -117,6 +119,7 @@ const nav: Array<{ key: AdminSection; label: string; icon: React.ReactNode; supe
   { key: "creators", label: "用户管理", icon: <Users size={19} /> },
   { key: "events", label: "活动管理", icon: <CalendarDays size={19} /> },
   { key: "design", label: "设计策划", icon: <Palette size={19} /> },
+  { key: "projects", label: "项目中台", icon: <FolderKanban size={19} /> },
   { key: "venue", label: "场地方管理", icon: <MapPin size={19} /> },
   { key: "mini", label: "小程序运营", icon: <Smartphone size={19} /> },
   { key: "viz", label: "可视化管理", icon: <ImageIcon size={19} />, superOnly: true },
@@ -198,6 +201,7 @@ export function AdminClient() {
           {section === "creators" ? <CreatorSearchView overview={overview} locations={locations} notifications={overview.notifications} showToast={showToast} onRefresh={load} /> : null}
           {section === "events" ? <EventsView showToast={showToast} onRefresh={load} /> : null}
           {section === "design" ? <DesignPlannerClient showToast={showToast} role={overview.admin.role} /> : null}
+          {section === "projects" ? <ProjectCenter admin={overview.admin} adminAccounts={overview.adminAccounts} showToast={showToast} /> : null}
           {section === "venue" ? <VenueTagsView showToast={showToast} /> : null}
           {section === "mini" ? <MiniProgramAdminView admin={overview.admin} creators={overview.creators} tags={overview.tags} locations={locations} showToast={showToast} /> : null}
           {section === "viz" && overview.admin.role === "super" ? <VizManagement showToast={showToast} creators={overview.creators} /> : null}

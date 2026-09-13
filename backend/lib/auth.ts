@@ -139,7 +139,8 @@ export function requireAdmin(request: Request) {
   ]);
   return principal.role === "super" || subadminPaths.has(pathname) || pathname.startsWith("/api/admin/mini/")
     || pathname.startsWith("/api/admin/workshop/") || pathname.startsWith("/api/admin/wecom/")
-    || pathname.startsWith("/api/admin/design/")
+    || pathname.startsWith("/api/admin/design/") || pathname === "/api/admin/projects"
+    || pathname.startsWith("/api/admin/projects/")
     ? null
     : Response.json({ error: "该账号没有此操作权限" }, { status: 403 });
 }
