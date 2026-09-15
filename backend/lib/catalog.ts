@@ -1,3 +1,5 @@
+import type { TaxonomyNamespace } from "./types";
+
 export const themeCategories: Array<{ name: string; accent: string; themes: string[] }> = [
   { name: "城市生活", accent: "#E5B93F", themes: ["城市周末市集", "夜晚微醺市集", "复古嘉年华", "天台派对", "城市露营", "街区漫游", "咖啡生活节", "城市野餐会", "黄昏音乐市集", "深夜食堂派对"] },
   { name: "手作工坊", accent: "#D86B4B", themes: ["手作体验工坊", "陶艺 Workshop", "银饰制作课", "香薰蜡烛课", "皮具手作课", "植物染体验", "木作体验课", "拼贴艺术课", "毛毡手作课", "手账拼贴派对"] },
@@ -33,11 +35,13 @@ export const cooperationTypes = [
 export const tagSeeds: Record<string, string[]> = {
   "我的身份": ["手作人", "设计师", "艺术家", "插画师", "摄影师", "非遗传承人", "工艺匠人", "独立出版人", "花艺师", "调香师", "甜品师", "烘焙师", "咖啡师", "茶艺师", "美食主理人", "酒饮主理人", "潮玩主理人", "古着主理人", "买手", "策展人", "音乐人", "乐队", "DJ", "舞者", "戏剧演员", "即兴演员", "脱口秀演员", "魔术师", "工作坊老师", "内容创作者", "AI从业者"],
   "我的作品": ["纯艺创作", "手帐", "文创周边", "首饰配饰", "银饰", "陶瓷", "木作", "皮具", "布艺", "编织", "刺绣", "染织", "漆艺", "玻璃", "金工", "纸艺", "版画", "插画作品", "摄影作品", "花艺", "香薰", "蜡烛", "香水", "茶", "咖啡", "甜品", "烘焙", "精酿", "酒饮", "宠物用品", "亲子玩具", "潮玩", "古着", "独立书刊", "家居摆件", "礼盒", "伴手礼", "创新食品", "手办", "身体艺术", "数字作品", "互动体验", "现场娱乐", "文学创作", "二次元", "动漫", "明星周边"],
-  "我的客群": ["城市青年", "年轻女性", "大学生", "职场人群", "亲子家庭", "儿童", "宝妈", "情侣", "宠物家庭", "艺术爱好者", "设计师群体", "音乐爱好者", "收藏玩家", "潮流人群", "小众审美人群", "品牌主理人", "企业客户", "行政采购", "礼品采购", "同好圈层"],
-  "我的风格": ["极简", "自然系", "森系", "复古", "国风", "东方美学", "日系", "法式", "韩系", "美式复古", "轻奢", "甜酷", "暗黑", "赛博", "街头", "Y2K", "多巴胺", "童趣", "治愈", "松弛", "艺术感", "电影感", "手工感", "先锋", "实验性", "小众", "精致", "节日感", "烟火气", "仪式感"],
+  "我的客群": ["城市青年", "年轻女性", "大学生", "职场人群", "亲子家庭", "儿童", "宝妈", "情侣", "宠物家庭", "艺术爱好者", "设计师群体", "音乐爱好者", "收藏玩家", "潮流人群", "小众审美人群", "品牌主理人", "企业客户", "行政采购", "礼品采购", "同好圈层", "喜欢新鲜事物", "喜欢动手体验", "关注设计与审美", "收藏爱好者", "礼物消费", "喜欢安静/慢节奏", "想放松一下", "朋友结伴", "传统文化爱好者", "特定兴趣人群", "纪念特殊时刻", "大众皆宜", "其他"],
+  "我的风格": ["极简", "自然系", "森系", "复古", "国风", "东方美学", "日系", "法式", "韩系", "美式复古", "轻奢", "甜酷", "暗黑", "赛博", "街头", "Y2K", "多巴胺", "童趣", "治愈", "松弛", "艺术感", "电影感", "手工感", "先锋", "实验性", "小众", "精致", "节日感", "烟火气", "仪式感", "自然", "东方", "当代", "实验", "可爱", "粗粝", "街头", "梦幻", "夜色感", "其他"],
   "现场体验": ["现场制作", "现场演示", "手作体验", "线下体验课", "主题工作坊", "亲子体验", "产品试用", "试吃", "试饮", "现场定制", "现场互动", "现场授课", "音乐演出", "舞蹈表演", "戏剧互动", "魔术互动", "脱口秀", "摄影服务", "主持服务"],
   "DIY材料包": ["可做材料包", "成人材料包", "儿童材料包", "亲子材料包", "团建材料包", "零基础友好", "可独立完成", "支持现场教学", "配图文教程", "配视频教程", "支持邮寄", "支持批量", "支持定制", "支持补充包"],
 };
+
+export const creatorV1WorkOptions = [...tagSeeds["我的作品"]] as const;
 
 export const creatorApplicationTagCategories = [
   "我的身份",
@@ -53,6 +57,17 @@ export const offlineExperienceTypes = ["DIY材料包", "个人工作室", "现�
 export const precisionInviteGoals = ["新品测试", "粉丝交流", "品牌推广", "销售增长"] as const;
 export const precisionInviteScenes = ["市集快闪", "节事活动", "文旅景区", "购物中心入驻", "艺术展览", "KOL沙龙", "行业展会"] as const;
 
+export const creatorV1StyleOptions = [
+  "自然", "极简", "东方", "复古", "当代", "实验", "童趣", "可爱",
+  "粗粝", "精致", "街头", "梦幻", "夜色感", "其他",
+] as const;
+
+export const creatorV1AudienceOptions = [
+  "喜欢新鲜事物", "喜欢动手体验", "关注设计与审美", "收藏爱好者", "礼物消费",
+  "喜欢安静/慢节奏", "想放松一下", "亲子家庭", "情侣", "朋友结伴",
+  "传统文化爱好者", "特定兴趣人群", "纪念特殊时刻", "大众皆宜", "其他",
+] as const;
+
 export const projectSceneTags = ["带孩子玩", "和朋友玩", "自己放空", "定制礼物"] as const;
 export const projectOperationTags = ["限时限量", "今日上新", "首发尝鲜"] as const;
 export const projectPlatformTags = ["好评精选"] as const;
@@ -64,6 +79,116 @@ export const projectTagSeeds: Record<string, readonly string[]> = {
 };
 
 export const tagCategoryNames: string[] = [...creatorApplicationTagCategories];
+
+export const creatorTaxonomyNamespaces = ["R", "I", "O", "X", "P", "E", "S"] as const satisfies readonly TaxonomyNamespace[];
+
+/**
+ * Product taxonomy used by the Phase 2B discovery flow.
+ * Legacy Chinese categories remain separate compatibility data.
+ */
+export const canonicalTaxonomySeeds: ReadonlyArray<{
+  namespace: TaxonomyNamespace;
+  termKey: string;
+  label: string;
+}> = [
+  { namespace: "R", termKey: "R01", label: "手作人" },
+  { namespace: "R", termKey: "R02", label: "艺术家" },
+  { namespace: "R", termKey: "R03", label: "设计师" },
+  { namespace: "R", termKey: "R04", label: "插画师" },
+  { namespace: "R", termKey: "R05", label: "独立品牌主理人" },
+  { namespace: "R", termKey: "R06", label: "美食主理人" },
+  { namespace: "R", termKey: "R07", label: "非遗相关创作者" },
+  { namespace: "R", termKey: "R08", label: "收藏者" },
+  { namespace: "R", termKey: "R09", label: "内容创作者" },
+  { namespace: "R", termKey: "R10", label: "工作坊老师" },
+  { namespace: "R", termKey: "R11", label: "其他" },
+  { namespace: "I", termKey: "I01", label: "陶瓷" },
+  { namespace: "I", termKey: "I02", label: "首饰" },
+  { namespace: "I", termKey: "I03", label: "织物" },
+  { namespace: "I", termKey: "I04", label: "木作" },
+  { namespace: "I", termKey: "I05", label: "纸艺" },
+  { namespace: "I", termKey: "I06", label: "香氛" },
+  { namespace: "I", termKey: "I07", label: "植物" },
+  { namespace: "I", termKey: "I08", label: "绘画 / 插画" },
+  { namespace: "I", termKey: "I09", label: "家居器物" },
+  { namespace: "I", termKey: "I10", label: "美食" },
+  { namespace: "I", termKey: "I11", label: "潮玩" },
+  { namespace: "I", termKey: "I12", label: "收藏" },
+  { namespace: "I", termKey: "I13", label: "其他" },
+  { namespace: "O", termKey: "O01", label: "作品展示" },
+  { namespace: "O", termKey: "O02", label: "商品售卖" },
+  { namespace: "O", termKey: "O03", label: "现场制作" },
+  { namespace: "O", termKey: "O04", label: "演示讲解" },
+  { namespace: "O", termKey: "O05", label: "故事分享" },
+  { namespace: "O", termKey: "O06", label: "定制服务" },
+  { namespace: "X", termKey: "X01", label: "自己动手" },
+  { namespace: "X", termKey: "X02", label: "试" },
+  { namespace: "X", termKey: "X03", label: "尝" },
+  { namespace: "X", termKey: "X04", label: "闻" },
+  { namespace: "X", termKey: "X05", label: "触摸材料" },
+  { namespace: "X", termKey: "X06", label: "选择组合" },
+  { namespace: "X", termKey: "X07", label: "小工作坊" },
+  { namespace: "X", termKey: "X08", label: "聊天" },
+  { namespace: "X", termKey: "X09", label: "共同完成" },
+  { namespace: "X", termKey: "X10", label: "拍照记录" },
+  { namespace: "P", termKey: "P01", label: "喜欢新鲜东西" },
+  { namespace: "P", termKey: "P02", label: "喜欢动手" },
+  { namespace: "P", termKey: "P03", label: "在意设计审美" },
+  { namespace: "P", termKey: "P04", label: "喜欢收藏" },
+  { namespace: "P", termKey: "P05", label: "挑礼物的人" },
+  { namespace: "P", termKey: "P06", label: "喜欢安静慢一点" },
+  { namespace: "P", termKey: "P07", label: "最近想放松" },
+  { namespace: "P", termKey: "P08", label: "亲子家庭" },
+  { namespace: "P", termKey: "P09", label: "情侣" },
+  { namespace: "P", termKey: "P10", label: "朋友" },
+  { namespace: "P", termKey: "P11", label: "传统文化爱好者" },
+  { namespace: "P", termKey: "P12", label: "特殊兴趣人群" },
+  { namespace: "P", termKey: "P13", label: "纪念某个时刻的人" },
+  { namespace: "E", termKey: "E01", label: "松弛" },
+  { namespace: "E", termKey: "E02", label: "好奇" },
+  { namespace: "E", termKey: "E03", label: "开心" },
+  { namespace: "E", termKey: "E04", label: "安静" },
+  { namespace: "E", termKey: "E05", label: "专注" },
+  { namespace: "E", termKey: "E06", label: "惊喜" },
+  { namespace: "E", termKey: "E07", label: "怀旧" },
+  { namespace: "E", termKey: "E08", label: "自我表达" },
+  { namespace: "E", termKey: "E09", label: "连接" },
+  { namespace: "E", termKey: "E10", label: "探索" },
+  { namespace: "E", termKey: "E11", label: "成就感" },
+  { namespace: "S", termKey: "S01", label: "自然" },
+  { namespace: "S", termKey: "S02", label: "极简" },
+  { namespace: "S", termKey: "S03", label: "东方" },
+  { namespace: "S", termKey: "S04", label: "复古" },
+  { namespace: "S", termKey: "S05", label: "当代" },
+  { namespace: "S", termKey: "S06", label: "实验" },
+  { namespace: "S", termKey: "S07", label: "童趣" },
+  { namespace: "S", termKey: "S08", label: "可爱" },
+  { namespace: "S", termKey: "S09", label: "粗粝" },
+  { namespace: "S", termKey: "S10", label: "精致" },
+  { namespace: "S", termKey: "S11", label: "街头" },
+  { namespace: "S", termKey: "S12", label: "梦幻" },
+  { namespace: "S", termKey: "S13", label: "夜间感" },
+];
+
+/**
+ * Compatibility only: legacy Chinese tag categories keep their original values
+ * while this map gives future consumers a stable namespace boundary.
+ */
+export const creatorTaxonomyLegacyCategoryMap: Readonly<Record<string, TaxonomyNamespace>> = {
+  "我的身份": "R",
+  "我的作品": "I",
+  "DIY材料包": "O",
+  "现场体验": "X",
+  "我的客群": "P",
+  "我的风格": "S",
+};
+
+export function legacyTaxonomyTermKey(namespace: TaxonomyNamespace, label: string) {
+  const codePoints = Array.from(label)
+    .map((character) => (character.codePointAt(0) || 0).toString(16))
+    .join("-");
+  return `legacy.${namespace}.${codePoints}`;
+}
 
 export const themeSuggestedTags: Record<string, string[]> = {
   "城市生活": ["市集", "城市青年", "周末", "街区", "松弛", "可摆摊", "摄影", "现场制作"],

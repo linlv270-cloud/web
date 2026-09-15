@@ -7,8 +7,32 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { id } = await params;
   const eventId = Number(id);
 
-  const event = one<any>(
-    `SELECT * FROM tde_events WHERE id = ?`,
+  const event = one<{
+    id: number;
+    reference: string;
+    title: string;
+    short_intro: string;
+    description: string;
+    cover_key: string | null;
+    province: string;
+    city: string;
+    district: string;
+    address: string;
+    start_date: string;
+    end_date: string;
+    registration_deadline: string;
+    category_tags: string;
+    max_participants: number;
+    status: string;
+    organizer: string;
+    view_count: number;
+  }>(
+    `SELECT id, reference, title, short_intro, description, cover_key,
+            province, city, district, address, start_date, end_date,
+            registration_deadline, category_tags, max_participants, status,
+            organizer, view_count
+     FROM tde_events
+     WHERE id = ? AND status != 'draft'`,
     eventId,
   );
   if (!event) return Response.json({ error: "活动不存在" }, { status: 404 });
@@ -33,7 +57,22 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   return Response.json({
     event: {
-      ...event,
+      id: event.id,
+      reference: event.reference,
+      title: event.title,
+      short_intro: event.short_intro,
+      description: event.description,
+      province: event.province,
+      city: event.city,
+      district: event.district,
+      address: event.address,
+      start_date: event.start_date,
+      end_date: event.end_date,
+      registration_deadline: event.registration_deadline,
+      max_participants: event.max_participants,
+      status: event.status,
+      organizer: event.organizer,
+      view_count: event.view_count,
       coverUrl: event.cover_key ? assetUrl(event.cover_key) : "",
       categoryTags: JSON.parse(event.category_tags || "[]"),
       registeredCount,

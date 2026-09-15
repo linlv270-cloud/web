@@ -45,6 +45,7 @@ npm run check:release-package
 
 ```dotenv
 DATA_DIR=/opt/tde/data
+PUBLIC_ORIGIN=https://tde.thedesignexpo.org.cn
 PUBLIC_SITE_URL=https://tde.thedesignexpo.org.cn
 WECHAT_MINI_APP_ID=wx65f33265254f8b02
 WECHAT_MINI_APP_SECRET=SET_ON_SERVER_ONLY

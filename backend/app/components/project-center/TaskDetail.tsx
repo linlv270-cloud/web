@@ -64,11 +64,30 @@ function listValue(value: unknown) {
   return [];
 }
 
+function userText(value: unknown) {
+  return String(value || "").replaceAll("状态流转", "每次变化");
+}
+
 function actionTitle(action: ActionName) {
   return {
     submit: "提交验收", waitExternal: "等待外部", waitInternal: "等待内部", block: "报告阻塞",
     resume: "恢复执行", approve: "验收通过", reject: "退回修改", reopen: "重新打开", cancel: "取消任务",
   }[action];
+}
+
+function historyLabel(value: unknown) {
+  const labels: Record<string, string> = {
+    TASK_CREATED: "创建工作", TASK_UPDATED: "修改工作", TASK_STARTED: "开始工作",
+    TASK_WAITING_EXTERNAL: "等待外部回复", TASK_WAITING_INTERNAL: "等待同事配合",
+    TASK_BLOCKED: "报告暂时做不下去", TASK_RESUMED: "恢复工作", TASK_CANCELLED: "取消工作",
+    TASK_REOPENED: "重新开始工作", TASK_SUBMITTED: "提交完成结果",
+    TASK_APPROVED: "确认完成", TASK_REJECTED: "退回修改",
+  };
+  return labels[String(value)] || "更新记录";
+}
+
+function decisionLabel(value: unknown) {
+  return ({ PENDING: "等待检查", APPROVED: "检查通过", REJECTED: "退回修改" } as Record<string, string>)[String(value)] || "检查记录";
 }
 
 export function TaskDetail({
@@ -191,7 +210,7 @@ export function TaskDetail({
   );
 
   return <section className={styles.panel}>
-    <div className={styles.detailTop}><div><button className="button secondary" type="button" onClick={onBack}><ArrowLeft size={16} /> 返回任务列表</button><p className={styles.eyebrow}>TASK DETAIL</p><h3>{task.title}</h3><p>{textValue(task.code)} · {labelTaskStatus(task.status)}</p></div><span className={styles.badge}>{labelTaskStatus(task.status)}</span></div>
+    <div className={styles.detailTop}><div><button className="button secondary" type="button" onClick={onBack}><ArrowLeft size={16} /> 返回任务列表</button><h3>{task.title}</h3><p>{textValue(task.code)} · {labelTaskStatus(task.status)}</p></div><span className={styles.badge}>{labelTaskStatus(task.status)}</span></div>
     <div className={styles.actionBar}>
       {canManage && ["DRAFT", "READY", "REVISION_REQUIRED"].includes(task.status) ? <button className="button secondary" type="button" onClick={() => setEditing(true)}><Pencil size={16} /> 编辑</button> : null}
       {["READY", "REVISION_REQUIRED"].includes(task.status) && canExecute ? <button className="button primary" type="button" onClick={() => void transition("START")} disabled={busy}><Play size={16} /> 开始</button> : null}
@@ -203,10 +222,10 @@ export function TaskDetail({
     </div>
     {error ? <p className="form-error">{error}</p> : null}
     <div className={styles.infoGrid}><div className={styles.infoItem}><label>负责人</label><p>{nameOf(task.owner_id)}</p></div><div className={styles.infoItem}><label>验收人</label><p>{nameOf(task.approver_id)}</p></div><div className={styles.infoItem}><label>截止时间</label><p>{formatDate(task.due_at, true)}</p></div><div className={styles.infoItem}><label>任务目标</label><p>{textValue(task.objective)}</p></div><div className={styles.infoItem}><label>等待 / 阻塞</label><p>{task.waiting_for ? `等待：${task.waiting_for} · ${task.waiting_reason || ""}` : task.blocker_reason ? `阻塞：${task.blocker_reason} · ${task.blocker_impact || ""}` : "无"}</p></div></div>
-    {task.status === "IN_PROGRESS" || task.status === "REVISION_REQUIRED" ? <div className={styles.formSection}><h4>本次提交的文件证据</h4><p>选择具体版本后提交，后续新版本不会改变本次引用。</p><div className={styles.detailList}>{evidenceFiles.map((file) => <label className={styles.detailRow} key={String(file.id)}><input type="checkbox" checked={selectedEvidence.includes(Number(file.current_version_id))} onChange={(event) => setSelectedEvidence((current) => event.target.checked ? [...current, Number(file.current_version_id)] : current.filter((id) => id !== Number(file.current_version_id)))} /><span><strong>{String(file.name || "")}</strong><small>V{String(file.version_number)} · {String(file.status || "")}</small></span></label>)}</div></div> : null}
-    <div className={styles.detailColumns}><div><h4>执行步骤</h4><ol>{listValue(task.steps).map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ol><h4>交付物</h4><ul>{listValue(task.deliverables).map((item) => <li key={item}>{item}</li>)}</ul><h4>验收标准</h4><ul>{listValue(task.acceptance_criteria).map((item) => <li key={item}>{item}</li>)}</ul></div><div><h4>依赖</h4>{(task.dependencies || []).map((item) => <p key={String(item.depends_on_task_id)}>{String(item.title)} · {labelTaskStatus(String(item.status))}</p>)}<h4>提交与验收历史</h4>{(task.approvals || []).map((item) => <p key={String(item.id)}>第 {String(item.submission_number)} 次 · {String(item.decision)} · {formatDate(String(item.created_at || ""), true)} · 文件 {Array.isArray(item.fileVersionIds) ? item.fileVersionIds.join(", ") || "无" : "无"}</p>)}<h4>状态历史</h4>{(task.history || []).slice(0, 12).map((item) => <p key={String(item.id)}>{String(item.action)} · {formatDate(String(item.created_at || ""), true)}</p>)}</div></div>
+      {task.status === "IN_PROGRESS" || task.status === "REVISION_REQUIRED" ? <div className={styles.formSection}><h4>本次提交的完成证明</h4><p>选择具体版本后提交，后续新版本不会改变本次引用。</p><div className={styles.detailList}>{evidenceFiles.map((file) => <label className={styles.detailRow} key={String(file.id)}><input type="checkbox" checked={selectedEvidence.includes(Number(file.current_version_id))} onChange={(event) => setSelectedEvidence((current) => event.target.checked ? [...current, Number(file.current_version_id)] : current.filter((id) => id !== Number(file.current_version_id)))} /><span><strong>{String(file.name || "")}</strong><small>V{String(file.version_number)} · {String(file.status || "")}</small></span></label>)}</div></div> : null}
+    <div className={styles.detailColumns}><div><h4>执行步骤</h4><ol>{listValue(task.steps).map((item, index) => <li key={`${item}-${index}`}>{item}</li>)}</ol><h4>交付物</h4><ul>{listValue(task.deliverables).map((item) => <li key={item}>{item}</li>)}</ul><h4>验收标准</h4><ul>{listValue(task.acceptance_criteria).map((item) => <li key={item}>{userText(item)}</li>)}</ul></div><div><h4>前置工作</h4>{(task.dependencies || []).map((item) => <p key={String(item.depends_on_task_id)}>{String(item.title)} · {labelTaskStatus(String(item.status))}</p>)}<h4>提交与检查历史</h4>{(task.approvals || []).map((item) => <p key={String(item.id)}>第 {String(item.submission_number)} 次 · {decisionLabel(item.decision)} · {formatDate(String(item.created_at || ""), true)} · 文件 {Array.isArray(item.fileVersionIds) ? item.fileVersionIds.join(", ") || "无" : "无"}</p>)}<h4>发生过什么</h4>{(task.history || []).slice(0, 12).map((item) => <p key={String(item.id)}>{historyLabel(item.action)} · {formatDate(String(item.created_at || ""), true)}</p>)}</div></div>
     {editing ? <TaskEditor projectId={projectId} phases={phases} accounts={accounts} initial={task} taskOptions={taskOptions} onClose={() => setEditing(false)} onSaved={() => { setEditing(false); void load(); onChanged(); }} /> : null}
-    {actionName ? <div className={styles.modalBackdrop}><form className={`${styles.modal} ${styles.confirm}`} onSubmit={(event) => void submitAction(event)}><header className={styles.modalHeader}><div><p className={styles.eyebrow}>TASK ACTION</p><h2>{actionTitle(actionName)}</h2></div></header><div className={styles.modalBody}>
+    {actionName ? <div className={styles.modalBackdrop}><form className={`${styles.modal} ${styles.confirm}`} onSubmit={(event) => void submitAction(event)}><header className={styles.modalHeader}><div><h2>{actionTitle(actionName)}</h2></div></header><div className={styles.modalBody}>
       {actionName === "submit" ? <>{actionField("resultSummary", "成果说明", 4, true)}<label className={`${styles.field} ${styles.wide}`}><span>证据链接</span><input value={actionForm.evidenceLink} onChange={(event) => updateForm("evidenceLink", event.target.value)} placeholder="可留空，或选择下方文件版本" /></label>{actionField("noFileEvidenceReason", "无需文件证据说明")}</> : null}
       {actionName === "waitExternal" || actionName === "waitInternal" ? <>{actionField("waitingFor", actionName === "waitExternal" ? "等待的外部对象" : "等待的内部成员或资料", 2, true)}{actionField("waitingReason", "等待原因", 3, true)}<label className={`${styles.field} ${styles.wide}`}><span>下次跟进时间 *</span><input type="datetime-local" value={actionForm.nextFollowUpAt} onChange={(event) => updateForm("nextFollowUpAt", event.target.value)} required /></label></> : null}
       {actionName === "block" ? <>{actionField("blockerReason", "阻塞原因", 3, true)}{actionField("blockerImpact", "影响范围", 3, true)}</> : null}

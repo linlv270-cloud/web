@@ -1,5 +1,6 @@
 const required = [
   "DATA_DIR",
+  "PUBLIC_ORIGIN",
   "PUBLIC_SITE_URL",
   "ADMIN_USERNAME",
   "ADMIN_PASSWORD",
@@ -15,6 +16,8 @@ for (const key of required) {
 }
 
 if (process.env.DATA_DIR !== "/opt/tde/data") failures.push("DATA_DIR 必须为 /opt/tde/data");
+if (process.env.PUBLIC_ORIGIN !== "https://tde.thedesignexpo.org.cn")
+  failures.push("PUBLIC_ORIGIN 必须为 https://tde.thedesignexpo.org.cn");
 if (!/^https:\/\/tde\.thedesignexpo\.org\.cn\/?$/.test(process.env.PUBLIC_SITE_URL || ""))
   failures.push("PUBLIC_SITE_URL 必须为 https://tde.thedesignexpo.org.cn");
 if ((process.env.ADMIN_PASSWORD || "").length < 12) {

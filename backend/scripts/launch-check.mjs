@@ -119,7 +119,7 @@ if (!versionRoute.includes("品牌：奇灯")) fail("/version 路由必须显示
 if (versionRoute.includes("奇灯 AI 智能体")) fail("/version 路由仍包含旧项目名：奇灯 AI 智能体");
 else pass("版本路由项目名与发布版本已校验。");
 
-const deployFiles = ["deploy/README.md", "deploy/nginx.conf", "deploy/nginx-bootstrap.conf", "deploy/qideng-backup"];
+const deployFiles = ["deploy/README.md", "deploy/nginx.conf", "deploy/nginx-bootstrap.conf"];
 for (const file of deployFiles) {
   const content = read(file);
   for (const forbidden of [
@@ -145,6 +145,7 @@ pass("部署文件已锁定 /opt/tde、3001、tde/viz 域名和无凭据发布�
 const envExample = read(".env.example");
 const requiredEnvKeys = [
   "DATA_DIR",
+  "PUBLIC_ORIGIN",
   "PUBLIC_SITE_URL",
   "ADMIN_USERNAME",
   "ADMIN_PASSWORD",

@@ -1,8 +1,12 @@
-const CACHE_NAME = "tde-shell-v1";
+const CACHE_NAME = "tde-shell-v2";
 const APP_SHELL = [
   "/index.html",
   "/login.html",
   "/profile.html",
+  "/welcome.html",
+  "/onboarding.html",
+  "/discovery.html",
+  "/discovery-feedback.html",
   "/manifest.json",
   "/pwa-icon-192.png",
   "/pwa-icon-512.png",

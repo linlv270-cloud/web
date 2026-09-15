@@ -15,6 +15,7 @@ import {
   type ProjectMemberRow,
 } from "./execution-projects";
 import { ensureExecutionProjectFileSchema } from "./execution-project-files";
+import { createProjectNotifications, ensureExecutionProjectNotificationSchema } from "./execution-project-notifications";
 import type { AdminPrincipal, AdminAccount } from "./types";
 import type { ProjectRole, TaskStatus } from "./execution-project-types";
 
@@ -44,6 +45,7 @@ const workflowSchemaChecked = new WeakSet<object>();
 
 export function ensureExecutionProjectWorkflowSchema(db: Db = getDb()) {
   if (workflowSchemaChecked.has(db)) return;
+  ensureExecutionProjectNotificationSchema(db);
   for (const [column, definition] of WORKFLOW_COLUMNS) {
     const table = column === "functional_label"
       ? "execution_project_members"
@@ -231,6 +233,41 @@ function taskView(projectId: number, task: Record<string, unknown>, db: Db) {
     })),
     history: logs.map((item) => ({ ...item, payload: parseJson(item.payload_json, {}) })),
   };
+}
+
+function taskRecipients(taskId: number, db: Db) {
+  const task = db.prepare("SELECT owner_id, approver_id FROM execution_project_tasks WHERE id = ?").get(taskId) as { owner_id: number | null; approver_id: number | null } | undefined;
+  if (!task) return [];
+  const collaborators = db.prepare("SELECT user_id FROM execution_task_collaborators WHERE task_id = ?").all(taskId) as Array<{ user_id: number }>;
+  const candidateIds: Array<number | null> = [
+    task.owner_id,
+    task.approver_id,
+    ...collaborators.map((item) => item.user_id),
+  ];
+  return [...new Set(candidateIds.filter((value): value is number => value !== null && Number.isInteger(value) && value > 0))];
+}
+
+function notifyTask(
+  projectId: number,
+  taskId: number,
+  eventType: Parameters<typeof createProjectNotifications>[0]["eventType"],
+  title: string,
+  body: string,
+  actorAdminId: number | null,
+  db: Db,
+  dedupeSuffix = "",
+  recipientIds = taskRecipients(taskId, db),
+) {
+  return createProjectNotifications({
+    projectId,
+    taskId,
+    eventType,
+    title,
+    body,
+    recipientIds,
+    actorAdminId,
+    dedupeSuffix,
+  }, db);
 }
 
 export class WorkflowError extends Error {
@@ -500,6 +537,9 @@ export function updateTask(projectId: number, taskId: number, principal: AdminPr
   const result = access(projectId, principal, "MANAGE_TASKS", db, { ownerId: Number(current.owner_id) || null, approverId: Number(current.approver_id) || null });
   if (!result.permission.allowed) throw new WorkflowError(result.permission.reason || "无权编辑任务", 403);
   if (current.status === "DONE") throw new WorkflowError("已验收任务必须先重新打开后才能编辑", 409);
+  if (input.expectedUpdatedAt !== undefined && String(input.expectedUpdatedAt) !== String(current.updated_at)) {
+    throw new WorkflowError("这项任务刚刚被别人修改，请重新加载后再保存", 409);
+  }
   const parsed = taskInput(projectId, input, db, current);
   if (!parsed.title) throw new WorkflowError("任务标题不能为空", 400, { fieldErrors: { title: "任务标题不能为空" } });
   const before = taskSnapshot(current);
@@ -515,6 +555,13 @@ export function updateTask(projectId: number, taskId: number, principal: AdminPr
     JSON.stringify(parsed.acceptanceCriteria), parsed.isCritical ? 1 : 0, taskId,
   );
   replaceTaskRelations(taskId, parsed, db);
+  const next = taskRow(projectId, taskId, db)!;
+  const assignmentChanged = Number(current.owner_id || 0) !== Number(next.owner_id || 0)
+    || Number(current.approver_id || 0) !== Number(next.approver_id || 0);
+  const dateChanged = String(current.start_at || "") !== String(next.start_at || "")
+    || String(current.due_at || "") !== String(next.due_at || "");
+  if (assignmentChanged) notifyTask(projectId, taskId, "TASK_ASSIGNED", "任务人员已调整", `「${next.title}」的负责人、协助人员或检查人已调整，请查看最新安排。`, principal.id, db, String(next.updated_at));
+  if (dateChanged) notifyTask(projectId, taskId, "TASK_DATE_CHANGED", "任务时间已调整", `「${next.title}」的开始或截止时间已调整，请查看最新安排。`, principal.id, db, String(next.updated_at));
   insertProjectActivityLog(db, {
     projectId, actorAdminId: principal.id, action: "TASK_UPDATED", entityType: "TASK", entityId: taskId,
     payload: { before, after: taskSnapshot(taskRow(projectId, taskId, db)!) },
@@ -571,6 +618,7 @@ export function publishPlan(projectId: number, principal: AdminPrincipal, reques
   return savepoint(db, () => {
     const update = db.prepare("UPDATE execution_project_tasks SET status = 'READY', updated_at = CURRENT_TIMESTAMP WHERE id = ? AND status = 'DRAFT'");
     for (const task of selected) update.run(Number(task.id));
+    for (const task of selected) notifyTask(projectId, Number(task.id), "TASK_PUBLISHED", "有一项新工作已安排给你", `「${String(task.title)}」已发布，请打开任务查看工作内容和截止时间。`, principal.id, db, String(Date.now()));
     insertProjectActivityLog(db, {
       projectId, actorAdminId: principal.id, action: "PLAN_PUBLISHED", entityType: "PROJECT", entityId: projectId,
       payload: { taskIds: selected.map((task) => Number(task.id)), count: selected.length },
@@ -659,6 +707,12 @@ export function transitionTask(projectId: number, taskId: number, action: string
     projectId, actorAdminId: principal.id, action: actionLabels[action], entityType: "TASK", entityId: taskId,
     payload: { from: current.status, to: target, reason: text(input.resolutionNote || input.cancelReason || input.reopenReason, 2000) },
   });
+  const notificationMap: Record<string, { event: Parameters<typeof createProjectNotifications>[0]["eventType"]; title: string; body: string }> = {
+    BLOCK: { event: "TASK_BLOCKED", title: "任务暂时做不下去", body: `「${String(current.title)}」已标记为暂时做不下去，请查看阻塞原因。` },
+    CANCEL: { event: "TASK_CANCELLED", title: "任务已取消", body: `「${String(current.title)}」已取消，请查看取消原因。` },
+  };
+  const notice = notificationMap[action];
+  if (notice) notifyTask(projectId, taskId, notice.event, notice.title, notice.body, principal.id, db, String(Date.now()));
   return taskView(projectId, taskRow(projectId, taskId, db)!, db);
 }
 
@@ -729,6 +783,7 @@ export function submitTask(projectId: number, taskId: number, principal: AdminPr
       projectId, actorAdminId: principal.id, action: "TASK_SUBMITTED", entityType: "TASK", entityId: taskId,
       payload: { submissionNumber, resultSummary, evidenceLinks: links, fileVersionIds: fileIds, noFileEvidenceReason, delegateReason: text(input.delegateReason, 2000) },
     });
+    notifyTask(projectId, taskId, "TASK_SUBMITTED", "有一项工作等你检查", `「${String(current.title)}」已提交完成结果，请打开任务进行检查。`, principal.id, db, String(submissionNumber), current.approver_id ? [Number(current.approver_id)] : []);
     return taskView(projectId, taskRow(projectId, taskId, db)!, db);
   });
 }
@@ -765,6 +820,17 @@ export function decideTask(projectId: number, taskId: number, decision: "APPROVE
       projectId, actorAdminId: principal.id, action: decision === "APPROVED" ? "TASK_APPROVED" : "TASK_REJECTED",
       entityType: "TASK", entityId: taskId, payload: { submissionNumber: pending.submission_number, note },
     });
+    notifyTask(
+      projectId,
+      taskId,
+      decision === "APPROVED" ? "TASK_APPROVED" : "TASK_REJECTED",
+      decision === "APPROVED" ? "你的工作已确认完成" : "你的工作需要修改",
+      decision === "APPROVED" ? `「${String(current.title)}」已确认完成。` : `「${String(current.title)}」已退回修改：${note}`,
+      principal.id,
+      db,
+      String(pending.submission_number),
+      current.owner_id ? [Number(current.owner_id)] : [],
+    );
     return taskView(projectId, taskRow(projectId, taskId, db)!, db);
   });
 }

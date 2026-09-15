@@ -2,7 +2,18 @@ import { mkdirSync } from "node:fs";
 import crypto from "node:crypto";
 import path from "node:path";
 import { DatabaseSync, type SQLInputValue } from "node:sqlite";
-import { projectTagSeeds, tagSeeds, themeCategories, themeSuggestedTags, designSolarTerms, designTagCategories, designTagSeeds } from "./catalog";
+import {
+  creatorTaxonomyLegacyCategoryMap,
+  legacyTaxonomyTermKey,
+  projectTagSeeds,
+  tagSeeds,
+  themeCategories,
+  themeSuggestedTags,
+  designSolarTerms,
+  designTagCategories,
+  designTagSeeds,
+  canonicalTaxonomySeeds,
+} from "./catalog";
 
 const globalDatabase = globalThis as typeof globalThis & {
   __qidengInvitationsDb?: DatabaseSync;
@@ -69,6 +80,41 @@ function seedCatalog(db: DatabaseSync) {
   }
 
   seedBootstrapInviteCode(db);
+}
+
+function seedCreatorTaxonomy(db: DatabaseSync) {
+  const insertCanonicalTerm = db.prepare(
+    `INSERT OR IGNORE INTO taxonomy_terms(namespace, term_key, label, version, status)
+     VALUES (?, ?, ?, 'v1', 'active')`,
+  );
+  for (const term of canonicalTaxonomySeeds)
+    insertCanonicalTerm.run(term.namespace, term.termKey, term.label);
+
+  const legacyCategories = Object.keys(creatorTaxonomyLegacyCategoryMap);
+  const placeholders = legacyCategories.map(() => "?").join(", ");
+  const tags = db.prepare(
+    `SELECT id, label, category FROM tags WHERE category IN (${placeholders})`,
+  ).all(...legacyCategories) as Array<{ id: number; label: string; category: string }>;
+  const insertTerm = db.prepare(
+    `INSERT OR IGNORE INTO taxonomy_terms(namespace, term_key, label, version, status)
+     VALUES (?, ?, ?, 'v1', 'active')`,
+  );
+  const findTerm = db.prepare(
+    "SELECT id FROM taxonomy_terms WHERE namespace = ? AND term_key = ? AND version = 'v1'",
+  );
+  const insertMapping = db.prepare(
+    `INSERT OR IGNORE INTO tag_taxonomy_mappings(tag_id, taxonomy_term_id, source, confidence)
+     VALUES (?, ?, 'legacy', 1)`,
+  );
+
+  for (const tag of tags) {
+    const namespace = creatorTaxonomyLegacyCategoryMap[tag.category];
+    if (!namespace) continue;
+    const termKey = legacyTaxonomyTermKey(namespace, tag.label);
+    insertTerm.run(namespace, termKey, tag.label);
+    const term = findTerm.get(namespace, termKey) as { id: number } | undefined;
+    if (term) insertMapping.run(tag.id, term.id);
+  }
 }
 
 /** 设计策划模块种子：24 节气档期 + 9 类标签槽位 + 默认值池 */
@@ -286,6 +332,156 @@ function schema(db: DatabaseSync) {
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY(creator_id, tag_id)
     );
+
+    CREATE TABLE IF NOT EXISTS taxonomy_terms (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      namespace TEXT NOT NULL CHECK(namespace IN ('R', 'I', 'O', 'X', 'P', 'E', 'S')),
+      term_key TEXT NOT NULL,
+      label TEXT NOT NULL,
+      version TEXT NOT NULL DEFAULT 'v1',
+      status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'pending', 'retired')),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(namespace, term_key, version)
+    );
+    CREATE INDEX IF NOT EXISTS taxonomy_terms_lookup_idx ON taxonomy_terms(namespace, version, status, term_key);
+
+    CREATE TABLE IF NOT EXISTS tag_taxonomy_mappings (
+      tag_id INTEGER NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+      taxonomy_term_id INTEGER NOT NULL REFERENCES taxonomy_terms(id) ON DELETE CASCADE,
+      source TEXT NOT NULL DEFAULT 'legacy' CHECK(source IN ('legacy', 'curated', 'ai')),
+      confidence REAL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY(tag_id, taxonomy_term_id, source)
+    );
+    CREATE INDEX IF NOT EXISTS tag_taxonomy_mappings_term_idx ON tag_taxonomy_mappings(taxonomy_term_id, source);
+
+    CREATE TABLE IF NOT EXISTS creator_taxonomy_terms (
+      creator_id INTEGER NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+      taxonomy_term_id INTEGER NOT NULL REFERENCES taxonomy_terms(id) ON DELETE RESTRICT,
+      source TEXT NOT NULL DEFAULT 'discovery'
+        CHECK(source IN ('discovery', 'curated', 'admin', 'import', 'cooperation')),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY(creator_id, taxonomy_term_id, source)
+    );
+    CREATE INDEX IF NOT EXISTS creator_taxonomy_terms_term_idx
+      ON creator_taxonomy_terms(taxonomy_term_id, creator_id, source);
+
+    CREATE TABLE IF NOT EXISTS creator_cooperation_preferences (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      creator_id INTEGER NOT NULL UNIQUE REFERENCES creators(id) ON DELETE CASCADE,
+      adaptation_preferences TEXT NOT NULL DEFAULT '[]',
+      opportunity_interests TEXT NOT NULL DEFAULT '[]',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS creator_cooperation_preferences_updated_idx
+      ON creator_cooperation_preferences(updated_at DESC);
+
+    CREATE TABLE IF NOT EXISTS creator_cooperation_supply_facts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      creator_id INTEGER NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+      namespace TEXT NOT NULL CHECK(namespace IN ('O', 'X')),
+      original_text TEXT NOT NULL,
+      source TEXT NOT NULL DEFAULT 'self' CHECK(source IN ('self')),
+      status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'inactive')),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(creator_id, namespace, original_text)
+    );
+    CREATE INDEX IF NOT EXISTS creator_cooperation_supply_facts_lookup_idx
+      ON creator_cooperation_supply_facts(creator_id, namespace, status, updated_at DESC);
+
+    CREATE TABLE IF NOT EXISTS creator_portraits (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      creator_id INTEGER NOT NULL UNIQUE REFERENCES creators(id) ON DELETE CASCADE,
+      public_id TEXT NOT NULL UNIQUE,
+      guide_number TEXT NOT NULL UNIQUE,
+      status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft', 'claimed')),
+      display_title_override TEXT NOT NULL DEFAULT '',
+      representative_line_override TEXT NOT NULL DEFAULT '',
+      hero_media_key TEXT NOT NULL DEFAULT '',
+      gallery_media_json TEXT NOT NULL DEFAULT '[]',
+      visibility_json TEXT NOT NULL DEFAULT '{}',
+      claimed_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS creator_portraits_status_idx
+      ON creator_portraits(status, updated_at DESC);
+
+    CREATE TABLE IF NOT EXISTS creator_discovery_sessions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      creator_id INTEGER NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+      version TEXT NOT NULL DEFAULT 'v1',
+      status TEXT NOT NULL DEFAULT 'in_progress'
+        CHECK(status IN ('in_progress', 'completed', 'feedback')),
+      current_question_key TEXT NOT NULL DEFAULT 'q1_identity_category',
+      completed_at TEXT,
+      feedback_completed_at TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(creator_id, version)
+    );
+    CREATE INDEX IF NOT EXISTS creator_discovery_sessions_status_idx
+      ON creator_discovery_sessions(creator_id, status, updated_at DESC);
+
+    CREATE TABLE IF NOT EXISTS creator_discovery_answers (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id INTEGER NOT NULL REFERENCES creator_discovery_sessions(id) ON DELETE CASCADE,
+      creator_id INTEGER NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+      question_key TEXT NOT NULL,
+      version TEXT NOT NULL,
+      selection_json TEXT NOT NULL DEFAULT '{}',
+      original_text TEXT NOT NULL DEFAULT '',
+      difference_original TEXT NOT NULL DEFAULT '',
+      memory_line_original TEXT NOT NULL DEFAULT '',
+      memory_line_source TEXT NOT NULL DEFAULT ''
+        CHECK(memory_line_source IN ('', 'self', 'ai', 'rule', 'fact')),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(session_id, question_key)
+    );
+    CREATE INDEX IF NOT EXISTS creator_discovery_answers_creator_idx
+      ON creator_discovery_answers(creator_id, question_key, version);
+
+    CREATE TABLE IF NOT EXISTS creator_discovery_answer_terms (
+      answer_id INTEGER NOT NULL REFERENCES creator_discovery_answers(id) ON DELETE CASCADE,
+      taxonomy_term_id INTEGER NOT NULL REFERENCES taxonomy_terms(id) ON DELETE RESTRICT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY(answer_id, taxonomy_term_id)
+    );
+    CREATE INDEX IF NOT EXISTS creator_discovery_answer_terms_term_idx
+      ON creator_discovery_answer_terms(taxonomy_term_id, answer_id);
+
+    CREATE TABLE IF NOT EXISTS creator_discovery_answer_media (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      answer_id INTEGER NOT NULL REFERENCES creator_discovery_answers(id) ON DELETE CASCADE,
+      media_key TEXT NOT NULL,
+      visibility TEXT NOT NULL DEFAULT 'private'
+        CHECK(visibility IN ('private', 'public')),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(answer_id, media_key)
+    );
+
+    CREATE TABLE IF NOT EXISTS creator_discovery_insights (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      session_id INTEGER NOT NULL REFERENCES creator_discovery_sessions(id) ON DELETE CASCADE,
+      creator_id INTEGER NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+      insight_type TEXT NOT NULL
+        CHECK(insight_type IN ('traits', 'display_title', 'representative_line', 'emotion')),
+      content TEXT NOT NULL,
+      taxonomy_term_id INTEGER REFERENCES taxonomy_terms(id) ON DELETE SET NULL,
+      source TEXT NOT NULL CHECK(source IN ('rule', 'ai', 'self', 'fact')),
+      status TEXT NOT NULL DEFAULT 'candidate'
+        CHECK(status IN ('candidate', 'confirmed', 'rejected')),
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS creator_discovery_insights_lookup_idx
+      ON creator_discovery_insights(session_id, insight_type, status, updated_at DESC);
 
     CREATE TABLE IF NOT EXISTS busy_periods (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -855,6 +1051,17 @@ function schema(db: DatabaseSync) {
     CREATE INDEX IF NOT EXISTS workshop_projects_public_idx ON workshop_projects(status, city, district, sort_order DESC, updated_at DESC);
     CREATE INDEX IF NOT EXISTS workshop_projects_creator_idx ON workshop_projects(creator_id, status, updated_at DESC);
 
+    CREATE TABLE IF NOT EXISTS creator_onsite_contents (
+      creator_id INTEGER NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+      content_label TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (creator_id, content_label)
+    );
+    CREATE INDEX IF NOT EXISTS creator_onsite_contents_order_idx
+      ON creator_onsite_contents(creator_id, sort_order, content_label);
+
     CREATE TABLE IF NOT EXISTS creator_presence (
       creator_id INTEGER PRIMARY KEY REFERENCES creators(id) ON DELETE CASCADE,
       status TEXT NOT NULL DEFAULT 'offline' CHECK(status IN ('online', 'offline')),
@@ -1364,6 +1571,44 @@ function schema(db: DatabaseSync) {
     CREATE INDEX IF NOT EXISTS design_drafts_session_idx ON design_drafts(session_id, version DESC);
   `);
 
+  const portraitColumns = new Set(
+    (db.prepare("PRAGMA table_info(creator_portraits)").all() as Array<{ name: string }>).map(
+      (column) => column.name,
+    ),
+  );
+  if (!portraitColumns.has("gallery_configured"))
+    db.exec("ALTER TABLE creator_portraits ADD COLUMN gallery_configured INTEGER NOT NULL DEFAULT 0");
+
+  const creatorTaxonomyTable = db.prepare(
+    "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'creator_taxonomy_terms'",
+  ).get() as { sql?: string } | undefined;
+  const creatorTaxonomySql = creatorTaxonomyTable?.sql || "";
+  if (
+    !creatorTaxonomySql.includes("'cooperation'")
+    || !creatorTaxonomySql.includes("PRIMARY KEY(creator_id, taxonomy_term_id, source)")
+  ) {
+    db.exec(`
+      CREATE TABLE creator_taxonomy_terms_phase2c (
+        creator_id INTEGER NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+        taxonomy_term_id INTEGER NOT NULL REFERENCES taxonomy_terms(id) ON DELETE RESTRICT,
+        source TEXT NOT NULL DEFAULT 'discovery'
+          CHECK(source IN ('discovery', 'curated', 'admin', 'import', 'cooperation')),
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY(creator_id, taxonomy_term_id, source)
+      );
+      INSERT INTO creator_taxonomy_terms_phase2c(
+        creator_id, taxonomy_term_id, source, created_at, updated_at
+      )
+      SELECT creator_id, taxonomy_term_id, source, created_at, updated_at
+      FROM creator_taxonomy_terms;
+      DROP TABLE creator_taxonomy_terms;
+      ALTER TABLE creator_taxonomy_terms_phase2c RENAME TO creator_taxonomy_terms;
+      CREATE INDEX creator_taxonomy_terms_term_idx
+        ON creator_taxonomy_terms(taxonomy_term_id, creator_id, source);
+    `);
+  }
+
   db.prepare(
     `INSERT OR IGNORE INTO visualization_ai_settings(
       id, prompt_template, min_creator_count, schedule_weekday, schedule_hour, horizon_days,
@@ -1488,6 +1733,23 @@ function schema(db: DatabaseSync) {
     db.exec("ALTER TABLE creators ADD COLUMN activity_limit INTEGER");
   if (!creatorColumns.has("reply_timeout_minutes"))
     db.exec("ALTER TABLE creators ADD COLUMN reply_timeout_minutes INTEGER");
+  const discoveryAnswerColumns = new Set(
+    (db.prepare("PRAGMA table_info(creator_discovery_answers)").all() as Array<{ name: string }>).map(
+      (column) => column.name,
+    ),
+  );
+  if (!discoveryAnswerColumns.has("difference_original"))
+    db.exec("ALTER TABLE creator_discovery_answers ADD COLUMN difference_original TEXT NOT NULL DEFAULT ''");
+  if (!discoveryAnswerColumns.has("memory_line_original"))
+    db.exec("ALTER TABLE creator_discovery_answers ADD COLUMN memory_line_original TEXT NOT NULL DEFAULT ''");
+  db.exec(`
+    UPDATE creator_discovery_answers
+    SET difference_original = original_text
+    WHERE question_key = 'q3_difference' AND difference_original = '';
+    UPDATE creator_discovery_answers
+    SET memory_line_original = original_text
+    WHERE question_key = 'q4_memory' AND memory_line_original = '';
+  `);
   const adminAccountColumns = new Set(
     (db.prepare("PRAGMA table_info(admin_accounts)").all() as Array<{ name: string }>).map(
       (column) => column.name,
@@ -1716,7 +1978,6 @@ function schema(db: DatabaseSync) {
     db.prepare("UPDATE creators SET intro = '' WHERE intro = 'QIDENG_PREVIEW_DEMO'").run();
     db.prepare("UPDATE creator_applications SET intro = '' WHERE intro = 'QIDENG_PREVIEW_DEMO'").run();
     db.prepare("UPDATE kits SET description = TRIM(REPLACE(description, 'QIDENG_PREVIEW_DEMO', '')) WHERE description LIKE '%QIDENG_PREVIEW_DEMO%'").run();
-    db.prepare("DELETE FROM creator_presence").run();
     db.prepare("INSERT OR IGNORE INTO platform_settings(key, value) VALUES ('retired_creator_presence_v1', 'complete')").run();
   }
   const adminSessionColumns = new Set(
@@ -1848,6 +2109,7 @@ function schema(db: DatabaseSync) {
   }
 
   seedCatalog(db);
+  seedCreatorTaxonomy(db);
   seedDesignCatalog(db);
 }
 

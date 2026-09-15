@@ -42,6 +42,165 @@ export type Tag = {
   source?: "creator" | "platform" | "auto";
 };
 
+export type TaxonomyNamespace = "R" | "I" | "O" | "X" | "P" | "E" | "S";
+export type TaxonomyTermStatus = "active" | "pending" | "retired";
+export type TaxonomyMappingSource = "legacy" | "curated" | "ai";
+
+export type TaxonomyTerm = {
+  id: number;
+  namespace: TaxonomyNamespace;
+  termKey: string;
+  label: string;
+  version: string;
+  status: TaxonomyTermStatus;
+};
+
+export type TagTaxonomyMapping = {
+  tagId: number;
+  taxonomyTermId: number;
+  namespace: TaxonomyNamespace;
+  termKey: string;
+  label: string;
+  version: string;
+  termStatus: TaxonomyTermStatus;
+  source: TaxonomyMappingSource;
+  confidence: number | null;
+};
+
+export type DiscoveryQuestionKey =
+  | "q1_identity_category"
+  | "q2_supply_experience"
+  | "q3_difference"
+  | "q4_memory"
+  | "q5_audience"
+  | "q6_style";
+
+export type DiscoverySessionStatus = "in_progress" | "completed" | "feedback";
+export type DiscoveryInsightType = "traits" | "display_title" | "representative_line" | "emotion";
+export type DiscoveryInsightSource = "rule" | "ai" | "self" | "fact";
+export type DiscoveryInsightStatus = "candidate" | "confirmed" | "rejected";
+
+export type DiscoveryAnswer = {
+  id: number;
+  questionKey: DiscoveryQuestionKey;
+  version: string;
+  selections: Record<string, string[]>;
+  originalText: string;
+  memoryLineSource: "" | "self" | "ai" | "rule" | "fact";
+  media: Array<{ key: string; url?: string; visibility: "private" | "public" }>;
+  updatedAt: string;
+};
+
+export type DiscoveryInsight = {
+  id: number;
+  type: DiscoveryInsightType;
+  content: string;
+  taxonomyTermId: number | null;
+  source: DiscoveryInsightSource;
+  status: DiscoveryInsightStatus;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type DiscoverySession = {
+  id: number;
+  creatorId: number;
+  version: string;
+  status: DiscoverySessionStatus;
+  currentQuestionKey: DiscoveryQuestionKey;
+  completedAt: string | null;
+  feedbackCompletedAt: string | null;
+  updatedAt: string;
+};
+
+export type CooperationSupplyNamespace = "O" | "X";
+
+export type CooperationSupplyFact = {
+  id: number;
+  namespace: CooperationSupplyNamespace;
+  originalText: string;
+  source: "self";
+  status: "active";
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CooperationPreferences = {
+  supply: Record<CooperationSupplyNamespace, TaxonomyTerm[]>;
+  supplyOptions: Record<CooperationSupplyNamespace, TaxonomyTerm[]>;
+  supplyFacts: Record<CooperationSupplyNamespace, CooperationSupplyFact[]>;
+  adaptationPreferences: string[];
+  opportunityInterests: string[];
+  updatedAt: string | null;
+};
+
+export type PortraitStatus = "draft" | "claimed";
+
+export type PortraitVisibility = {
+  displayTitle: boolean;
+  representativeLine: boolean;
+  supply: boolean;
+  difference: boolean;
+  memory: boolean;
+  creatorSaid: boolean;
+  tags: boolean;
+  hiddenTagKeys: string[];
+};
+
+export type PortraitTagOption = {
+  key: string;
+  namespace: TaxonomyNamespace;
+  label: string;
+  visible: boolean;
+};
+
+export type PortraitImage = {
+  key: string;
+  label: string;
+  url: string;
+  visible: boolean;
+  isHero: boolean;
+};
+
+export type PortraitPreview = {
+  brandName: string;
+  displayTitle: string;
+  representativeLine: string;
+  heroImageUrl: string;
+  supply: Array<{ namespace: "O" | "X"; label: string; source: "canonical" | "self" }>;
+  difference: string;
+  memory: string;
+  creatorSaid: string[];
+  tags: string[];
+  gallery: string[];
+};
+
+export type PortraitManagement = {
+  portrait: {
+    publicId: string;
+    guideNumber: string;
+    status: PortraitStatus;
+    claimedAt: string | null;
+    publicUrl: string | null;
+    updatedAt: string;
+  };
+  editable: {
+    displayTitleOverride: string;
+    representativeLineOverride: string;
+    heroMediaKey: string;
+    galleryMediaKeys: string[];
+    galleryConfigured: boolean;
+    visibility: PortraitVisibility;
+  };
+  source: {
+    displayTitle: string;
+    representativeLine: string;
+  };
+  preview: PortraitPreview;
+  images: PortraitImage[];
+  tagOptions: PortraitTagOption[];
+};
+
 export type Theme = {
   id: number;
   title: string;
@@ -300,6 +459,16 @@ export type OnboardingState = {
   lightsSubmitted: boolean;
   complete: boolean;
   nextStep: "profile" | "schedule" | "lights" | "complete";
+  phase2A: Phase2AOnboardingState;
+};
+
+export type Phase2AOnboardingState = {
+  startedAt: string | null;
+  basicsCompleted: boolean;
+  imagesCompleted: boolean;
+  scheduleConfirmed: boolean;
+  discoveryCompleted: boolean;
+  nextStep: "basics" | "images" | "schedule" | "complete";
 };
 
 export type HomeShowcaseCard = {

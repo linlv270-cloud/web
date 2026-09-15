@@ -40,7 +40,21 @@ export async function GET(request: NextRequest) {
   );
 
   const result = events.map((e) => ({
-    ...e,
+    id: e.id,
+    reference: e.reference,
+    title: e.title,
+    short_intro: e.short_intro,
+    province: e.province,
+    city: e.city,
+    district: e.district,
+    address: e.address,
+    start_date: e.start_date,
+    end_date: e.end_date,
+    registration_deadline: e.registration_deadline,
+    category_tags: e.category_tags,
+    max_participants: e.max_participants,
+    status: e.status,
+    organizer: e.organizer,
     coverUrl: e.cover_key ? assetUrl(e.cover_key) : "",
     categoryTags: JSON.parse(e.category_tags || "[]"),
     registeredCount: e.registered_count || 0,

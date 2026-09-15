@@ -1,4 +1,10 @@
-import { creatorApplicationTagCategories, offlineExperienceTypes } from "../../../../lib/catalog";
+import {
+  creatorApplicationTagCategories,
+  creatorV1WorkOptions,
+  creatorV1AudienceOptions,
+  creatorV1StyleOptions,
+  offlineExperienceTypes,
+} from "../../../../lib/catalog";
 import { all, one, run, transaction } from "../../../../lib/database";
 import { apiError } from "../../../../lib/http";
 import { getCreatorApplication, miniPrincipalFromRequest, submitCreatorApplicationSnapshot } from "../../../../lib/mini-auth";
@@ -7,6 +13,8 @@ import {
   getCreator,
   getPlatformSettings,
   removeTag,
+  refreshScheduleConfirmation,
+  replaceManualBusyPeriods,
   updateManagedCreatorDetails,
   updateCreatorImages,
   updateProfile,
@@ -15,6 +23,11 @@ import { assetUrl, getObject } from "../../../../lib/storage";
 import { ensureReviewThread, addCreatorReviewSubmission } from "../../../../lib/review-workflow";
 import { creatorSectionUpdates, legalConsentsForCreator, markCreatorSection } from "../../../../lib/legal";
 import { isValidLocation } from "../../../../lib/locations";
+import {
+  getCooperationPreferences,
+  opportunityInterestOptions,
+  saveCooperationPreferences,
+} from "../../../../lib/cooperation";
 
 function requireCreator(request: Request) {
   const principal = miniPrincipalFromRequest(request);
@@ -37,6 +50,20 @@ function parseStringList(value: string | null | undefined) {
   } catch {
     return [];
   }
+}
+
+function normalizeSignalList(value: unknown, options: readonly string[], label: string) {
+  if (!Array.isArray(value)) return [];
+  const values = [...new Set(value.map((item) => String(item).trim()).filter(Boolean))];
+  if (values.some((item) => !options.includes(item))) throw new Error(`${label}选项已失效，请刷新后重试`);
+  return values;
+}
+
+function normalizeCustomSignalList(value: unknown, label: string) {
+  if (!Array.isArray(value)) return [];
+  const values = [...new Set(value.map((item) => String(item).trim()).filter(Boolean))];
+  if (values.some((item) => Array.from(item).length > 7)) throw new Error(`${label}自定义内容最多7个字`);
+  return values;
 }
 
 function normalizeAction(action: string, data: Record<string, unknown>) {
@@ -80,8 +107,8 @@ export async function GET(request: Request) {
     excluded_audience_tags: string;
     updated_at: string;
   }>("SELECT unavailable_dates, weekly_off, excluded_venue_tags, footfall_threshold, excluded_audience_tags, updated_at FROM creator_preferences WHERE creator_id = ?", creatorId);
-  const busyPeriods = all<{ id: number; start_date: string; end_date: string; note: string }>(
-    "SELECT id, start_date, end_date, note FROM busy_periods WHERE creator_id = ? ORDER BY start_date",
+  const busyPeriods = all<{ id: number; start_date: string; end_date: string; note: string; source: string; source_id: number | null }>(
+    "SELECT id, start_date, end_date, note, source, source_id FROM busy_periods WHERE creator_id = ? ORDER BY start_date, end_date, id",
     creatorId,
   );
   const inbox = all<{ id: number; subject: string; body: string; href: string; read_at: string | null; created_at: string }>(
@@ -93,6 +120,7 @@ export async function GET(request: Request) {
   );
   const settings = getPlatformSettings();
   const inviteSharingText = settings.inviteSharing.description.replace(/奇灯/g, "TDE");
+  const cooperationPreferences = getCooperationPreferences(creatorId);
 
   return Response.json(
     {
@@ -123,6 +151,8 @@ export async function GET(request: Request) {
             historyImageKey: creator.historyImageKey,
             historyImageUrl: creator.historyImageKey ? assetUrl(creator.historyImageKey) : "",
             noBookings: creator.noBookings,
+            scheduleConfirmedAt: creator.scheduleConfirmedAt,
+            onboarding: creator.onboarding,
             opportunityTypes: creator.opportunityTypes,
             precisionInviteGoals: creator.precisionInviteGoals,
             precisionInviteScenes: creator.precisionInviteScenes,
@@ -163,7 +193,14 @@ export async function GET(request: Request) {
             submittedAt: application.submittedAt,
           }
         : null,
-      busyPeriods: busyPeriods.map((p) => ({ id: p.id, startDate: p.start_date, endDate: p.end_date, note: p.note })),
+      busyPeriods: busyPeriods.map((p) => ({
+        id: p.id,
+        startDate: p.start_date,
+        endDate: p.end_date,
+        note: p.note,
+        source: p.source,
+        sourceId: p.source_id,
+      })),
       preferences: preference
         ? {
             unavailableDates: parseStringList(preference.unavailable_dates),
@@ -175,6 +212,13 @@ export async function GET(request: Request) {
             updatedAt: preference.updated_at,
           }
         : { unavailableDates: [], weeklyOff: [], excludedVenueTags: [], footfallThreshold: 0, excludedAudienceTags: [], saved: false, updatedAt: null },
+      cooperationPreferences,
+      profileSignals: {
+        work: creator?.tags.filter((tag) => tag.category === "我的作品").map((tag) => tag.label) || [],
+        style: creator?.tags.filter((tag) => tag.category === "我的风格").map((tag) => tag.label) || [],
+        audience: creator?.tags.filter((tag) => tag.category === "我的客群").map((tag) => tag.label) || [],
+        inviteTypes: cooperationPreferences.opportunityInterests,
+      },
       inbox,
       unreadCount,
       sectionUpdatedAt: creatorSectionUpdates(creatorId),
@@ -250,6 +294,99 @@ export async function POST(request: Request) {
       });
       markCreatorSection(creatorId, "tags");
       return Response.json({ success: true, creator: getCreator(creatorId) });
+    }
+
+    if (action === "updateCooperationPreferences") {
+      const cooperationPreferences = saveCooperationPreferences({
+        creatorId,
+        supply: data.supply,
+        supplyFacts: data.supplyFacts,
+        adaptationPreferences: data.adaptationPreferences,
+        opportunityInterests: data.opportunityInterests,
+      });
+      markCreatorSection(creatorId, "brand");
+      return Response.json({ success: true, cooperationPreferences });
+    }
+
+    if (action === "updateProfileSignals") {
+      const work = normalizeSignalList(data.work, creatorV1WorkOptions, "创作品类");
+      const style = normalizeSignalList(data.style, creatorV1StyleOptions, "品牌风格");
+      const audience = normalizeSignalList(data.audience, creatorV1AudienceOptions, "适合人群");
+      const inviteTypes = normalizeSignalList(data.inviteTypes, opportunityInterestOptions, "邀约类型");
+      const customStyle = normalizeCustomSignalList(data.styleCustom, "品牌风格");
+      const customAudience = normalizeCustomSignalList(data.audienceCustom, "适合人群");
+      const selectedLabels = new Set([...work, ...style, ...audience]);
+      if (style.length + customStyle.length > 8) throw new Error("品牌风格最多选择8项");
+      if (audience.length + customAudience.length > 8) throw new Error("适合人群最多选择8项");
+      if (customStyle.some((item) => creatorV1StyleOptions.includes(item as (typeof creatorV1StyleOptions)[number]))) throw new Error("品牌风格自定义内容已存在");
+      if (customAudience.some((item) => creatorV1AudienceOptions.includes(item as (typeof creatorV1AudienceOptions)[number]))) throw new Error("适合人群自定义内容已存在");
+      for (const label of creatorV1WorkOptions)
+        run("INSERT OR IGNORE INTO tags(label, category, status) VALUES (?, '我的作品', 'active')", label);
+      for (const label of creatorV1StyleOptions)
+        run("INSERT OR IGNORE INTO tags(label, category, status) VALUES (?, '我的风格', 'active')", label);
+      for (const label of creatorV1AudienceOptions)
+        run("INSERT OR IGNORE INTO tags(label, category, status) VALUES (?, '我的客群', 'active')", label);
+      const selectedTags = selectedLabels.size
+        ? all<{ id: number; label: string; category: string }>(
+            `SELECT id, label, category
+             FROM tags
+             WHERE status = 'active' AND category IN ('我的作品', '我的风格', '我的客群')
+               AND label IN (${[...selectedLabels].map(() => "?").join(",")})`,
+            ...selectedLabels,
+          )
+        : [];
+      if (selectedTags.length !== selectedLabels.size) throw new Error("画像选项已失效，请刷新后重试");
+      transaction(() => {
+        for (const [category, options] of [["我的作品", creatorV1WorkOptions], ["我的风格", creatorV1StyleOptions], ["我的客群", creatorV1AudienceOptions] ] as const) {
+          run(
+            `DELETE FROM creator_tags
+             WHERE creator_id = ?
+               AND tag_id IN (
+                 SELECT id FROM tags WHERE category = ? AND label IN (${options.map(() => "?").join(",")})
+               )`,
+            creatorId,
+            category,
+            ...options,
+          );
+        }
+        run(
+          `DELETE FROM creator_tags
+           WHERE creator_id = ?
+             AND tag_id IN (
+               SELECT id FROM tags
+               WHERE category IN ('我的风格', '我的客群')
+                 AND label NOT IN (${[...creatorV1StyleOptions, ...creatorV1AudienceOptions].map(() => "?").join(",")})
+             )`,
+          creatorId,
+          ...creatorV1StyleOptions,
+          ...creatorV1AudienceOptions,
+        );
+        for (const tag of selectedTags)
+          run("INSERT OR IGNORE INTO creator_tags(creator_id, tag_id, source) VALUES (?, ?, 'creator')", creatorId, tag.id);
+      });
+      for (const label of customStyle) claimTag(creatorId, { category: "我的风格", customLabel: label });
+      for (const label of customAudience) claimTag(creatorId, { category: "我的客群", customLabel: label });
+      const existingCooperation = getCooperationPreferences(creatorId);
+      const cooperationPreferences = saveCooperationPreferences({
+        creatorId,
+        supply: {
+          O: existingCooperation.supply.O.map((item) => item.termKey),
+          X: existingCooperation.supply.X.map((item) => item.termKey),
+        },
+        supplyFacts: {
+          O: existingCooperation.supplyFacts.O.map((item) => item.originalText),
+          X: existingCooperation.supplyFacts.X.map((item) => item.originalText),
+        },
+        adaptationPreferences: existingCooperation.adaptationPreferences,
+        opportunityInterests: inviteTypes,
+      });
+      markCreatorSection(creatorId, "tags");
+      return Response.json({
+        success: true,
+        profileSignals: { work, style: [...style, ...customStyle], audience: [...audience, ...customAudience], inviteTypes },
+        cooperationPreferences,
+        creator: getCreator(creatorId),
+      });
     }
 
     if (action === "updateTags") {
@@ -360,20 +497,13 @@ export async function POST(request: Request) {
 
     if (action === "updateSchedule") {
       const noBookings = data.noBookings === true;
-      const busyPeriods = Array.isArray(data.busyPeriods) ? data.busyPeriods : [];
-      if (noBookings && busyPeriods.length) throw new Error("不能同时选择");
-      transaction(() => {
-        run("DELETE FROM busy_periods WHERE creator_id = ?", creatorId);
-        if (!noBookings) {
-          for (const p of busyPeriods) {
-            run(
-              "INSERT INTO busy_periods(creator_id, start_date, end_date, note) VALUES (?, ?, ?, ?)",
-              creatorId, String(p.startDate), String(p.endDate || p.startDate), String(p.note || "已有活动").slice(0, 20),
-            );
-          }
-        }
-        run("UPDATE creators SET no_bookings = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", noBookings ? 1 : 0, creatorId);
-      });
+      replaceManualBusyPeriods(creatorId, data.busyPeriods, noBookings);
+      markCreatorSection(creatorId, "schedule");
+      return Response.json({ success: true });
+    }
+
+    if (action === "refreshScheduleConfirmation") {
+      refreshScheduleConfirmation(creatorId);
       markCreatorSection(creatorId, "schedule");
       return Response.json({ success: true });
     }

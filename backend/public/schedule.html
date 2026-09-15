@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#FFE600">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="TDE 主理人">
+<title>TheDesignExpo — 主理人档期</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="pwa-icon-180.png">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC",system-ui,sans-serif;
+  background:#F7F5F0;color:#222;line-height:1.6;overflow-x:hidden;
+}
+img{max-width:100%;display:block;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+ul{list-style:none;}
+
+:root{
+  --yellow:#FFE600;--yellow-light:#FFF3B0;--yellow-deep:#F5D000;
+  --pink:#FFCDD2;--blue:#283593;--red:#E53935;
+  --green-1:#DCE775;--green-2:#A5D6A7;--purple:#7B1FA2;
+  --orange:#FB8C00;--teal:#00897B;--pink-btn:#C2185B;--brown:#6D4C41;
+  --text:#222;--text-light:#666;--border:#e8e5de;--bg:#F7F5F0;--card-bg:#fff;
+}
+
+/* ===== Top Bar ===== */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:60px;background:#fff;z-index:900;
+  display:flex;align-items:center;justify-content:center;
+  border-bottom:3px solid var(--yellow);box-shadow:0 2px 8px rgba(0,0,0,0.05);
+}
+.topbar-inner{
+  width:100%;max-width:1200px;display:flex;align-items:center;
+  position:relative;padding:0 20px;
+}
+.topbar-logo{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.topbar-logo .badge{
+  width:40px;height:40px;border-radius:50%;background:var(--yellow);
+  border:2.5px solid var(--text);display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:13px;color:var(--text);flex-shrink:0;
+}
+.topbar-logo .logo-text{display:flex;flex-direction:column;line-height:1.1;}
+.topbar-logo .logo-sub{font-size:8px;font-weight:700;letter-spacing:0.2em;color:var(--text-light);}
+.topbar-logo .logo-main{font-size:18px;font-weight:900;letter-spacing:-0.02em;color:var(--text);}
+.topbar-right{
+  position:absolute;right:16px;display:flex;align-items:center;gap:12px;
+}
+.topbar-actions{display:flex;align-items:center;gap:10px;}
+.topbar-apply-btn{
+  background:var(--yellow);color:var(--text);border:2px solid var(--text);
+  padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;transition:all .2s;
+}
+.topbar-apply-btn:hover{background:var(--yellow-deep);transform:translateY(-1px);}
+.topbar-login-btn{
+  background:#fff;color:var(--text);border:2px solid var(--text);
+  padding:7px 16px;border-radius:20px;font-size:12px;font-weight:700;transition:all .2s;
+}
+.topbar-login-btn:hover{background:var(--yellow-light);}
+.topbar-user{display:none;align-items:center;gap:8px;cursor:pointer;}
+.topbar-avatar{
+  width:36px;height:36px;border-radius:50%;background:var(--pink);
+  border:2px solid var(--text);display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:14px;color:var(--text);overflow:hidden;
+}
+
+/* ===== Page ===== */
+.page{max-width:1080px;margin:0 auto;padding:90px 20px 70px;}
+
+.page-header{margin-bottom:8px;}
+.page-title{
+  font-size:32px;font-weight:900;letter-spacing:-0.02em;display:flex;align-items:baseline;gap:12px;
+}
+.page-title .em{color:var(--red);}
+.page-sub{font-size:13px;color:var(--text-light);margin-top:4px;}
+.lede{
+  color:var(--text-light);font-size:14px;margin:14px 0 6px;max-width:640px;line-height:1.8;
+}
+.lede b{font-weight:700;color:var(--text);}
+.divider{border:none;border-top:2px dashed var(--border);margin:16px 0 24px;}
+
+/* ===== Grid ===== */
+.grid{display:grid;grid-template-columns:minmax(0,680px);justify-content:center;gap:22px;align-items:start;}
+.card{
+  background:var(--card-bg);border:2px solid var(--text);border-radius:16px;
+  padding:22px 24px 20px;box-shadow:4px 4px 0 var(--text);
+}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
+.card-num{
+  font-weight:900;font-size:15px;color:#fff;background:var(--text);
+  border-radius:50%;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;flex:none;
+}
+.card-title{font-weight:900;font-size:19px;}
+.card-sub{font-size:13px;color:var(--text-light);margin-bottom:16px;line-height:1.7;}
+.card-sub b{font-weight:700;color:var(--text);}
+
+/* ===== Calendar ===== */
+.cal-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+.cal-month{font-weight:900;font-size:16px;min-width:104px;}
+.cal-nav{display:flex;gap:6px;margin-left:auto;}
+.cal-nav button{
+  width:28px;height:28px;border:2px solid var(--text);border-radius:8px;background:var(--card-bg);
+  color:var(--text);font-size:14px;font-weight:700;cursor:pointer;line-height:1;transition:all .2s;
+}
+.cal-nav button:hover{background:var(--yellow);}
+.cal-nav button:disabled{opacity:.3;cursor:default;}
+.week-row{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;color:var(--text-light);margin-bottom:6px;font-weight:700;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+.day{
+  position:relative;text-align:center;padding:10px 0 8px;font-size:13.5px;border-radius:10px;
+  border:2px solid var(--border);background:var(--card-bg);color:var(--text);
+  cursor:pointer;user-select:none;transition:transform .15s,background .2s,color .2s;font-weight:600;
+}
+.day:hover{transform:scale(1.08);}
+.day.off{
+  background:var(--border);border-color:var(--border);color:var(--text-light);
+  text-decoration:line-through;text-decoration-thickness:2px;
+}
+.day.off:hover{transform:scale(1.08);}
+.day.past{opacity:.35;cursor:default;color:var(--text-light);background:transparent;border-color:transparent;}
+.day.past:hover{transform:none;}
+.day.today::after{
+  content:'今';position:absolute;top:-6px;right:-4px;font-size:9px;
+  background:var(--red);color:#fff;border-radius:50%;width:16px;height:16px;line-height:16px;font-weight:700;
+}
+.day.selected{
+  background:var(--yellow);border-color:var(--text);color:var(--text);
+}
+.cal-tip{
+  display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;padding-top:12px;
+  border-top:1px dashed var(--border);font-size:11.5px;color:var(--text-light);
+}
+.cal-tip span{display:flex;align-items:center;gap:5px;}
+.sw{width:13px;height:13px;border-radius:4px;display:inline-block;border:2px solid var(--border);}
+.sw.on{background:var(--card-bg);border-color:var(--text);}
+.sw.off{background:var(--border);border-color:var(--border);}
+
+/* Weekly */
+.weekly{margin-top:14px;padding-top:12px;border-top:1px dashed var(--border);}
+.weekly-label{font-size:11px;color:var(--text-light);letter-spacing:1px;margin-bottom:8px;font-weight:700;}
+.weekly-row{display:flex;gap:6px;flex-wrap:wrap;}
+.wk{
+  font-size:12px;padding:4px 12px;border-radius:999px;cursor:pointer;user-select:none;
+  background:var(--green-1);color:var(--text);font-weight:600;transition:all .2s;border:2px solid transparent;
+}
+.wk:hover{transform:scale(1.06);}
+.wk.on{background:var(--border);color:var(--text-light);text-decoration:line-through;border-color:var(--border);}
+
+/* ===== Chips ===== */
+.group{margin-bottom:18px;}
+.group-label{font-size:11px;color:var(--text-light);letter-spacing:2px;margin-bottom:8px;font-weight:700;}
+.group-label .hint{letter-spacing:0;color:var(--text-light);font-size:11px;margin-left:6px;font-weight:400;}
+.chips{display:flex;flex-wrap:wrap;gap:7px 9px;}
+.chip{
+  display:inline-block;font-size:12.5px;padding:5px 14px;border-radius:999px;cursor:pointer;
+  user-select:none;transition:all .2s;font-weight:600;border:2px solid transparent;
+}
+.chip:hover{transform:scale(1.06);}
+.chip.off{
+  background:var(--border)!important;color:var(--text-light)!important;
+  text-decoration:line-through;text-decoration-thickness:2px;border-color:var(--border)!important;
+}
+.chip .cost{font-size:10.5px;opacity:0;margin-left:5px;transition:opacity .2s;font-weight:700;}
+.chip.off .cost{opacity:.85;}
+.foot-note{font-size:11.5px;color:var(--text-light);margin-top:8px;line-height:1.8;}
+.foot-note b{color:var(--text-light);font-weight:600;}
+
+/* ===== Uploads ===== */
+.uploads{display:flex;gap:10px;flex-wrap:wrap;}
+.up{
+  width:80px;height:80px;border-radius:12px;position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-light);
+  border:2px solid var(--border);background:var(--bg);
+}
+.up img{width:100%;height:100%;object-fit:cover;}
+.up.add{
+  border:2px dashed var(--text-light);background:transparent;cursor:pointer;color:var(--text-light);
+  font-size:24px;font-weight:300;transition:all .2s;
+}
+.up.add:hover{border-color:var(--text);color:var(--text);background:var(--yellow-light);}
+.upload-hint{font-size:12px;color:var(--text-light);margin-top:10px;}
+.upload-hint a{color:var(--blue);text-decoration:underline;font-weight:600;}
+.register-field{display:block;text-align:left;margin-bottom:12px}
+.register-field>span:first-child{display:block;font-size:13px;font-weight:800;margin-bottom:6px}
+.register-field .auth-input{margin-bottom:0;min-height:48px;font-size:16px}
+.register-help{display:block;margin-top:5px;color:var(--text-light);font-size:12px;line-height:1.55}
+.register-error{display:none}
+.register-validation-summary{display:none;margin:4px 0 12px;color:var(--text);font-size:12px;font-weight:700;line-height:1.6}
+.register-validation-summary.show{display:block}
+.register-field.invalid .auth-input,.register-field.invalid select{border-color:var(--text);box-shadow:0 0 0 1px var(--text)}
+.register-agreement.invalid{outline:2px solid var(--text);outline-offset:4px}
+.password-wrap{position:relative}
+.password-wrap .auth-input{padding-right:50px}
+.password-toggle{position:absolute;right:5px;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:6px;font-size:20px;color:var(--text);font-weight:900}
+.password-toggle:focus-visible{outline:3px solid rgba(40,53,147,.22)}
+.register-location{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 12px}
+.register-location .register-field{margin-bottom:0}
+.register-location select{width:100%;min-height:52px;padding:10px 8px;border:2px solid var(--text);border-radius:8px;background:#fff;font-family:inherit;font-size:16px}
+.register-location select:disabled{background:#f2f2f2;color:#999}
+.register-agreement{display:flex;align-items:flex-start;gap:7px;font-size:12px;line-height:1.6;margin:8px 0 14px;color:var(--text-light)}
+.register-agreement input{margin-top:4px;accent-color:var(--blue)}
+.register-agreement a{color:var(--blue);text-decoration:underline;font-weight:700}
+@media(max-width:480px){.register-location{grid-template-columns:1fr;gap:12px}.login-modal{max-height:calc(100vh - 32px);overflow-y:auto;padding:22px 18px}.register-field .auth-input{min-height:52px}.register-agreement{font-size:13px}}
+
+/* ===== Save Bar ===== */
+.save-bar{
+  margin-top:22px;background:var(--card-bg);border:2px solid var(--text);
+  border-radius:16px;padding:20px 24px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  box-shadow:4px 4px 0 var(--text);
+}
+.save-stat{font-size:13px;color:var(--text-light);line-height:1.9;}
+.save-stat b{font-weight:900;font-size:18px;color:var(--text);padding:0 2px;}
+.save-btn{
+  margin-left:auto;border:2px solid var(--text);background:var(--yellow);color:var(--text);
+  border-radius:999px;padding:12px 32px;font-size:15px;font-weight:900;cursor:pointer;
+  transition:all .2s;
+}
+.save-btn:hover{transform:translateY(-2px);box-shadow:0 4px 0 var(--text);background:var(--yellow-deep);}
+.save-btn:active{transform:translateY(0);box-shadow:none;}
+.save-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
+.privacy{
+  margin-top:12px;font-size:11.5px;color:var(--text-light);line-height:1.9;
+  display:flex;gap:8px;align-items:flex-start;
+}
+.privacy .lock{
+  flex:none;width:15px;height:15px;border-radius:3px;border:2px solid var(--text-light);margin-top:4px;position:relative;
+}
+.privacy .lock::before{
+  content:'';position:absolute;left:3px;top:-5px;width:7px;height:6px;
+  border:2px solid var(--text-light);border-bottom:none;border-radius:4px 4px 0 0;
+}
+
+/* ===== Ticket ===== */
+.ticket{
+  margin-top:22px;background:var(--card-bg);border:2px dashed var(--text);border-radius:22px;
+  padding:28px 32px 24px;position:relative;display:none;animation:slidein .35s ease;
+}
+.ticket.show{display:block;}
+@keyframes slidein{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:none;}}
+.ticket h3{font-weight:900;font-size:22px;margin-bottom:4px;}
+.ticket .sub{font-size:13px;color:var(--text-light);margin-bottom:18px;}
+.tstats{display:flex;gap:28px;flex-wrap:wrap;margin-bottom:18px;}
+.tstat .n{font-weight:900;font-size:30px;line-height:1.1;color:var(--red);}
+.tstat .l{font-size:11.5px;color:var(--text-light);letter-spacing:1px;font-weight:700;}
+.ticket .note{font-size:12.5px;color:var(--text-light);line-height:1.9;padding-top:14px;border-top:1px dashed var(--border);}
+.ticket .note b{color:var(--text);font-weight:700;}
+
+/* ===== Toast ===== */
+.toast{
+  position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);
+  background:var(--text);color:#fff;padding:10px 22px;border-radius:999px;
+  font-size:13.5px;opacity:0;pointer-events:none;transition:all .35s;z-index:999;max-width:86vw;text-align:center;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ===== Login Modal ===== */
+.login-modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+.login-modal-overlay.show{display:flex;}
+.login-modal{
+  background:#fff;border:3px solid var(--text);border-radius:20px;padding:32px;
+  max-width:380px;width:100%;text-align:center;box-shadow:8px 8px 0 var(--text);
+}
+.login-modal h3{font-size:22px;font-weight:900;margin-bottom:8px;}
+.login-modal p{font-size:14px;color:var(--text-light);margin-bottom:20px;line-height:1.7;}
+.login-modal .btn-row{display:flex;gap:10px;justify-content:center;}
+.login-modal .btn{
+  padding:10px 24px;border-radius:999px;font-size:14px;font-weight:700;cursor:pointer;
+  border:2px solid var(--text);transition:all .2s;
+}
+.login-modal .btn-primary{background:var(--yellow);color:var(--text);}
+.login-modal .btn-primary:hover{background:var(--yellow-deep);}
+.login-modal .btn-secondary{background:#fff;color:var(--text);}
+.login-modal .btn-secondary:hover{background:var(--yellow-light);}
+.auth-input{display:block;width:100%;padding:12px 14px;margin-bottom:10px;border:2px solid var(--text);border-radius:8px;font:inherit;outline:none;background:#fff}
+.auth-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(40,53,147,.1)}
+
+/* ===== Responsive ===== */
+@media(max-width:860px){
+  .grid{grid-template-columns:1fr;}
+  .page{padding:80px 14px 50px;}
+  .card{padding:18px 16px 16px;}
+  .day{padding:8px 0 6px;font-size:12.5px;}
+  .ticket{padding:22px 18px 20px;border-radius:18px;}
+  .save-btn{margin-left:0;width:100%;}
+  .page-title{font-size:22px;}
+  .topbar-right{gap:8px;}
+  .lang-btn-top{padding:4px 10px;font-size:11px;}
+  .topbar-apply-btn,.topbar-login-btn{padding:6px 12px;font-size:11px;}
+  .topbar-logo .logo-main{font-size:15px;}
+  .topbar-logo .logo-sub{font-size:7px;}
+  .topbar-logo .badge{width:34px;height:34px;font-size:11px;}
+  .lede{font-size:13px;}
+  .card-title{font-size:17px;}
+  .up{width:64px;height:64px;}
+}
+body.embed .topbar,body.embed .page-header,body.embed .lede,body.embed .divider,body.embed .privacy,body.embed .ticket,body.embed .weekly,body.embed #tagGroups{display:none}
+body.embed .page{padding:4px;max-width:720px}
+body.embed .card{box-shadow:none}
+body.embed.a13-embed .card-head,body.embed.a13-embed .cal-tip{display:none}
+.embedded-schedule-actions{display:none}
+body.embed .embedded-schedule-actions{display:block;margin-top:14px;padding-top:14px;border-top:1px dashed var(--border)}
+body.embed.a13-embed .embedded-schedule-actions{display:none}
+.embedded-schedule-actions button{border:2px solid var(--text);background:#fff;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:800}
+.embedded-schedule-actions button.selected{background:var(--yellow)}
+.embedded-schedule-actions p{margin-top:7px;color:var(--text-light);font-size:12px;line-height:1.7}
+.day.platform-busy{background:#BBDEFB;border-color:#283593;color:#283593}
+.day.platform-busy:hover{transform:none;cursor:not-allowed}
+</style>
+<style>
+.install-app-btn[hidden]{display:none}
+.install-app-btn{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:6px 12px;border:2px solid var(--text);border-radius:18px;background:var(--yellow);color:var(--text);font-size:12px;font-weight:800;white-space:nowrap}
+.install-app-btn:hover{background:var(--yellow-deep)}
+@media(max-width:860px){.install-app-btn{min-height:32px;padding:5px 9px;font-size:11px}}
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-logo" onclick="location.href='index.html'">
+      <div class="badge">TDE</div>
+      <div class="logo-text">
+        <span class="logo-main">TheDesignExpo</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-actions">
+        <button class="install-app-btn" data-install-app hidden type="button">添加到桌面</button>
+        <a href="welcome.html" class="topbar-login-btn" id="topbarLoginBtn" style="display:none">登录 / 注册</a>
+        <div class="topbar-user" id="topbarUser" style="display:none" onclick="location.href='profile.html'">
+          <div class="topbar-avatar" id="topbarAvatar">创</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+<script>(()=>{try{const c=JSON.parse(localStorage.getItem('tde_creator')||'null'),a=document.getElementById('topbarAvatar');if(a&&c?.brandName)a.textContent=c.brandName.charAt(0)}catch(e){}})();</script>
+<script src="pwa-install.js" defer></script>
+
+<div class="page">
+
+  <div class="page-header">
+    <div class="page-title">TDE·<span class="em">主理人</span>档期</div>
+  </div>
+
+  <div class="grid">
+
+    <!-- 左：档期 -->
+    <section class="card">
+      <div class="card-head">
+        <div class="card-title">选择已经有活动档期，降低打扰。</div>
+      </div>
+
+      <div class="cal-head">
+        <div class="cal-month" id="calMonth"></div>
+        <div class="cal-nav">
+          <button id="prevBtn" title="上一月">‹</button>
+          <button id="nextBtn" title="下一月">›</button>
+        </div>
+      </div>
+      <div class="week-row"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+      <div class="cal-grid" id="calGrid"></div>
+
+      <div class="cal-tip">
+        <span><i class="sw on"></i>可约</span>
+        <span><i class="sw off"></i>不可约</span>
+        <span>未来 60 天：<b id="freeCount">—</b> 天可约 · <b id="offCount">—</b> 天已占</span>
+      </div>
+
+      <div class="weekly">
+        <div class="weekly-label">每 周 固 定 不 可 约（点一下整周生效）</div>
+        <div class="weekly-row" id="weeklyRow"></div>
+      </div>
+      <div class="embedded-schedule-actions" id="embeddedScheduleActions">
+        <button id="noBookingsBtn" type="button">目前没有已占用档期</button>
+        <p id="embeddedScheduleHint">只维护你自己已经有安排的日期。</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- 保存 -->
+  <div class="save-bar">
+    <div class="save-stat" id="saveStat"></div>
+    <button class="save-btn" id="saveBtn">保存</button>
+  </div>
+  <div class="ticket" id="ticket">
+    <h3>已生效 · 你的档期</h3>
+    <div class="sub">系统会按下面这份条件为你筛选邀约，随时可以回来改</div>
+    <div class="tstats" id="tstats"></div>
+    <div class="note" id="tnote"></div>
+  </div>
+
+</div>
+
+<!-- Login Modal -->
+<div class="login-modal-overlay" id="loginModal">
+  <div class="login-modal" onclick="event.stopPropagation()">
+    <div style="display:flex;gap:8px;margin-bottom:18px">
+      <button class="btn btn-primary" id="authLoginTab" onclick="switchAuthMode('login')">登录</button>
+      <button class="btn btn-secondary" id="authRegisterTab" onclick="switchAuthMode('register')">注册</button>
+    </div>
+    <h3 id="authTitle">登录 TDE</h3>
+    <p id="authHint">登录后即可保存档期。</p>
+    <div id="authLoginForm">
+      <input id="authLoginPhone" class="auth-input" type="tel" maxlength="11" placeholder="手机号">
+      <input id="authLoginPassword" class="auth-input" type="password" placeholder="密码">
+      <button class="btn btn-primary" style="width:100%" onclick="submitAuth('login')">登录并继续</button>
+    </div>
+    <div id="authRegisterForm" style="display:none">
+      <label class="register-field" id="fieldInvite"><span>填写邀请码</span><input id="authRegisterInviteCode" class="auth-input" type="text" maxlength="8" placeholder="4-8位字母或数字" autocomplete="off" style="text-transform:uppercase"><small class="register-help" id="registerInviteHelp">联系TDE微信客服：aaabht获取邀请码</small><small class="register-error" id="errorInvite"></small></label>
+      <label class="register-field" id="fieldPhone"><span>填写手机号</span><input id="authRegisterPhone" class="auth-input" type="tel" inputmode="numeric" maxlength="11" placeholder="11位手机号" autocomplete="tel"><small class="register-error" id="errorPhone"></small></label>
+      <label class="register-field" id="fieldConfirmPhone"><span>再次确认手机号</span><input id="authRegisterConfirmPhone" class="auth-input" type="tel" inputmode="numeric" maxlength="11" placeholder="请再次填写手机号" autocomplete="tel"><small class="register-error" id="errorConfirmPhone"></small></label>
+      <label class="register-field" id="fieldPassword"><span>设置密码</span><div class="password-wrap"><input id="authRegisterPassword" class="auth-input" type="password" placeholder="8-72位字符" autocomplete="new-password"><button class="password-toggle" type="button" title="显示或隐藏密码" aria-label="显示密码" onclick="togglePassword('authRegisterPassword',this)">◎</button></div><small class="register-error" id="errorPassword"></small></label>
+      <label class="register-field" id="fieldConfirmPassword"><span>再次确认密码</span><div class="password-wrap"><input id="authRegisterConfirmPassword" class="auth-input" type="password" placeholder="请再次填写密码" autocomplete="new-password"><button class="password-toggle" type="button" title="显示或隐藏密码" aria-label="显示密码" onclick="togglePassword('authRegisterConfirmPassword',this)">◎</button></div><small class="register-error" id="errorConfirmPassword"></small></label>
+      <div class="register-location">
+        <label class="register-field" id="fieldProvince"><span>选择所在省</span><select id="authRegisterProvince"><option value="">请选择省</option></select><small class="register-error" id="errorProvince"></small></label>
+        <label class="register-field" id="fieldCity"><span>选择所在市</span><select id="authRegisterCity" disabled><option value="">请选择市</option></select><small class="register-error" id="errorCity"></small></label>
+        <label class="register-field" id="fieldDistrict"><span>选择所在区/县</span><select id="authRegisterDistrict" disabled><option value="">请选择区/县</option></select><small class="register-error" id="errorDistrict"></small></label>
+      </div>
+      <label class="register-agreement"><input id="authRegisterAgreed" type="checkbox"><span>我已阅读并同意 <a href="terms.html" target="_blank">《用户协议》</a> 和 <a href="privacy.html" target="_blank">《隐私政策》</a></span></label>
+      <small class="register-error" id="errorAgreed"></small>
+      <p class="register-validation-summary" id="registerValidationSummary" role="status" aria-live="polite"></p>
+      <button class="btn btn-primary" id="authRegisterSubmit" style="width:100%" onclick="submitAuth('register')">注册并继续</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = id => document.getElementById(id);
+async function responseJson(res){try{return await res.json()}catch{return{}}}
+const SCHEDULE_PARAMS = new URLSearchParams(location.search);
+const IS_EMBEDDED = SCHEDULE_PARAMS.get('embed') === 'schedule';
+const IS_A13 = SCHEDULE_PARAMS.get('a13') === '1';
+if(IS_EMBEDDED) document.body.classList.add('embed');
+if(IS_A13) document.body.classList.add('a13-embed');
+
+/* ===== State ===== */
+let isLoggedIn = false;
+let venueTagsConfig = { venue: [], footfall: [], audience: [] };
+const state = {
+  unavailableDates: {},   // { '2026-9-12': true }
+  weeklyOff: {},          // { 1:true } 0=周一
+  excludedVenue: {},      // 排除的场地标签
+  footfallThreshold: 0,   // 人流量阈值下标
+  excludedAudience: {},   // 排除的客群标签
+  platformBusyPeriods: [],
+  noBookings: false,
+  scheduleConfirmedAt: null,
+  uploads: [],            // 图片列表
+};
+
+const WEEK_NAMES = ['周一','周二','周三','周四','周五','周六','周日'];
+const BASE_OPPORTUNITIES = 24;
+const TAG_COLORS = {
+  venue: ['#FFF3B0','#FFCDD2','#DCE775'],
+  footfall: ['#FFCDD2','#E1BEE7','#FFF3B0'],
+  audience: ['#B2DFDB','#FFCDD2','#BBDEFB'],
+};
+
+/* 月份范围：从当前月开始24个月，支持跨年维护 */
+const TODAY = new Date();
+const MONTH_RANGE = [];
+for(let i=0;i<24;i++){
+  MONTH_RANGE.push(new Date(TODAY.getFullYear(), TODAY.getMonth()+i, 1));
+}
+let curMonth = 0;
+
+/* ===== Utils ===== */
+function dkey(y,m,d){ return y+'-'+(m+1)+'-'+d; }
+function normalizeDateKey(value){
+  const match=String(value).match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  return match?`${match[1]}-${String(match[2]).padStart(2,'0')}-${String(match[3]).padStart(2,'0')}`:String(value);
+}
+function weekdayMon(y,m,d){ return (new Date(y,m,d).getDay()+6)%7; }
+function isPast(y,m,d){ return new Date(y,m,d) < new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate()); }
+function isOff(y,m,d){
+  const k = normalizeDateKey(dkey(y,m,d));
+  if(IS_EMBEDDED && state.platformBusyPeriods.some(period=>periodContains(period,k))) return true;
+  if(k in state.unavailableDates) return state.unavailableDates[k];
+  return !!state.weeklyOff[weekdayMon(y,m,d)];
+}
+function periodContains(period,key){
+  return normalizeDateKey(period.startDate)<=key && key<=normalizeDateKey(period.endDate);
+}
+function selectedDatesToPeriods(){
+  const dates=Object.keys(state.unavailableDates).filter(k=>state.unavailableDates[k]).sort();
+  const periods=[];
+  for(const value of dates){
+    const previous=periods[periods.length-1];
+    if(previous){
+      const next=new Date(`${previous.endDate}T00:00:00Z`);
+      next.setUTCDate(next.getUTCDate()+1);
+      if(next.toISOString().slice(0,10)===value){previous.endDate=value;continue}
+    }
+    periods.push({startDate:value,endDate:value,note:'本人已标记'});
+  }
+  return periods;
+}
+let toastTimer=null;
+function toast(msg){
+  const t=$('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+function requireLogin(){
+  if(!isLoggedIn){ location.href='welcome.html'; return false; }
+  return true;
+}
+function openAuthModal(){ $('loginModal').classList.add('show'); switchAuthMode('login'); }
+function switchAuthMode(mode){
+  const login=mode==='login';
+  $('authLoginForm').style.display=login?'block':'none';
+  $('authRegisterForm').style.display=login?'none':'block';
+  $('authTitle').textContent=login?'登录 TDE':'注册 TDE';
+  $('authHint').textContent=login?'登录后即可保存档期。':'注册后即可在首页保存档期。';
+  $('authLoginTab').className='btn '+(login?'btn-primary':'btn-secondary');
+  $('authRegisterTab').className='btn '+(login?'btn-secondary':'btn-primary');
+}
+let registerLocations = [];
+async function loadRegisterLocations(){
+  try{
+    const res=await fetch('/api/public/locations');
+    const data=await res.json();
+    registerLocations=data.provinces||[];
+    $('authRegisterProvince').innerHTML='<option value="">请选择省</option>'+registerLocations.map(p=>`<option value="${p.name}">${p.name}</option>`).join('');
+  }catch(e){ toast('地区加载失败，请重试'); }
+}
+function renderRegisterCities(){
+  const p=registerLocations.find(item=>item.name===$('authRegisterProvince').value);
+  $('authRegisterCity').innerHTML='<option value="">请选择市</option>'+(p?.cities||[]).map(c=>`<option value="${c.name}">${c.name}</option>`).join('');
+  $('authRegisterCity').disabled=!p;
+  $('authRegisterDistrict').innerHTML='<option value="">请选择区/县</option>';
+  $('authRegisterDistrict').disabled=true;
+}
+function renderRegisterDistricts(){
+  const p=registerLocations.find(item=>item.name===$('authRegisterProvince').value);
+  const c=p?.cities?.find(item=>item.name===$('authRegisterCity').value);
+  $('authRegisterDistrict').innerHTML='<option value="">请选择区/县</option>'+(c?.districts||[]).map(d=>`<option value="${d.name}">${d.name}</option>`).join('');
+  $('authRegisterDistrict').disabled=!c;
+}
+const registerFields={invite:['fieldInvite','errorInvite','authRegisterInviteCode'],phone:['fieldPhone','errorPhone','authRegisterPhone'],confirmPhone:['fieldConfirmPhone','errorConfirmPhone','authRegisterConfirmPhone'],password:['fieldPassword','errorPassword','authRegisterPassword'],confirmPassword:['fieldConfirmPassword','errorConfirmPassword','authRegisterConfirmPassword'],province:['fieldProvince','errorProvince','authRegisterProvince'],city:['fieldCity','errorCity','authRegisterCity'],district:['fieldDistrict','errorDistrict','authRegisterDistrict'],agreed:[null,'errorAgreed','authRegisterAgreed']};
+const registerFieldNames={invite:'邀请码',phone:'手机号',confirmPhone:'确认手机号',password:'密码',confirmPassword:'确认密码',province:'所在省',city:'所在市',district:'所在区/县',agreed:'协议确认'};
+const registerErrorState={};
+function renderRegisterErrorSummary(){const keys=Object.keys(registerFields).filter(key=>registerErrorState[key]);const summary=$('registerValidationSummary');summary.textContent=keys.length?'请检查：'+keys.map(key=>registerFieldNames[key]).join('、'):'';summary.classList.toggle('show',keys.length>0)}
+function setRegisterError(key,message=''){const [fieldId,,inputId]=registerFields[key];registerErrorState[key]=message;if(fieldId)$(fieldId).classList.toggle('invalid',Boolean(message));else $(inputId).closest('.register-agreement')?.classList.toggle('invalid',Boolean(message));$(inputId).setAttribute('aria-invalid',message?'true':'false');renderRegisterErrorSummary()}
+function clearRegisterError(key){setRegisterError(key,'')}
+function validateRegisterForm(){
+  Object.keys(registerFields).forEach(clearRegisterError);
+  const values={invite:$('authRegisterInviteCode').value.trim().toUpperCase(),phone:$('authRegisterPhone').value.trim(),confirmPhone:$('authRegisterConfirmPhone').value.trim(),password:$('authRegisterPassword').value,confirmPassword:$('authRegisterConfirmPassword').value,province:$('authRegisterProvince').value,city:$('authRegisterCity').value,district:$('authRegisterDistrict').value};
+  $('authRegisterInviteCode').value=values.invite;
+  const errors={};
+  if(!/^[A-Z0-9]{4,8}$/.test(values.invite))errors.invite='请填写4-8位字母或数字的邀请码';
+  if(!/^1\d{10}$/.test(values.phone))errors.phone='请填写正确的11位手机号';
+  if(!values.confirmPhone)errors.confirmPhone='请再次填写手机号';else if(values.phone!==values.confirmPhone)errors.confirmPhone='两次输入的手机号不一致';
+  if(values.password.length<8||values.password.length>72)errors.password='密码需要为8-72位字符';
+  if(!values.confirmPassword)errors.confirmPassword='请再次填写密码';else if(values.password!==values.confirmPassword)errors.confirmPassword='两次输入的密码不一致';
+  if(!values.province)errors.province='请选择所在省';
+  if(!values.city)errors.city='请选择所在市';
+  if(!values.district)errors.district='请选择所在区/县';
+  if(!$('authRegisterAgreed').checked)errors.agreed='请先阅读并同意用户协议和隐私政策';
+  Object.entries(errors).forEach(([key,message])=>setRegisterError(key,message));
+  const firstKey=Object.keys(registerFields).find(key=>errors[key]);
+  if(firstKey){const input=$(registerFields[firstKey][2]);input.scrollIntoView({behavior:'smooth',block:'center'});setTimeout(()=>input.focus(),250);return null}
+  return values;
+}
+function togglePassword(inputId,button){const input=$(inputId),show=input.type==='password';input.type=show?'text':'password';button.textContent=show?'◉':'◎';button.setAttribute('aria-label',show?'隐藏密码':'显示密码')}
+async function loadRegisterSettings(){try{const res=await fetch('/api/web/settings',{cache:'no-store'});const data=await res.json();if(data.inviteContactText||data.contactText)$('registerInviteHelp').textContent=data.inviteContactText||data.contactText}catch(e){}}
+async function submitAuth(mode){
+  const prefix=mode==='login'?'authLogin':'authRegister';
+  const phone=$(prefix+'Phone').value.trim();
+  const password=$(prefix+'Password').value;
+  const payload=mode==='login'
+    ? {phone,password}
+    : {phone,confirmPhone:$('authRegisterConfirmPhone').value.trim(),password,confirmPassword:$('authRegisterConfirmPassword').value,inviteCode:$('authRegisterInviteCode').value.trim().toUpperCase(),province:$('authRegisterProvince').value,city:$('authRegisterCity').value,district:$('authRegisterDistrict').value,agreed:$('authRegisterAgreed').checked};
+  try{
+    if(mode==='register'){
+      if(!validateRegisterForm())return;
+      $('authRegisterSubmit').disabled=true;$('authRegisterSubmit').textContent='注册中...';
+    }
+    const res=await fetch('/api/web/auth/'+(mode==='login'?'login':'register-account'),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const data=await responseJson(res);
+    if(!res.ok)throw new Error(data.error||`操作失败（HTTP ${res.status}）`);
+    if(!data.session?.token)throw new Error('登录结果不完整，请重试');
+    localStorage.setItem('tde_token',data.session.token);
+    localStorage.setItem('tde_creator',JSON.stringify(data.creator));
+    isLoggedIn=true;
+    $('loginModal').classList.remove('show');
+    await checkLogin(false);
+    await loadPreferences();
+    renderCalendar();renderSummary();
+    toast(mode==='login'?'登录成功':'注册成功，请继续填写首页资料');
+  }catch(e){
+    const message=e.message||'操作失败';
+    if(mode==='register'){
+      const key=/邀请码/.test(message)?'invite':/两次输入的手机号/.test(message)?'confirmPhone':/手机号/.test(message)?'phone':/两次输入的密码/.test(message)?'confirmPassword':/密码/.test(message)?'password':/省、市、区|地区/.test(message)?'province':/用户协议|隐私政策/.test(message)?'agreed':'';
+      if(key){setRegisterError(key,message);$(registerFields[key][2]).scrollIntoView({behavior:'smooth',block:'center'});}
+    }
+    toast(message);
+  }finally{if(mode==='register'){$('authRegisterSubmit').disabled=false;$('authRegisterSubmit').textContent='注册并继续'}}
+}
+$('loginModal').addEventListener('click',(e)=>{
+  if(e.target===$('loginModal')) $('loginModal').classList.remove('show');
+});
+Object.entries(registerFields).forEach(([key,[, ,inputId]])=>$(inputId).addEventListener(key==='province'||key==='city'||key==='district'||key==='agreed'?'change':'input',()=>clearRegisterError(key)));
+$('authRegisterProvince').addEventListener('change',()=>{renderRegisterCities();clearRegisterError('city');clearRegisterError('district')});
+$('authRegisterCity').addEventListener('change',()=>{renderRegisterDistricts();clearRegisterError('district')});
+loadRegisterLocations();loadRegisterSettings();
+
+/* ===== Calendar ===== */
+function renderCalendar(){
+  const y=MONTH_RANGE[curMonth].getFullYear(),m=MONTH_RANGE[curMonth].getMonth();
+  $('calMonth').textContent=y+' 年 '+(m+1)+' 月';
+  $('prevBtn').disabled=curMonth===0;
+  $('nextBtn').disabled=curMonth===MONTH_RANGE.length-1;
+
+  const grid=$('calGrid');grid.innerHTML='';
+  const lead=weekdayMon(y,m,1);
+  const days=new Date(y,m+1,0).getDate();
+  for(let i=0;i<lead;i++) grid.appendChild(document.createElement('span'));
+
+  for(let d=1;d<=days;d++){
+    const el=document.createElement('div');
+    el.className='day';el.textContent=d;
+    if(y===TODAY.getFullYear()&&m===TODAY.getMonth()&&d===TODAY.getDate()) el.classList.add('today');
+    if(isPast(y,m,d)){
+      el.classList.add('past');
+    }else{
+      const key=normalizeDateKey(dkey(y,m,d));
+      const platformBusy=IS_EMBEDDED && state.platformBusyPeriods.some(period=>periodContains(period,key));
+      const off=platformBusy || isOff(y,m,d);
+      if(off) el.classList.add('off');
+      if(platformBusy) el.classList.add('platform-busy');
+      el.title=platformBusy?'平台已有记录（不可修改）':off?'已标记有安排（点击恢复）':'点击标记为已有安排';
+      el.addEventListener('click',()=>{
+        if(!requireLogin()) return;
+        if(platformBusy){toast('这是平台已有记录，不能在这里修改');return;}
+        const k=normalizeDateKey(dkey(y,m,d));
+        if(IS_EMBEDDED && state.noBookings) state.noBookings=false;
+        state.unavailableDates[k]=!isOff(y,m,d);
+        renderCalendar();renderSummary();
+        toast((m+1)+'月'+d+'日：'+(state.unavailableDates[k]?'已设为不可约':'已恢复可约'));
+      });
+    }
+    grid.appendChild(el);
+  }
+  renderWeekly();
+}
+
+function renderWeekly(){
+  const row=$('weeklyRow');row.innerHTML='';
+  WEEK_NAMES.forEach((w,i)=>{
+    const s=document.createElement('span');
+    s.className='wk'+(state.weeklyOff[i]?' on':'');
+    s.textContent=w;
+    s.addEventListener('click',()=>{
+      if(!requireLogin()) return;
+      if(state.weeklyOff[i]) delete state.weeklyOff[i]; else state.weeklyOff[i]=true;
+      renderCalendar();renderSummary();
+      toast(w+(state.weeklyOff[i]?'：每周固定不可约':'：已恢复可约'));
+    });
+    row.appendChild(s);
+  });
+}
+
+/* ===== Tags ===== */
+function renderTags(){
+  const box=$('tagGroups');box.innerHTML='';
+  const groups=[
+    {key:'venue',label:'场 地 描 述',hint:'硬件条件不OK的，别推给我',data:venueTagsConfig.venue},
+    {key:'footfall',label:'人 流 量 预 估',hint:'选一个下限，低于它的别推给我',data:venueTagsConfig.footfall},
+    {key:'audience',label:'客 群 画 像',hint:'人群不对味的，别推给我',data:venueTagsConfig.audience},
+  ];
+
+  groups.forEach(g=>{
+    const wrap=document.createElement('div');wrap.className='group';
+    const lb=document.createElement('div');lb.className='group-label';
+    lb.innerHTML=g.label+'<span class="hint">'+g.hint+'</span>';
+    wrap.appendChild(lb);
+
+    const row=document.createElement('div');row.className='chips';
+    g.data.forEach((it,i)=>{
+      const off = g.key==='footfall'
+        ? (i<=state.footfallThreshold && i>0)
+        : (g.key==='venue' ? !!state.excludedVenue[it.name] : !!state.excludedAudience[it.name]);
+      const c=document.createElement('span');
+      c.className='chip'+(off?' off':'');
+      c.style.background=TAG_COLORS[g.key][i%TAG_COLORS[g.key].length];
+      c.innerHTML=it.name+'<span class="cost">−'+it.cost+'</span>';
+      c.addEventListener('click',()=>{
+        if(!requireLogin()) return;
+        if(g.key==='footfall'){
+          state.footfallThreshold=(state.footfallThreshold===i)?0:i;
+          toast(state.footfallThreshold?'已排除日均人流量 '+it.name.replace('低于 ','')+' 以下的场地':'人流量不限');
+        }else if(g.key==='venue'){
+          if(state.excludedVenue[it.name]) delete state.excludedVenue[it.name];
+          else state.excludedVenue[it.name]=true;
+          toast((state.excludedVenue[it.name]?'已排除「':'已恢复「')+it.name+'」'+
+                (state.excludedVenue[it.name]?' · 每月少约 '+it.cost+' 个邀约':''));
+        }else{
+          if(state.excludedAudience[it.name]) delete state.excludedAudience[it.name];
+          else state.excludedAudience[it.name]=true;
+          toast((state.excludedAudience[it.name]?'已排除「':'已恢复「')+it.name+'」'+
+                (state.excludedAudience[it.name]?' · 每月少约 '+it.cost+' 个邀约':''));
+        }
+        renderTags();renderSummary();
+      });
+      row.appendChild(c);
+    });
+    wrap.appendChild(row);
+
+    if(g.key==='footfall'){
+      const note=document.createElement('div');note.className='foot-note';
+      note.innerHTML='该数值由<b>场地方自填</b>，平台会同时给出该商圈的参考区间做对照；活动结束后如与实际不符，可反馈，平台核实后修正。';
+      wrap.appendChild(note);
+    }
+    box.appendChild(wrap);
+  });
+}
+
+/* ===== Uploads ===== */
+/* ===== Summary ===== */
+function countNext60(){
+  let free=0,off=0;
+  for(let i=0;i<60;i++){
+    const d=new Date(TODAY.getFullYear(),TODAY.getMonth(),TODAY.getDate()+i);
+    if(isOff(d.getFullYear(),d.getMonth(),d.getDate())) off++; else free++;
+  }
+  return {free,off};
+}
+function excludedCost(){
+  let c=0;
+  venueTagsConfig.venue.forEach(it=>{ if(state.excludedVenue[it.name]) c+=it.cost; });
+  if(state.footfallThreshold>0 && venueTagsConfig.footfall[state.footfallThreshold]){
+    c+=venueTagsConfig.footfall[state.footfallThreshold].cost;
+  }
+  venueTagsConfig.audience.forEach(it=>{ if(state.excludedAudience[it.name]) c+=it.cost; });
+  return c;
+}
+function excludedCount(){
+  let n=Object.keys(state.excludedVenue).length;
+  if(state.footfallThreshold>0) n+=state.footfallThreshold;
+  n+=Object.keys(state.excludedAudience).length;
+  return n;
+}
+function opportunities(){ return Math.max(0, BASE_OPPORTUNITIES - excludedCost()); }
+
+function renderSummary(){
+  const c=countNext60();
+  $('freeCount').textContent=c.free;
+  $('offCount').textContent=c.off;
+  $('saveStat').innerHTML='未来 60 天可约 <b>'+c.free+'</b> 天 · 已标记 <b>'+c.off+'</b> 天不可约';
+  notifyEmbedHeight();
+}
+
+/* ===== Save ===== */
+$('saveBtn').addEventListener('click',async()=>{
+  if(!requireLogin()) return;
+
+  $('saveBtn').disabled=true;
+  $('saveBtn').textContent='保存中...';
+
+  const payload=IS_EMBEDDED
+    ? { action:'updateSchedule', busyPeriods:selectedDatesToPeriods(), noBookings:state.noBookings }
+    : {
+        unavailableDates: Object.keys(state.unavailableDates).filter(k=>state.unavailableDates[k]),
+        weeklyOff: Object.keys(state.weeklyOff).map(Number),
+        excludedVenueTags: Object.keys(state.excludedVenue),
+        footfallThreshold: state.footfallThreshold,
+        excludedAudienceTags: Object.keys(state.excludedAudience),
+      };
+
+  try{
+    const token=localStorage.getItem('tde_token');
+    const res=await fetch(IS_EMBEDDED?'/api/web/profile':'/api/web/preferences',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify(payload),
+    });
+    const data=await responseJson(res);
+    if(res.status===401)throw new Error(data.error||'登录状态已失效，请重新登录');
+    if(!res.ok||!data.success)throw new Error(data.error||`请求失败（HTTP ${res.status}）`);
+    if(data.success){
+      const c=countNext60();
+      const wk=Object.keys(state.weeklyOff).map(i=>WEEK_NAMES[i]);
+
+      $('tstats').innerHTML=
+        '<div class="tstat"><div class="n">'+c.free+'</div><div class="l">天 可 约</div></div>'+
+        '<div class="tstat"><div class="n">'+c.off+'</div><div class="l">天 不 可 约</div></div>';
+      $('tnote').innerHTML=
+        IS_EMBEDDED
+          ? '<b>本人已标记：</b>'+(selectedDatesToPeriods().map(item=>item.startDate===item.endDate?item.startDate:`${item.startDate} 至 ${item.endDate}`).join('、')||'无')
+          : '<b>每周固定不可约：</b>'+(wk.length?wk.join('、'):'无');
+      $('ticket').classList.add('show');
+      toast('已生效 · 未来 60 天你有 '+c.free+' 天可约');
+      if(IS_EMBEDDED) parent.postMessage({type:'tde-schedule-saved'},window.parent===window?location.origin:parent.location.origin);
+      else setTimeout(()=>{ location.href='profile.html'; }, 700);
+      $('ticket').scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
+  }catch(e){
+    toast('保存失败：'+(e.message||'请重试'));
+  }finally{
+    $('saveBtn').disabled=false;
+    $('saveBtn').textContent='保存';
+  }
+});
+
+/* ===== Month Nav ===== */
+$('prevBtn').addEventListener('click',()=>{ if(curMonth>0){curMonth--;renderCalendar();} });
+$('nextBtn').addEventListener('click',()=>{ if(curMonth<MONTH_RANGE.length-1){curMonth++;renderCalendar();} });
+
+/* ===== Load Data ===== */
+async function loadVenueTags(){
+  try{
+    const res=await fetch('/api/web/venue-tags');
+    const data=await res.json();
+    if(data.tags){
+      venueTagsConfig=data.tags;
+    }
+  }catch(e){
+    // fallback default
+    venueTagsConfig={
+      venue:[
+        {name:'室外无遮挡',cost:3},{name:'无电源接入',cost:2},
+        {name:'三层以上无电梯',cost:2},{name:'无固定摊位',cost:1},
+        {name:'面积小于10㎡',cost:4},{name:'无仓储空间',cost:1},
+      ],
+      footfall:[
+        {name:'不限',cost:0},{name:'低于1千',cost:1},{name:'低于3千',cost:4},
+        {name:'低于5千',cost:7},{name:'低于1万',cost:11},{name:'低于3万',cost:15},
+      ],
+      audience:[
+        {name:'纯亲子家庭',cost:2},{name:'纯写字楼白领',cost:2},
+        {name:'纯学生群体',cost:2},{name:'纯长者为主',cost:3},
+        {name:'禁止宠物入场',cost:1},{name:'高端奢侈定位',cost:2},
+      ],
+    };
+  }
+}
+
+async function loadPreferences(){
+  const token=localStorage.getItem('tde_token');
+  if(!token) return;
+  try{
+    const res=await fetch(IS_EMBEDDED?'/api/web/profile':'/api/web/preferences',{
+      headers:{'Authorization':'Bearer '+token},
+      cache:'no-store',
+    });
+    if(res.ok){
+      const data=await res.json();
+      if(IS_EMBEDDED){
+        const periods=data.busyPeriods||[];
+        state.platformBusyPeriods=periods.filter(period=>period.source&&period.source!=='manual');
+        state.unavailableDates={};
+        for(const period of periods.filter(item=>item.source==='manual')){
+          const cursor=new Date(`${period.startDate}T00:00:00Z`);
+          const end=new Date(`${period.endDate}T00:00:00Z`);
+          while(cursor<=end){
+            state.unavailableDates[cursor.toISOString().slice(0,10)]=true;
+            cursor.setUTCDate(cursor.getUTCDate()+1);
+          }
+        }
+        state.noBookings=Boolean(data.creator?.noBookings);
+        state.scheduleConfirmedAt=data.creator?.scheduleConfirmedAt||null;
+        $('noBookingsBtn').classList.toggle('selected',state.noBookings);
+        $('embeddedScheduleHint').textContent=state.noBookings
+          ? '目前没有已占用档期。'
+          : '只维护你自己已经有安排的日期。';
+        return;
+      }
+      (data.unavailableDates||[]).forEach(d=>{ state.unavailableDates[d]=true; });
+      (data.weeklyOff||[]).forEach(d=>{ state.weeklyOff[d]=true; });
+      (data.excludedVenueTags||[]).forEach(t=>{ state.excludedVenue[t]=true; });
+      state.footfallThreshold=data.footfallThreshold||0;
+      (data.excludedAudienceTags||[]).forEach(t=>{ state.excludedAudience[t]=true; });
+    }
+  }catch(e){}
+}
+if(IS_EMBEDDED) $('noBookingsBtn').addEventListener('click',()=>{
+  if(!requireLogin()) return;
+  state.noBookings=!state.noBookings;
+  if(state.noBookings) state.unavailableDates={};
+  $('noBookingsBtn').classList.toggle('selected',state.noBookings);
+  $('embeddedScheduleHint').textContent=state.noBookings
+    ? '目前没有已占用档期。'
+    : '只维护你自己已经有安排的日期。';
+  renderCalendar();renderSummary();
+});
+
+/* ===== Login Check ===== */
+let topbarAvatarObjectUrl='',topbarAvatarRenderSeq=0;
+function showAvatarFallback(creator){
+  const avatar=$('topbarAvatar');
+  topbarAvatarRenderSeq++;
+  if(topbarAvatarObjectUrl){URL.revokeObjectURL(topbarAvatarObjectUrl);topbarAvatarObjectUrl='';}
+  avatar.innerHTML='';
+  avatar.textContent=(creator?.brandName||'创').charAt(0);
+}
+async function renderTopbarAvatar(creator,token){
+  showAvatarFallback(creator);
+  if(!creator?.logoImageUrl)return;
+  const renderSeq=topbarAvatarRenderSeq;
+  try{
+    const res=await fetch(creator.logoImageUrl,{headers:{'Authorization':'Bearer '+token},cache:'no-store'});
+    if(!res.ok)throw new Error();
+    const url=URL.createObjectURL(await res.blob()),avatar=$('topbarAvatar'),img=document.createElement('img');
+    img.src=url;img.alt='品牌 Logo';img.style.cssText='width:100%;height:100%;border-radius:50%;object-fit:cover';
+    await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject});
+    if(renderSeq!==topbarAvatarRenderSeq){URL.revokeObjectURL(url);return}
+    topbarAvatarObjectUrl=url;
+    avatar.replaceChildren(img);
+  }catch(e){showAvatarFallback(creator)}
+}
+async function checkLogin(verifySession=true){
+  const token=localStorage.getItem('tde_token');
+  const storedCreator=localStorage.getItem('tde_creator');
+  if(token&&storedCreator){
+    try{
+      let c=JSON.parse(storedCreator);
+      isLoggedIn=true;
+      $('topbarLoginBtn').style.display='none';
+      $('topbarUser').style.display='flex';
+      await renderTopbarAvatar(c,token);
+      if(!verifySession)return;
+      try{
+        const res=await fetch('/api/web/profile',{headers:{'Authorization':'Bearer '+token},cache:'no-store'});
+        if(res.status===401){
+          localStorage.removeItem('tde_token');localStorage.removeItem('tde_creator');
+          isLoggedIn=false;$('topbarLoginBtn').style.display='inline-block';$('topbarUser').style.display='none';showAvatarFallback(null);
+          return;
+        }
+        if(res.ok){
+          const data=await res.json();
+          if(data.creator){c=data.creator;localStorage.setItem('tde_creator',JSON.stringify(c));await renderTopbarAvatar(c,token);}
+        }
+      }catch(e){}
+    }catch(e){
+      isLoggedIn=false;
+      $('topbarLoginBtn').style.display='inline-block';
+      $('topbarUser').style.display='none';
+      showAvatarFallback(null);
+    }
+  }else{
+    isLoggedIn=false;
+    $('topbarLoginBtn').style.display='inline-block';
+    $('topbarUser').style.display='none';
+    showAvatarFallback(null);
+  }
+}
+
+/* ===== Init ===== */
+function notifyEmbedHeight(){if(IS_EMBEDDED)requestAnimationFrame(()=>parent.postMessage({type:'tde-schedule-height',height:document.documentElement.scrollHeight},window.parent===window?location.origin:parent.location.origin))}
+(async()=>{
+  await checkLogin();
+  if(isLoggedIn){
+    await loadPreferences();
+  }
+  renderCalendar();
+  renderSummary();
+  notifyEmbedHeight();
+})();
+window.addEventListener('resize',notifyEmbedHeight);
+</script>
+</body>
+</html>

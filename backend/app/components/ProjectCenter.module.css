@@ -799,6 +799,54 @@
   font: inherit;
 }
 
+.timelineTaskLabel {
+  display: grid;
+  gap: 3px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  min-width: 0;
+}
+
+.timelineTaskLabel strong,
+.timelineTaskLabel span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timelineTaskLabel span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.timelineBar {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  min-width: 16px;
+  border: 0;
+  background: var(--accent);
+  color: var(--ink);
+  cursor: grab;
+}
+
+.timelineBar:active {
+  cursor: grabbing;
+}
+
+.timelineBar small {
+  position: absolute;
+  left: 7px;
+  top: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 .timelineBarRow > span {
   display: flex;
   align-items: center;
@@ -851,6 +899,144 @@
   align-items: center;
   gap: 6px;
   width: fit-content;
+}
+
+.timelinePending {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 6px 0 0 260px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.drawerBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: flex-end;
+  background: rgb(16 24 40 / 28%);
+}
+
+.taskDrawer {
+  width: min(720px, 100vw);
+  height: 100%;
+  overflow: auto;
+  padding: 12px;
+  background: var(--surface);
+  box-shadow: -10px 0 30px rgb(16 24 40 / 18%);
+}
+
+.taskDrawer > .panel {
+  min-height: calc(100% - 28px);
+  border: 0;
+  box-shadow: none;
+}
+
+.drawerClose {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.helpTip {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.helpButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  padding: 0 2px;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.helpPopover {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 250px;
+  padding: 12px 32px 12px 12px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 8px 22px rgb(16 24 40 / 14%);
+  font-size: 12px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.helpPopover .icon-button {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+
+.workGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 16px;
+}
+
+.workList,
+.notificationList {
+  display: grid;
+  gap: 8px;
+}
+
+.workItem,
+.notificationItem button {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  border: 1px solid var(--soft-line);
+  padding: 12px;
+  background: var(--surface-2);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.workItem:hover,
+.notificationItem button:hover {
+  border-color: var(--accent);
+}
+
+.workItem span,
+.notificationItem span,
+.notificationItem small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.workItemTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.countBadge {
+  display: inline-flex;
+  min-width: 22px;
+  justify-content: center;
+  border-radius: 10px;
+  padding: 1px 6px;
+  background: var(--red);
+  color: white;
+  font-size: 11px;
+}
+
+.notificationItem.unread button {
+  border-left: 3px solid var(--accent);
 }
 
 @media (max-width: 980px) {
@@ -925,5 +1111,18 @@
   .modalBody,
   .modalFooter {
     padding: 16px;
+  }
+
+  .workGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .timelineChartLabels,
+  .timelineBarRow {
+    grid-template-columns: 190px minmax(700px, 1fr);
+  }
+
+  .timelinePending {
+    padding-left: 190px;
   }
 }

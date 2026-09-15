@@ -41,6 +41,7 @@ import { ProjectFiles } from "./project-center/ProjectFiles";
 import { ProjectRecords } from "./project-center/ProjectRecords";
 import { ProjectDashboard } from "./project-center/ProjectDashboard";
 import { ProjectTimeline } from "./project-center/ProjectTimeline";
+import { ProjectWork } from "./project-center/ProjectWork";
 import { ProjectSettings } from "./project-center/ProjectSettings";
 
 const sources = [
@@ -117,7 +118,8 @@ export function ProjectCenter({ admin, adminAccounts, showToast }: ProjectCenter
   const [createFieldErrors, setCreateFieldErrors] = useState<Record<string, string>>({});
   const [creating, setCreating] = useState(false);
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
-  const [homeView, setHomeView] = useState<"dashboard" | "list">("dashboard");
+  const [requestedTaskId, setRequestedTaskId] = useState<number | undefined>();
+  const [homeView, setHomeView] = useState<"dashboard" | "list" | "work">("dashboard");
   const [detail, setDetail] = useState<(ProjectDetail & { phases: ProjectPhase[]; milestones: ProjectMilestone[] }) | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState("");
@@ -175,9 +177,10 @@ export function ProjectCenter({ admin, adminAccounts, showToast }: ProjectCenter
     return () => window.clearTimeout(timer);
   }, [filters, loadProjects]);
 
-  async function openProject(projectId: number) {
+  async function openProject(projectId: number, taskId?: number) {
     const requestId = ++detailRequest.current;
     setSelectedProjectId(projectId);
+    setRequestedTaskId(taskId);
     setDetail(null);
     setDetailError("");
     setDetailErrorStatus(undefined);
@@ -328,16 +331,18 @@ export function ProjectCenter({ admin, adminAccounts, showToast }: ProjectCenter
         loading={detailLoading}
         error={detailError}
         errorStatus={detailErrorStatus}
-        onBack={() => { setSelectedProjectId(null); setDetail(null); }}
+        onBack={() => { setSelectedProjectId(null); setRequestedTaskId(undefined); setDetail(null); }}
         onRetry={() => void openProject(selectedProjectId)}
+        initialTaskId={requestedTaskId}
       />
     );
   }
 
   return (
     <div className={styles.root}>
-      <div className={styles.detailTabs}><button className={homeView === "dashboard" ? styles.active : ""} type="button" onClick={() => setHomeView("dashboard")}>驾驶舱</button><button className={homeView === "list" ? styles.active : ""} type="button" onClick={() => setHomeView("list")}>项目列表</button></div>
+      <div className={styles.detailTabs}><button className={homeView === "dashboard" ? styles.active : ""} type="button" onClick={() => setHomeView("dashboard")}>项目总览</button><button className={homeView === "work" ? styles.active : ""} type="button" onClick={() => setHomeView("work")}>我的工作</button><button className={homeView === "list" ? styles.active : ""} type="button" onClick={() => setHomeView("list")}>项目列表</button></div>
       {homeView === "dashboard" ? <ProjectDashboard admin={admin} onOpenProject={(projectId) => void openProject(projectId)} /> : null}
+      {homeView === "work" ? <ProjectWork admin={admin} onOpenProject={(projectId, taskId) => void openProject(projectId, taskId)} /> : null}
       {homeView === "list" ? <>
       <section className={styles.intro}>
         <div className={styles.introTitle}>
@@ -414,6 +419,7 @@ function ProjectDetailView({
   errorStatus,
   onBack,
   onRetry,
+  initialTaskId,
 }: {
   admin: ProjectCenterProps["admin"];
   adminAccounts: ProjectCenterProps["adminAccounts"];
@@ -423,10 +429,17 @@ function ProjectDetailView({
   errorStatus?: number;
   onBack: () => void;
   onRetry: () => void;
+  initialTaskId?: number;
 }) {
   const [tab, setTab] = useState<"overview" | "phases" | "milestones" | "tasks" | "members" | "files" | "records" | "timeline" | "settings">("overview");
-  const [initialTaskId, setInitialTaskId] = useState<number | undefined>();
+  const [initialTaskIdState, setInitialTaskId] = useState<number | undefined>(initialTaskId);
   const [initialMilestoneId, setInitialMilestoneId] = useState<number | undefined>();
+  useEffect(() => {
+    if (initialTaskId) {
+      setInitialTaskId(initialTaskId);
+      setTab("tasks");
+    }
+  }, [initialTaskId]);
   if (loading && !detail) return <div className={styles.root}><button className="button secondary" type="button" onClick={onBack}><ArrowLeft size={16} /> 返回项目列表</button><LoadingState label="正在读取项目详情" /></div>;
   if (error || !detail) return <div className={styles.root}><button className="button secondary" type="button" onClick={onBack}><ArrowLeft size={16} /> 返回项目列表</button><ProjectErrorState status={errorStatus} message={error || "项目不存在"} onRetry={onRetry} /></div>;
   const { project, taskStats } = detail;
@@ -434,7 +447,7 @@ function ProjectDetailView({
     <div className={styles.root}>
       <section className={styles.detailHeader}>
         <div className={styles.detailTop}>
-          <div><button className="button secondary" type="button" onClick={onBack}><ArrowLeft size={16} /> 项目列表</button><p className={styles.eyebrow}>PROJECT DETAIL · {project.code}</p><h2>{project.name}</h2><p>{project.venue_name || "未填写场地"} · {labelSource(String(project.source || ""))}</p></div>
+          <div><button className="button secondary" type="button" onClick={onBack}><ArrowLeft size={16} /> 项目列表</button><p className={styles.eyebrow}>项目详情 · {project.code}</p><h2>{project.name}</h2><p>{project.venue_name || "未填写场地"} · {labelSource(String(project.source || ""))}</p></div>
           <span className={`${styles.health} ${projectHealthClass(String(project.health || ""))}`}>{labelHealth(String(project.health || ""))}</span>
         </div>
         <div className={styles.summaryGrid}>
@@ -443,16 +456,16 @@ function ProjectDetailView({
           <div className={styles.summaryCard}><span>逾期任务</span><strong>{taskStats.overdue}</strong></div>
           <div className={styles.summaryCard}><span>阻塞任务</span><strong>{taskStats.blocked}</strong></div>
         </div>
-        <div className={styles.detailTabs}>{(["overview", "members", "phases", "milestones", "tasks", "files", "records", "timeline", "settings"] as const).map((value) => <button key={value} className={tab === value ? styles.active : ""} type="button" onClick={() => setTab(value)}>{value === "overview" ? "概览" : value === "members" ? "成员" : value === "phases" ? "阶段" : value === "milestones" ? "里程碑" : value === "tasks" ? "任务" : value === "files" ? "文件" : value === "records" ? "记录" : value === "timeline" ? "时间线" : "设置"}</button>)}</div>
+        <div className={styles.detailTabs}>{(["overview", "members", "phases", "milestones", "tasks", "files", "records", "timeline", "settings"] as const).map((value) => <button key={value} className={tab === value ? styles.active : ""} type="button" onClick={() => setTab(value)}>{value === "overview" ? "项目情况" : value === "members" ? "参与人员" : value === "phases" ? "工作步骤" : value === "milestones" ? "重要日期" : value === "tasks" ? "安排工作" : value === "files" ? "项目文件" : value === "records" ? "沟通记录" : value === "timeline" ? "时间安排" : "基本信息"}</button>)}</div>
       </section>
       {tab === "overview" ? <OverviewTab detail={detail} /> : null}
       {tab === "members" ? <ProjectMembers projectId={project.id} members={detail.members as never[]} accounts={adminAccounts} canManage={admin.role === "super" || detail.members.some((member) => Number(member.user_id) === admin.id && member.role === "PROJECT_MANAGER")} onChanged={onRetry} /> : null}
       {tab === "phases" ? <PhasesTab projectId={project.id} phases={detail.phases} adminAccounts={adminAccounts} canManage={admin.role === "super" || detail.members.some((member) => Number(member.user_id) === admin.id && member.role === "PROJECT_MANAGER")} onChanged={onRetry} /> : null}
       {tab === "milestones" ? <MilestonesTab projectId={project.id} milestones={detail.milestones} adminAccounts={adminAccounts} canManage={admin.role === "super" || detail.members.some((member) => Number(member.user_id) === admin.id && member.role === "PROJECT_MANAGER")} onChanged={onRetry} initialMilestoneId={initialMilestoneId} /> : null}
-      {tab === "tasks" ? <ProjectTasks projectId={project.id} phases={detail.phases} admin={admin} adminAccounts={adminAccounts} canManage={admin.role === "super" || detail.members.some((member) => Number(member.user_id) === admin.id && member.role === "PROJECT_MANAGER")} initialTaskId={initialTaskId} /> : null}
+      {tab === "tasks" ? <ProjectTasks projectId={project.id} phases={detail.phases} admin={admin} adminAccounts={adminAccounts} canManage={admin.role === "super" || detail.members.some((member) => Number(member.user_id) === admin.id && member.role === "PROJECT_MANAGER")} initialTaskId={initialTaskIdState} /> : null}
       {tab === "files" ? <ProjectFiles projectId={project.id} phases={detail.phases} admin={admin} canManage={admin.role === "super" || detail.members.some((member) => Number(member.user_id) === admin.id && member.role === "PROJECT_MANAGER")} canUpload={admin.role === "super" || detail.members.some((member) => Number(member.user_id) === admin.id && ["PROJECT_MANAGER", "MEMBER"].includes(String(member.role)))} /> : null}
       {tab === "records" ? <ProjectRecords projectId={project.id} admin={admin} accounts={adminAccounts} canManage={admin.role === "super" || detail.members.some((member) => Number(member.user_id) === admin.id && member.role === "PROJECT_MANAGER")} canCreate={admin.role === "super" || detail.members.some((member) => Number(member.user_id) === admin.id && ["PROJECT_MANAGER", "MEMBER"].includes(String(member.role)))} /> : null}
-      {tab === "timeline" ? <ProjectTimeline projectId={project.id} phases={detail.phases} milestones={detail.milestones} admin={admin} onOpenTask={(taskId) => { setInitialTaskId(taskId); setTab("tasks"); }} onOpenMilestone={(milestoneId) => { setInitialMilestoneId(milestoneId); setTab("milestones"); }} /> : null}
+      {tab === "timeline" ? <ProjectTimeline projectId={project.id} phases={detail.phases} milestones={detail.milestones} admin={admin} adminAccounts={adminAccounts} canManage={admin.role === "super" || detail.members.some((member) => Number(member.user_id) === admin.id && member.role === "PROJECT_MANAGER")} onChanged={onRetry} /> : null}
       {tab === "settings" ? <ProjectSettings projectId={project.id} projectStatus={String(project.status)} project={project} admin={admin} isSuper={admin.role === "super"} canManage={admin.role === "super" || detail.members.some((member) => Number(member.user_id) === admin.id && member.role === "PROJECT_MANAGER")} /> : null}
     </div>
   );

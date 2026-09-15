@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#FFE600">
+<title>我们好像开始认识你了 - TheDesignExpo</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:#F7F5F0;color:#222;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC",sans-serif;padding:20px 14px 44px}.shell{width:min(100%,760px);margin:auto}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.brand{display:flex;align-items:center;gap:10px;font-weight:900}.badge{width:40px;height:40px;border:2px solid #222;border-radius:50%;background:#FFE600;display:grid;place-items:center;font-size:12px}.brand small{display:block;font-size:9px;color:#666;letter-spacing:.12em}.brand strong{display:block;font-size:16px}.back{color:#283593;font-size:13px;font-weight:800;text-decoration:none}.hero{margin-bottom:18px}.eyebrow{font-size:12px;color:#E53935;font-weight:900;margin-bottom:10px}.hero h1{margin:0;font-size:clamp(30px,7vw,52px);line-height:1.15}.hero p{margin:14px 0 0;color:#666;font-size:14px;line-height:1.8}.section{background:#fff;border:2px solid #222;border-radius:12px;box-shadow:4px 4px 0 #222;padding:22px;margin-top:18px}.section h2{font-size:19px;margin:0 0 5px}.section>p{color:#666;font-size:13px;line-height:1.7;margin:0 0 16px}.candidates{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.candidate{min-height:52px;padding:11px 12px;border:1.5px solid #bbb;border-radius:8px;background:#fff;text-align:left;font:inherit;font-size:13px;cursor:pointer}.candidate.selected{border-color:#222;background:#FFE600;font-weight:800}.candidate small{display:block;margin-top:4px;color:#777;font-size:11px;font-weight:500}.candidate.selected small{color:#555}.field{margin-top:14px}.field label{display:block;font-size:13px;font-weight:800;margin-bottom:7px}.field input,.field textarea{width:100%;min-height:48px;padding:10px 12px;border:2px solid #222;border-radius:8px;background:#fff;font:inherit;font-size:16px}.field textarea{min-height:90px;resize:vertical}.muted{color:#777;font-size:12px;line-height:1.6}.save{min-height:24px;margin-top:18px;color:#666;font-size:12px}.save.error{color:#E53935}.save.success{color:#00897B}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.button{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:11px 18px;border:2px solid #222;border-radius:8px;background:#FFE600;color:#222;text-decoration:none;font:inherit;font-size:14px;font-weight:800;box-shadow:0 3px 0 #222;cursor:pointer}.button.secondary{background:#fff}.button:disabled{opacity:.5;cursor:not-allowed}.empty{text-align:center;color:#777;padding:40px 0}@media(max-width:560px){body{padding:14px 11px 34px}.top{align-items:flex-start}.section{padding:18px}.candidates{grid-template-columns:1fr}.button{width:100%}.actions{display:grid}}
+</style>
+</head>
+<body>
+<main class="shell">
+  <div class="top"><div class="brand"><div class="badge">TDE</div><div><small>THE DESIGN EXPO</small><strong>奇灯主理人</strong></div></div><a class="back" href="profile.html?section=brand">返回个人中心</a></div>
+  <header class="hero"><div class="eyebrow">你的回答，我们先这样理解</div><h1>我们好像开始认识你了</h1><p>下面是奇灯根据你刚才的真实回答整理出的理解。你可以保留、删除、修改或暂时不使用。</p></header>
+  <div id="app"><div class="empty">正在整理...</div></div>
+</main>
+<script>
+const $=id=>document.getElementById(id),token=()=>localStorage.getItem('tde_token')||'',headers=()=>({'Content-Type':'application/json','Authorization':'Bearer '+token()}),esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let bundle=null,selected={traits:new Set(),display_title:0,representative_line:0,emotion:new Set()},customTraits=[],customTitle='',customLine='',noneTitle=false,noneLine=false;
+function list(type){return(bundle?.insights||[]).filter(item=>item.type===type)}
+function toggleMulti(type,id){selected[type].has(id)?selected[type].delete(id):selected[type].add(id);render()}
+function chooseSingle(type,id){selected[type]=id;type==='display_title'?noneTitle=false:noneLine=false;render()}
+function sourceLabel(source){return source==='fact'?'主理人原话':source==='self'?'你补充的内容':'系统整理'}
+function candidateMarkup(type,multi=false){const items=list(type);if(!items.length)return'<p class="muted">目前没有可确认的候选，可以暂时跳过。</p>';return`<div class="candidates">${items.map(item=>{const isSelected=multi?selected[type].has(item.id):selected[type]===item.id;return`<button type="button" class="candidate ${isSelected?'selected':''}" onclick="${multi?`toggleMulti('${type}',${item.id})`:`chooseSingle('${type}',${item.id})`}">${esc(item.content)}<small>${sourceLabel(item.source)}</small></button>`}).join('')}</div>`}
+function render(){const title=list('display_title'),line=list('representative_line');$('app').innerHTML=`<section class="section"><h2>特点</h2><p>这些是从你的身份、品类、供给、参与方式、客群和风格里整理出的特点。</p>${candidateMarkup('traits',true)}<div class="field"><label>还想补充一点吗？</label><input maxlength="80" value="${esc(customTraits.join('、'))}" oninput="customTraits=this.value.split('、').map(v=>v.trim()).filter(Boolean).slice(0,4)"><p class="muted">多个特点请用“、”分开。</p></div></section><section class="section"><h2>一个适合你的称号</h2><p>这不是职业职称，只是我们暂时想到的表达。</p>${candidateMarkup('display_title')}<div class="field"><label>自己写一个也可以</label><input maxlength="80" value="${esc(customTitle)}" oninput="customTitle=this.value;noneTitle=false"></div><div class="actions"><button type="button" class="button secondary" onclick="noneTitle=true;selected.display_title=0;customTitle='';render()">暂时不要</button></div></section><section class="section"><h2>一句值得留下的话</h2><p>优先保留你自己写下的原话。系统不会把整理后的内容冒充成你说过的话。</p>${line.length?candidateMarkup('representative_line'): '<p class="muted">你没有填写可提炼的原话，可以自己补充，或者暂时跳过。</p>'}<div class="field"><label>换成自己的一句话（选填）</label><textarea maxlength="300" oninput="customLine=this.value;noneLine=false" placeholder="像你平时说话就好。">${esc(customLine)}</textarea></div><div class="actions"><button type="button" class="button secondary" onclick="noneLine=true;selected.representative_line=0;customLine='';render()">暂时不要</button></div></section><section class="section"><h2>你可能带来的感觉</h2><p>这些情绪是根据你的回答推荐的，只有你确认后才会成为正式理解。</p>${candidateMarkup('emotion',true)}</section><div id="saveStatus" class="save"></div><div class="actions"><button type="button" class="button" onclick="saveFeedback('like')">这些挺像我</button><button type="button" class="button secondary" onclick="saveFeedback('edit')">还有一点不像我</button></div>`}
+function setStatus(message,type=''){const el=$('saveStatus');if(el){el.textContent=message;el.className='save '+type}}
+async function json(res){try{return await res.json()}catch{return{}}}
+async function saveFeedback(action){
+  if(action==='edit'){
+    setStatus('你可以继续调整这些内容','success');
+    document.querySelector('.section input:not([type="hidden"]), .section textarea')?.focus();
+    return;
+  }
+  const buttons=document.querySelectorAll('.actions button');
+  buttons.forEach(button=>button.disabled=true);
+  setStatus('正在保存你的确认...');
+  try{
+    bundle=await call('confirmInsights',{traits:{candidateIds:[...selected.traits],customTexts:customTraits},displayTitle:{candidateId:selected.display_title||0,customText:customTitle,none:noneTitle},representativeLine:{candidateId:selected.representative_line||0,customText:customLine,none:noneLine},emotions:{candidateIds:[...selected.emotion]}});
+    setStatus('已记住这些内容','success');
+    render();
+    setStatus('已记住这些内容，接下来确认合作偏好','success');
+    setTimeout(()=>location.href='profile.html?section=brand&subsection=cooperation',350);
+  }catch(error){
+    setStatus(error.message,'error');
+    buttons.forEach(button=>button.disabled=false);
+  }
+}
+async function call(action,body={}){const res=await fetch('/api/web/discovery',{method:'POST',headers:headers(),body:JSON.stringify({action,...body})}),data=await json(res);if(!res.ok)throw new Error(data.error||'操作失败');return data}
+async function init(){if(!token()){location.href='login.html?next=discovery-feedback.html';return}try{const res=await fetch('/api/web/discovery',{headers:{Authorization:'Bearer '+token()},cache:'no-store'});if(res.status===401){location.href='login.html?next=discovery-feedback.html';return}if(!res.ok)throw new Error('理解结果加载失败');bundle=await res.json();if(bundle.session.status==='in_progress'){location.href='discovery.html';return}for(const item of bundle.insights||[]){if(item.status==='confirmed'){if(item.type==='traits')selected.traits.add(item.id);else if(item.type==='emotion')selected.emotion.add(item.id);else selected[item.type]=item.id}}render()}catch(error){$('app').innerHTML=`<div class="empty">${esc(error.message)}</div>`}}
+init();
+</script>
+</body>
+</html>

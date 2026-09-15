@@ -14,6 +14,10 @@ function getTokenFromRequest(request: Request): string {
   return match ? match[1] : "";
 }
 
+function secureCookieSuffix(request: Request) {
+  return new URL(request.url).protocol === "https:" ? "; Secure" : "";
+}
+
 export async function POST(request: Request) {
   try {
     const data = await request.json();
@@ -27,7 +31,7 @@ export async function POST(request: Request) {
         status: 200,
         headers: {
           "content-type": "application/json",
-          "set-cookie": `${COOKIE_NAME}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`,
+          "set-cookie": `${COOKIE_NAME}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}${secureCookieSuffix(request)}`,
         },
       });
     }
@@ -39,7 +43,7 @@ export async function POST(request: Request) {
         status: 200,
         headers: {
           "content-type": "application/json",
-          "set-cookie": `${COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`,
+          "set-cookie": `${COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secureCookieSuffix(request)}`,
         },
       });
     }

@@ -3,7 +3,10 @@ import path from "node:path";
 import crypto from "node:crypto";
 
 const root = process.cwd();
-const sourceRoot = path.resolve(root, "../frontend");
+const bundledFrontend = path.join(root, "frontend");
+const sourceRoot = existsSync(bundledFrontend) && statSync(bundledFrontend).isDirectory()
+  ? bundledFrontend
+  : path.resolve(root, "../frontend");
 const targetRoot = path.join(root, "public");
 const checkOnly = process.argv.includes("--check");
 

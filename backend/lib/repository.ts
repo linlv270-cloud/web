@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import {
   categoryPosterPath,
   cooperationTypes,
+  creatorTaxonomyNamespaces,
   precisionInviteGoals as precisionInviteGoalOptions,
   precisionInviteScenes as precisionInviteSceneOptions,
   projectTagSeeds,
@@ -24,6 +25,7 @@ import { rankTagMatches } from "./tag-search";
 import { isValidLocation } from "./locations";
 import { getCreatorWecomBinding } from "./wecom-bindings";
 import { decryptDesignKey, encryptDesignKey, generateDesignBrief } from "./design-ai";
+import { discoveryProgress } from "./discovery";
 import type {
   ActivityApplication,
   AdminAccount,
@@ -52,7 +54,10 @@ import type {
   PlatformNotification,
   ServiceIntent,
   Tag,
+  TagTaxonomyMapping,
   TagStatus,
+  TaxonomyNamespace,
+  TaxonomyTerm,
   Theme,
   TrendSettings,
   TrendTerm,
@@ -134,6 +139,20 @@ type AdminAccountRow = {
 };
 
 type TagRow = { id: number; label: string; category: string; status: TagStatus; source?: Tag["source"] };
+type TaxonomyTermRow = {
+  id: number;
+  namespace: TaxonomyNamespace;
+  term_key: string;
+  label: string;
+  version: string;
+  status: TaxonomyTerm["status"];
+};
+type TagTaxonomyMappingRow = TaxonomyTermRow & {
+  tag_id: number;
+  taxonomy_term_id: number;
+  source: TagTaxonomyMapping["source"];
+  confidence: number | null;
+};
 type CopyGenerationRow = {
   id: number;
   creator_id: number;
@@ -281,6 +300,10 @@ function mapCreator(row: CreatorRow, includePrivate = true): CreatorProfile {
   const tags = creatorTags(row.id);
   const workKeys = parseJson<string[]>(row.work_keys, []);
   const periods = getBusyPeriods(row.id);
+  const phase2AStartedAt = one<{ updated_at: string }>(
+    "SELECT updated_at FROM creator_section_updates WHERE creator_id = ? AND section = 'phase2a.account'",
+    row.id,
+  )?.updated_at || null;
   const settings = getPlatformSettings();
   const serviceIntents = parseJson<ServiceIntent[]>(row.service_intents, ["writer"]).filter(
     (item): item is ServiceIntent => item === "writer" || item === "opportunity",
@@ -359,6 +382,10 @@ function mapCreator(row: CreatorRow, includePrivate = true): CreatorProfile {
       : !lightsSubmitted
         ? "lights"
         : "complete";
+  const phase2ABasicsCompleted = Boolean(row.brand_name && row.province && row.city && row.district);
+  const phase2AImagesCompleted = Boolean(row.logo_key && row.booth_image_key);
+  const phase2AScheduleConfirmed = Boolean(row.schedule_confirmed_at);
+  const discovery = discoveryProgress(row.id);
   return {
     id: row.id,
     phone: includePrivate ? row.phone : undefined,
@@ -410,6 +437,20 @@ function mapCreator(row: CreatorRow, includePrivate = true): CreatorProfile {
       lightsSubmitted,
       complete: nextStep === "complete",
       nextStep,
+      phase2A: {
+        startedAt: phase2AStartedAt,
+        basicsCompleted: phase2ABasicsCompleted,
+        imagesCompleted: phase2AImagesCompleted,
+        scheduleConfirmed: phase2AScheduleConfirmed,
+        discoveryCompleted: discovery.feedbackCompleted,
+        nextStep: !phase2ABasicsCompleted
+          ? "basics"
+          : !phase2AImagesCompleted
+            ? "images"
+            : !phase2AScheduleConfirmed
+              ? "schedule"
+              : "complete",
+      },
     },
     profileCompleteness: enabledDossierFields.length
       ? Math.round((enabledDossierFields.filter((key) => dossierValues[key]).length / enabledDossierFields.length) * 100)
@@ -739,6 +780,97 @@ export function listTags(includePending = false) {
   return all<TagRow>(
     `SELECT id, label, category, status FROM tags ${includePending ? "" : "WHERE status = 'active'"} ORDER BY id`,
   ).filter((tag) => visibleCategories.has(tag.category));
+}
+
+export function listTaxonomyTerms(namespace?: TaxonomyNamespace, includeInactive = false): TaxonomyTerm[] {
+  if (namespace && !creatorTaxonomyNamespaces.includes(namespace)) throw new Error("机器词典命名空间不正确");
+  const predicates = [includeInactive ? "1 = 1" : "status = 'active'"];
+  const values: string[] = [];
+  if (namespace) {
+    predicates.push("namespace = ?");
+    values.push(namespace);
+  }
+  return all<TaxonomyTermRow>(
+    `SELECT id, namespace, term_key, label, version, status
+     FROM taxonomy_terms
+     WHERE ${predicates.join(" AND ")}
+     ORDER BY namespace, term_key, version`,
+    ...values,
+  ).map((row) => ({
+    id: row.id,
+    namespace: row.namespace,
+    termKey: row.term_key,
+    label: row.label,
+    version: row.version,
+    status: row.status,
+  }));
+}
+
+export function listTagTaxonomyMappings(tagId?: number): TagTaxonomyMapping[] {
+  const where = tagId === undefined ? "" : "WHERE m.tag_id = ?";
+  const values = tagId === undefined ? [] : [tagId];
+  return all<TagTaxonomyMappingRow>(
+    `SELECT m.tag_id, m.taxonomy_term_id, m.source, m.confidence,
+            t.id, t.namespace, t.term_key, t.label, t.version, t.status
+     FROM tag_taxonomy_mappings m
+     JOIN taxonomy_terms t ON t.id = m.taxonomy_term_id
+     ${where}
+     ORDER BY m.tag_id, t.namespace, t.term_key`,
+    ...values,
+  ).map((row) => ({
+    tagId: row.tag_id,
+    taxonomyTermId: row.taxonomy_term_id,
+    namespace: row.namespace,
+    termKey: row.term_key,
+    label: row.label,
+    version: row.version,
+    termStatus: row.status,
+    source: row.source,
+    confidence: row.confidence,
+  }));
+}
+
+export function listCreatorTaxonomyTerms(creatorId: number): TaxonomyTerm[] {
+  return all<TaxonomyTermRow>(
+    `WITH cooperation_state AS (
+       SELECT EXISTS(
+         SELECT 1 FROM creator_cooperation_preferences WHERE creator_id = ?
+       ) AS has_cooperation_preferences
+     )
+     SELECT DISTINCT id, namespace, term_key, label, version, status
+     FROM (
+       SELECT t.id, t.namespace, t.term_key, t.label, t.version, t.status
+       FROM creator_tags ct
+       JOIN tag_taxonomy_mappings m ON m.tag_id = ct.tag_id
+       JOIN taxonomy_terms t ON t.id = m.taxonomy_term_id
+       WHERE ct.creator_id = ? AND t.status = 'active'
+         AND (
+           t.namespace NOT IN ('O', 'X')
+           OR (SELECT has_cooperation_preferences FROM cooperation_state) = 0
+         )
+       UNION ALL
+       SELECT t.id, t.namespace, t.term_key, t.label, t.version, t.status
+       FROM creator_taxonomy_terms ctt
+       JOIN taxonomy_terms t ON t.id = ctt.taxonomy_term_id
+       WHERE ctt.creator_id = ? AND t.status = 'active'
+         AND (
+           t.namespace NOT IN ('O', 'X')
+           OR ctt.source = 'cooperation'
+           OR (SELECT has_cooperation_preferences FROM cooperation_state) = 0
+         )
+     )
+     ORDER BY namespace, term_key, version`,
+    creatorId,
+    creatorId,
+    creatorId,
+  ).map((row) => ({
+    id: row.id,
+    namespace: row.namespace,
+    termKey: row.term_key,
+    label: row.label,
+    version: row.version,
+    status: row.status,
+  }));
 }
 
 export function listCreatorTags(includePending = false) {
@@ -1810,7 +1942,12 @@ export function submitTags(creatorId: number) {
 }
 
 function validDate(value: string) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(`${value}T00:00:00`));
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const [year, month, day] = value.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCFullYear() === year
+    && date.getUTCMonth() === month - 1
+    && date.getUTCDate() === day;
 }
 
 function shanghaiToday() {
@@ -1845,6 +1982,55 @@ export function addBusyPeriod(
      updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
     creatorId,
   );
+  return getCreator(creatorId)!;
+}
+
+type ManualBusyPeriodInput = {
+  startDate?: unknown;
+  endDate?: unknown;
+  note?: unknown;
+};
+
+function normalizeManualBusyPeriods(input: unknown) {
+  if (!Array.isArray(input)) return [];
+  return input.map((item) => {
+    if (!item || typeof item !== "object") throw new Error("活动日期格式不正确");
+    const period = item as ManualBusyPeriodInput;
+    const startDate = cleanText(period.startDate, 10);
+    const endDate = cleanText(period.endDate || period.startDate, 10);
+    if (!validDate(startDate) || !validDate(endDate) || startDate > endDate)
+      throw new Error("活动日期格式不正确");
+    return { startDate, endDate, note: cleanText(period.note, 20) };
+  });
+}
+
+export function replaceManualBusyPeriods(creatorId: number, input: unknown, noBookings: boolean) {
+  if (!getCreator(creatorId)) throw new Error("用户不存在");
+  const periods = normalizeManualBusyPeriods(input);
+  if (noBookings && periods.length) throw new Error("不能同时选择");
+  if (!noBookings && !periods.length) throw new Error("请标记已有安排，或选择“目前没有已占用档期”");
+
+  transaction(() => {
+    run("DELETE FROM busy_periods WHERE creator_id = ? AND source = 'manual'", creatorId);
+    if (!noBookings) {
+      for (const period of periods) {
+        run(
+          "INSERT INTO busy_periods(creator_id, start_date, end_date, note, source) VALUES (?, ?, ?, ?, 'manual')",
+          creatorId,
+          period.startDate,
+          period.endDate,
+          period.note,
+        );
+      }
+    }
+    run(
+      `UPDATE creators SET no_bookings = ?, schedule_confirmed_at = CURRENT_TIMESTAMP,
+       generation_schedule_confirmed_at = NULL, generation_schedule_confirmation_used_at = NULL,
+       updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      noBookings ? 1 : 0,
+      creatorId,
+    );
+  });
   return getCreator(creatorId)!;
 }
 
@@ -1890,6 +2076,15 @@ export function confirmSchedule(creatorId: number) {
     !(creator.busyPeriods || []).length
   )
     throw new Error("请标记已有安排，或选择“近期无计划”");
+  run(
+    "UPDATE creators SET schedule_confirmed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+    creatorId,
+  );
+  return getCreator(creatorId)!;
+}
+
+export function refreshScheduleConfirmation(creatorId: number) {
+  if (!getCreator(creatorId)) throw new Error("用户不存在");
   run(
     "UPDATE creators SET schedule_confirmed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
     creatorId,
