@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { one, run } from "../../../../../../lib/database";
+import { one, run, transaction } from "../../../../../../lib/database";
 import { apiError } from "../../../../../../lib/http";
 import { miniPrincipalFromRequest } from "../../../../../../lib/mini-auth";
 
@@ -45,19 +45,34 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       throw new Error("你已报名该活动");
     }
 
-    if (existing) {
+    transaction(() => {
+      let registrationId = existing?.id;
+      if (existing) {
+        run(
+          "UPDATE event_registrations SET status = 'pending', message = ?, created_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP, reviewed_at = NULL, reviewed_by = '' WHERE id = ?",
+          message, existing.id,
+        );
+      } else {
+        const result = run(
+          "INSERT INTO event_registrations (event_id, creator_id, message) VALUES (?, ?, ?)",
+          eventId, creatorId, message,
+        );
+        registrationId = Number(result.lastInsertRowid);
+      }
       run(
-        "UPDATE event_registrations SET status = 'pending', message = ?, created_at = CURRENT_TIMESTAMP WHERE id = ?",
-        message, existing.id,
+        `INSERT INTO event_registration_actions
+          (registration_id, event_id, creator_id, action, from_status, to_status, actor_type, actor_id, note)
+         VALUES (?, ?, ?, 'apply', ?, 'pending', 'creator', ?, ?)`,
+        registrationId,
+        eventId,
+        creatorId,
+        existing?.status || "",
+        String(creatorId),
+        message,
       );
-    } else {
-      run(
-        "INSERT INTO event_registrations (event_id, creator_id, message) VALUES (?, ?, ?)",
-        eventId, creatorId, message,
-      );
-    }
+    });
 
-    return Response.json({ success: true, message: "报名成功，等待审核" });
+    return Response.json({ success: true, status: "pending", message: "报名申请已提交，请及时联络你的奇灯星探官" });
   } catch (error) {
     return apiError(error);
   }
@@ -74,12 +89,34 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return Response.json({ error: "请先登录" }, { status: 401 });
     }
 
-    run(
-      "UPDATE event_registrations SET status = 'cancelled' WHERE event_id = ? AND creator_id = ?",
-      eventId, principal.actorId,
+    const registration = one<{ id: number; status: string }>(
+      "SELECT id, status FROM event_registrations WHERE event_id = ? AND creator_id = ?",
+      eventId,
+      principal.actorId,
     );
+    if (!registration) throw new Error("你还没有报名该活动");
+    if (!["pending", "approved"].includes(registration.status)) {
+      throw new Error("当前报名状态不可取消");
+    }
 
-    return Response.json({ success: true, message: "已取消报名" });
+    transaction(() => {
+      run(
+        "UPDATE event_registrations SET status = 'cancelled', updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+        registration.id,
+      );
+      run(
+        `INSERT INTO event_registration_actions
+          (registration_id, event_id, creator_id, action, from_status, to_status, actor_type, actor_id)
+         VALUES (?, ?, ?, 'cancel', ?, 'cancelled', 'creator', ?)`,
+        registration.id,
+        eventId,
+        principal.actorId,
+        registration.status,
+        String(principal.actorId),
+      );
+    });
+
+    return Response.json({ success: true, status: "cancelled", message: "已取消报名" });
   } catch (error) {
     return apiError(error);
   }

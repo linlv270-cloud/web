@@ -21,6 +21,22 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
        ORDER BY er.created_at DESC`,
       Number(id),
     );
+    const registrationIds = registrations.map((registration) => registration.id);
+    const actions = registrationIds.length
+      ? all<any>(
+          `SELECT id, registration_id, action, from_status, to_status, actor_type, actor_id, note, created_at
+           FROM event_registration_actions
+           WHERE registration_id IN (${registrationIds.map(() => "?").join(",")})
+           ORDER BY created_at ASC, id ASC`,
+          ...registrationIds,
+        )
+      : [];
+    const actionsByRegistration = new Map<number, any[]>();
+    for (const action of actions) {
+      const list = actionsByRegistration.get(action.registration_id) || [];
+      list.push(action);
+      actionsByRegistration.set(action.registration_id, list);
+    }
 
     return Response.json({
       event: {
@@ -31,6 +47,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       registrations: registrations.map((r) => ({
         ...r,
         logoUrl: r.logo_key ? assetUrl(r.logo_key) : "",
+        operationRecords: actionsByRegistration.get(r.id) || [],
       })),
     });
   } catch (error) {
@@ -48,7 +65,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     const fields = [];
     const values = [];
-    const allowed = ["title", "short_intro", "description", "province", "city", "district", "address", "start_date", "end_date", "registration_deadline", "max_participants", "status", "organizer"];
+    const allowed = ["title", "short_intro", "description", "province", "city", "district", "address", "start_date", "end_date", "business_hours", "registration_deadline", "max_participants", "status", "organizer"];
     allowed.forEach((f) => {
       if (data[f] !== undefined) {
         fields.push(`${f} = ?`);

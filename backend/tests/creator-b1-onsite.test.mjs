@@ -52,7 +52,7 @@ test("B1 published static page matches the frontend source", () => {
 });
 
 test("B1 is reachable from the logged-in creator navigation", () => {
-  assert.match(profile, /['"]onsite['"],['"]品牌体验['"]/);
+  assert.match(profile, /['"]onsite['"],['"]我的体验['"]/);
   assert.match(profile, /location\.href='onsite\.html'/);
   assert.equal(publishedProfile, profile);
 });

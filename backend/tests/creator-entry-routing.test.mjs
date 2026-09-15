@@ -44,7 +44,7 @@ test("creator entry routes a complete basic profile to the A1-3 target", () => {
         onboarding: { phase2A: { basicsCompleted: true } },
       },
     }),
-    "profile.html?section=schedule",
+    "profile.html?section=overview",
   );
 });
 
@@ -80,6 +80,6 @@ test("creator entry routes complete profile to maintenance after schedule is see
         onboarding: { phase2A: { basicsCompleted: true } },
       },
     }),
-    "profile.html?section=atlas",
+    "profile.html?section=overview",
   );
 });

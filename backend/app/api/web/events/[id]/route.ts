@@ -20,6 +20,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     address: string;
     start_date: string;
     end_date: string;
+    business_hours: string;
     registration_deadline: string;
     category_tags: string;
     max_participants: number;
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     view_count: number;
   }>(
     `SELECT id, reference, title, short_intro, description, cover_key,
-            province, city, district, address, start_date, end_date,
+            province, city, district, address, start_date, end_date, business_hours,
             registration_deadline, category_tags, max_participants, status,
             organizer, view_count
      FROM tde_events
@@ -68,6 +69,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       address: event.address,
       start_date: event.start_date,
       end_date: event.end_date,
+      business_hours: event.business_hours,
       registration_deadline: event.registration_deadline,
       max_participants: event.max_participants,
       status: event.status,

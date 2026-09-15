@@ -43,8 +43,8 @@ const retiredPages = [
 for (const retiredWebPage of ["app/login/page.tsx", "app/join/page.tsx", "app/studio/page.tsx"]) {
   if (exists(retiredWebPage)) fail(`旧创作者密码网页仍存在：${retiredWebPage}`);
 }
-if (!read("app/page.tsx").includes('redirect("/admin/login")')) fail("网页根地址必须进入奇灯运营台登录页");
-else pass("网页根地址只进入奇灯运营台，旧创作者密码页面已退休。");
+if (!read("app/page.tsx").includes('redirect("/register.html")')) fail("网页根地址必须进入主理人注册页");
+else pass("网页根地址进入主理人注册页，旧创作者密码页面已退休。");
 
 const forbiddenPhrases = [
   "启灯",

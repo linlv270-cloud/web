@@ -313,13 +313,16 @@ export async function POST(request: Request) {
       const style = normalizeSignalList(data.style, creatorV1StyleOptions, "品牌风格");
       const audience = normalizeSignalList(data.audience, creatorV1AudienceOptions, "适合人群");
       const inviteTypes = normalizeSignalList(data.inviteTypes, opportunityInterestOptions, "邀约类型");
+      const customWork = normalizeCustomSignalList(data.workCustom, "创作品类");
       const customStyle = normalizeCustomSignalList(data.styleCustom, "品牌风格");
       const customAudience = normalizeCustomSignalList(data.audienceCustom, "适合人群");
+      if (work.length + customWork.length > 8) throw new Error("创作品类最多选择8项");
       const selectedLabels = new Set([...work, ...style, ...audience]);
       if (style.length + customStyle.length > 8) throw new Error("品牌风格最多选择8项");
       if (audience.length + customAudience.length > 8) throw new Error("适合人群最多选择8项");
       if (customStyle.some((item) => creatorV1StyleOptions.includes(item as (typeof creatorV1StyleOptions)[number]))) throw new Error("品牌风格自定义内容已存在");
       if (customAudience.some((item) => creatorV1AudienceOptions.includes(item as (typeof creatorV1AudienceOptions)[number]))) throw new Error("适合人群自定义内容已存在");
+      if (customWork.some((item) => creatorV1WorkOptions.includes(item as (typeof creatorV1WorkOptions)[number]))) throw new Error("创作品类自定义内容已存在");
       for (const label of creatorV1WorkOptions)
         run("INSERT OR IGNORE INTO tags(label, category, status) VALUES (?, '我的作品', 'active')", label);
       for (const label of creatorV1StyleOptions)
@@ -354,16 +357,18 @@ export async function POST(request: Request) {
            WHERE creator_id = ?
              AND tag_id IN (
                SELECT id FROM tags
-               WHERE category IN ('我的风格', '我的客群')
-                 AND label NOT IN (${[...creatorV1StyleOptions, ...creatorV1AudienceOptions].map(() => "?").join(",")})
+               WHERE category IN ('我的作品', '我的风格', '我的客群')
+                 AND label NOT IN (${[...creatorV1WorkOptions, ...creatorV1StyleOptions, ...creatorV1AudienceOptions].map(() => "?").join(",")})
              )`,
           creatorId,
+          ...creatorV1WorkOptions,
           ...creatorV1StyleOptions,
           ...creatorV1AudienceOptions,
         );
         for (const tag of selectedTags)
           run("INSERT OR IGNORE INTO creator_tags(creator_id, tag_id, source) VALUES (?, ?, 'creator')", creatorId, tag.id);
       });
+      for (const label of customWork) claimTag(creatorId, { category: "我的作品", customLabel: label });
       for (const label of customStyle) claimTag(creatorId, { category: "我的风格", customLabel: label });
       for (const label of customAudience) claimTag(creatorId, { category: "我的客群", customLabel: label });
       const existingCooperation = getCooperationPreferences(creatorId);
@@ -383,7 +388,7 @@ export async function POST(request: Request) {
       markCreatorSection(creatorId, "tags");
       return Response.json({
         success: true,
-        profileSignals: { work, style: [...style, ...customStyle], audience: [...audience, ...customAudience], inviteTypes },
+        profileSignals: { work: [...work, ...customWork], style: [...style, ...customStyle], audience: [...audience, ...customAudience], inviteTypes },
         cooperationPreferences,
         creator: getCreator(creatorId),
       });

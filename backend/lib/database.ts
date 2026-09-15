@@ -767,6 +767,7 @@ function schema(db: DatabaseSync) {
       address TEXT NOT NULL DEFAULT '',
       start_date TEXT NOT NULL DEFAULT '',
       end_date TEXT NOT NULL DEFAULT '',
+      business_hours TEXT NOT NULL DEFAULT '',
       registration_deadline TEXT NOT NULL DEFAULT '',
       category_tags TEXT NOT NULL DEFAULT '[]',
       max_participants INTEGER NOT NULL DEFAULT 0,
@@ -794,6 +795,24 @@ function schema(db: DatabaseSync) {
     );
     CREATE INDEX IF NOT EXISTS event_registrations_event_idx ON event_registrations(event_id, status, created_at DESC);
     CREATE INDEX IF NOT EXISTS event_registrations_creator_idx ON event_registrations(creator_id, created_at DESC);
+
+    CREATE TABLE IF NOT EXISTS event_registration_actions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      registration_id INTEGER NOT NULL REFERENCES event_registrations(id) ON DELETE CASCADE,
+      event_id INTEGER NOT NULL REFERENCES tde_events(id) ON DELETE CASCADE,
+      creator_id INTEGER NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+      action TEXT NOT NULL CHECK(action IN ('apply', 'cancel', 'review')),
+      from_status TEXT NOT NULL DEFAULT '',
+      to_status TEXT NOT NULL DEFAULT '',
+      actor_type TEXT NOT NULL CHECK(actor_type IN ('creator', 'admin', 'system')),
+      actor_id TEXT NOT NULL DEFAULT '',
+      note TEXT NOT NULL DEFAULT '',
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+    CREATE INDEX IF NOT EXISTS event_registration_actions_registration_idx
+      ON event_registration_actions(registration_id, created_at ASC, id ASC);
+    CREATE INDEX IF NOT EXISTS event_registration_actions_creator_idx
+      ON event_registration_actions(creator_id, created_at DESC);
 
     CREATE TABLE IF NOT EXISTS activities (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1623,6 +1642,16 @@ function schema(db: DatabaseSync) {
     const columns = db.prepare("PRAGMA table_info(visualization_users)").all() as { name: string }[];
     if (!columns.some((col) => col.name === "access_scope")) {
       db.exec("ALTER TABLE visualization_users ADD COLUMN access_scope TEXT NOT NULL DEFAULT 'all'");
+    }
+  } catch {
+    // 表不存在时忽略，schema 已包含该字段
+  }
+
+  // 迁移：活动增加营业时间字段（旧数据库兼容）
+  try {
+    const columns = db.prepare("PRAGMA table_info(tde_events)").all() as { name: string }[];
+    if (!columns.some((col) => col.name === "business_hours")) {
+      db.exec("ALTER TABLE tde_events ADD COLUMN business_hours TEXT NOT NULL DEFAULT ''");
     }
   } catch {
     // 表不存在时忽略，schema 已包含该字段

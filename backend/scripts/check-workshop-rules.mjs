@@ -314,7 +314,7 @@ pass("重点界面与前端数据未发现库存、积分、名额占用等已�
 for (const retiredPage of ["app/login/page.tsx", "app/join/page.tsx", "app/studio/page.tsx"]) {
   if (fs.existsSync(path.join(root, retiredPage))) fail(`旧创作者密码页面不应存在：${retiredPage}`);
 }
-mustInclude("app/page.tsx", ['redirect("/admin/login")'], "网页运营台入口");
+mustInclude("app/page.tsx", ['redirect("/register.html")'], "网页主理人入口");
 pass("网页只公开运营台入口，创作者继续使用小程序微信授权身份。");
 
 if (failures.length) {

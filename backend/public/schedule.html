@@ -41,7 +41,7 @@ ul{list-style:none;}
 }
 .topbar-logo{display:flex;align-items:center;gap:10px;cursor:pointer;}
 .topbar-logo .badge{
-  width:40px;height:40px;border-radius:50%;background:var(--yellow);
+  width:40px;height:40px;border-radius:0;background:var(--yellow);
   border:2.5px solid var(--text);display:flex;align-items:center;justify-content:center;
   font-weight:900;font-size:13px;color:var(--text);flex-shrink:0;
 }
@@ -64,7 +64,7 @@ ul{list-style:none;}
 .topbar-login-btn:hover{background:var(--yellow-light);}
 .topbar-user{display:none;align-items:center;gap:8px;cursor:pointer;}
 .topbar-avatar{
-  width:36px;height:36px;border-radius:50%;background:var(--pink);
+  width:36px;height:36px;border-radius:0;background:var(--pink);
   border:2px solid var(--text);display:flex;align-items:center;justify-content:center;
   font-weight:900;font-size:14px;color:var(--text);overflow:hidden;
 }
@@ -313,6 +313,7 @@ body.embed.a13-embed .embedded-schedule-actions{display:none}
 .embedded-schedule-actions p{margin-top:7px;color:var(--text-light);font-size:12px;line-height:1.7}
 .day.platform-busy{background:#BBDEFB;border-color:#283593;color:#283593}
 .day.platform-busy:hover{transform:none;cursor:not-allowed}
+.install-app-btn{display:none!important}
 </style>
 <style>
 .install-app-btn[hidden]{display:none}
@@ -326,7 +327,7 @@ body.embed.a13-embed .embedded-schedule-actions{display:none}
 <!-- Top Bar -->
 <header class="topbar">
   <div class="topbar-inner">
-    <div class="topbar-logo" onclick="location.href='index.html'">
+    <div class="topbar-logo" onclick="location.href='profile.html?section=schedule'">
       <div class="badge">TDE</div>
       <div class="logo-text">
         <span class="logo-main">TheDesignExpo</span>
@@ -343,7 +344,7 @@ body.embed.a13-embed .embedded-schedule-actions{display:none}
     </div>
   </div>
 </header>
-<script>(()=>{try{const c=JSON.parse(localStorage.getItem('tde_creator')||'null'),a=document.getElementById('topbarAvatar');if(a&&c?.brandName)a.textContent=c.brandName.charAt(0)}catch(e){}})();</script>
+<script>(()=>{try{const c=JSON.parse(localStorage.getItem('tde_creator')||'null'),a=document.getElementById('topbarAvatar');if(a)a.textContent=c?.logoImageUrl?'':(c?.brandName||'创').charAt(0)}catch(e){}})();</script>
 <script src="pwa-install.js" defer></script>
 
 <div class="page">
@@ -907,14 +908,15 @@ function showAvatarFallback(creator){
   avatar.textContent=(creator?.brandName||'创').charAt(0);
 }
 async function renderTopbarAvatar(creator,token){
-  showAvatarFallback(creator);
+  const avatar=$('topbarAvatar');
+  if(creator?.logoImageUrl){avatar.innerHTML='';avatar.textContent='';}else showAvatarFallback(creator);
   if(!creator?.logoImageUrl)return;
   const renderSeq=topbarAvatarRenderSeq;
   try{
     const res=await fetch(creator.logoImageUrl,{headers:{'Authorization':'Bearer '+token},cache:'no-store'});
     if(!res.ok)throw new Error();
     const url=URL.createObjectURL(await res.blob()),avatar=$('topbarAvatar'),img=document.createElement('img');
-    img.src=url;img.alt='品牌 Logo';img.style.cssText='width:100%;height:100%;border-radius:50%;object-fit:cover';
+    img.src=url;img.alt='品牌 Logo';img.style.cssText='width:100%;height:100%;border-radius:0;object-fit:cover';
     await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject});
     if(renderSeq!==topbarAvatarRenderSeq){URL.revokeObjectURL(url);return}
     topbarAvatarObjectUrl=url;

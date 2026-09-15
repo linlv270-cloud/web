@@ -112,6 +112,7 @@ try {
   fs.writeFileSync(path.join(staging, "RELEASE_MANIFEST.json"), `${JSON.stringify({
     name: packageJson.name,
     version: packageJson.version,
+    packageKind: "source-only-build-input",
     createdAt: new Date().toISOString(),
     checks: process.env.RELEASE_SKIP_CHECKS === "YES" ? "performed separately" : "check:all and test passed before packaging",
     selfContained: true,

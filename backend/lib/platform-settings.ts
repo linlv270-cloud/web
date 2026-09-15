@@ -373,7 +373,7 @@ export const defaultPlatformSettings: PlatformSettings = {
   headline: "让TDE在合适的时候想到你",
   subheadline:
     "告诉我们你在做什么、在哪里、近期有什么安排。遇到合适的市集、快闪、空间、品牌和活动合作时，TDE可以更准确地联系你。",
-  contactText: "联系TDE\n官方微信：aaabht\n小红书：12345",
+  contactText: "联系TDE\n官方微信：aaabht\n小红书ID:641926845",
   profileExample:
     "例如：独立手作品牌，专注天然材料首饰，适合市集、快闪和线下体验活动。",
   scheduleTitle: "更新线下活动日期匹配热搜词",

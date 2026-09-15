@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>活动详情 · TDE</title>
+<title>活动详情 · 奇灯®TDE</title>
 <style>
 :root{
   --yellow:#FFE600;--yellow-light:#FFF3B0;
@@ -28,9 +28,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .container{max-width:800px;margin:0 auto;padding:20px;}
 
 .event-hero{background:var(--card);border:2px solid var(--text);border-radius:16px;overflow:hidden;margin-bottom:20px;}
-.event-cover{height:240px;background:var(--blue-light);display:flex;align-items:center;justify-content:center;position:relative;}
+.event-cover{width:min(100%,420px);aspect-ratio:3 / 4;margin:0 auto;background:var(--blue-light);display:flex;align-items:center;justify-content:center;position:relative;}
 .event-cover img{width:100%;height:100%;object-fit:cover;}
-.event-status{position:absolute;top:16px;right:16px;padding:6px 16px;border-radius:999px;font-size:12px;font-weight:700;border:2px solid var(--text);}
+.event-cover-title{width:100%;height:100%;padding:36px 28px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:clamp(28px,6vw,48px);font-weight:900;line-height:1.22;color:var(--blue);overflow-wrap:anywhere;}
+.event-status{display:inline-block;margin-bottom:12px;padding:6px 16px;border-radius:999px;font-size:12px;font-weight:700;border:2px solid var(--text);}
 .event-status.recruiting{background:var(--green);color:#fff;}
 .event-status.full{background:var(--orange);color:#fff;}
 .event-status.ended{background:var(--text-light);color:#fff;}
@@ -52,7 +53,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .register-info{display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px;font-size:14px;}
 .register-info span{display:flex;align-items:center;gap:6px;}
 .register-info b{color:var(--red);}
-.register-form textarea{width:100%;padding:12px;border:2px solid var(--text);border-radius:10px;font-family:inherit;font-size:14px;resize:vertical;min-height:80px;margin-bottom:12px;background:var(--card);}
 .register-btn{width:100%;border:2px solid var(--text);background:var(--text);color:var(--yellow);border-radius:999px;padding:14px;font-size:16px;font-weight:900;cursor:pointer;font-family:inherit;transition:all .2s;}
 .register-btn:hover{background:var(--yellow);color:var(--text);}
 .register-btn:disabled{opacity:.5;cursor:not-allowed;}
@@ -71,7 +71,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 
 @media(max-width:600px){
   .event-meta-grid{grid-template-columns:1fr;}
-  .event-cover{height:160px;}
+  .event-cover{width:100%;}
   .event-title{font-size:20px;}
 }
 </style>
@@ -79,8 +79,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 <body>
 
 <header class="topbar">
-  <a href="calendar.html" class="back-btn">← 返回日历</a>
-  <div class="logo" onclick="location.href='index.html'">TDE<span>·</span>活动</div>
+  <a href="profile.html?section=activities" class="back-btn">← 返回我的邀约</a>
+  <div class="logo" onclick="location.href='profile.html?section=schedule'">奇灯®TDE</div>
   <div class="topbar-right" id="topbarRight"></div>
 </header>
 
@@ -88,7 +88,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
   <!-- Hero -->
   <div class="event-hero">
     <div class="event-cover" id="eventCover">
-      <div style="font-size:60px;font-weight:900;color:var(--blue)">TDE</div>
+      <div class="event-cover-title"></div>
     </div>
     <div class="event-content">
       <div class="event-status" id="eventStatus">招募中</div>
@@ -98,6 +98,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         <div class="meta-item">
           <div class="meta-label">活动时间</div>
           <div class="meta-value" id="eventDate"></div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">营业时间</div>
+          <div class="meta-value" id="eventBusinessHours"></div>
         </div>
         <div class="meta-item">
           <div class="meta-label">报名截止</div>
@@ -112,12 +116,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
           <div class="meta-value" id="eventOrganizer"></div>
         </div>
         <div class="meta-item">
-          <div class="meta-label">招募品类</div>
+          <div class="meta-label">招募数量</div>
           <div class="meta-value" id="eventSlots"></div>
-        </div>
-        <div class="meta-item">
-          <div class="meta-label">浏览量</div>
-          <div class="meta-value" id="eventViews"></div>
         </div>
       </div>
       <div class="event-tags" id="eventTags"></div>
@@ -136,12 +136,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
     <div class="register-info" id="registerInfo"></div>
     <div id="conflictWarning" style="display:none" class="conflict-warning"></div>
     <div id="registerFormArea">
-      <textarea id="registerMessage" placeholder="留言（选填）：介绍你的品牌、想带的作品、特殊需求等"></textarea>
       <button class="register-btn" id="registerBtn" onclick="submitRegister()">确认报名</button>
     </div>
     <div id="registeredArea" style="display:none;text-align:center">
       <div class="status-badge" id="myRegStatus"></div>
-      <p style="margin-top:12px;font-size:13px;color:var(--text-light)" id="myRegMessage"></p>
       <button class="register-btn cancel" style="margin-top:16px;max-width:200px" id="cancelBtn" onclick="cancelRegister()">取消报名</button>
     </div>
   </div>
@@ -176,14 +174,14 @@ function checkLogin(){
 
 async function loadEvent(){
   const id = getEventId();
-  if(!id){ location.href = 'calendar.html'; return; }
+  if(!id){ location.href = 'profile.html?section=activities'; return; }
   try{
     const headers = {};
     const token = localStorage.getItem('tde_token');
     if(token) headers['Authorization'] = 'Bearer ' + token;
     const res = await fetch(`/api/web/events/${id}`, { headers });
     const data = await res.json();
-    if(data.error){ toast(data.error); setTimeout(()=>location.href='calendar.html', 1500); return; }
+    if(data.error){ toast(data.error); setTimeout(()=>location.href='profile.html?section=activities', 1500); return; }
     eventData = data.event;
     myReg = data.myRegistration;
     renderEvent();
@@ -199,9 +197,7 @@ async function loadEvent(){
 
 function renderEvent(){
   const e = eventData;
-  if(e.coverUrl){
-    $('eventCover').innerHTML = `<img src="${e.coverUrl}" alt="${e.title}">`;
-  }
+  renderEventCover(e);
   const statusText = {recruiting:'招募中', full:'已满员', ended:'已结束', cancelled:'已取消'}[e.status] || e.status;
   const statusEl = $('eventStatus');
   statusEl.textContent = statusText;
@@ -214,11 +210,11 @@ function renderEvent(){
   const end = new Date(e.end_date);
   const dateStr = `${start.getFullYear()}.${start.getMonth()+1}.${start.getDate()} - ${end.getFullYear()}.${end.getMonth()+1}.${end.getDate()}`;
   $('eventDate').textContent = dateStr;
+  $('eventBusinessHours').textContent = e.business_hours || '—';
   $('eventDeadline').textContent = e.registration_deadline || '无';
   $('eventLocation').textContent = `${e.province} ${e.city} ${e.district || ''} ${e.address || ''}`;
-  $('eventOrganizer').textContent = e.organizer || 'TDE官方';
-  $('eventSlots').textContent = e.max_participants ? `剩余${e.remaining}/${e.max_participants}个名额` : '名额不限';
-  $('eventViews').textContent = e.view_count + ' 次';
+  $('eventOrganizer').textContent = '奇灯®TDE';
+  $('eventSlots').textContent = e.max_participants ? `${e.max_participants}人` : '不限';
 
   $('eventTags').innerHTML = e.categoryTags.map(t => `<span class="event-tag">${t}</span>`).join('');
   $('eventDesc').textContent = e.description || '暂无详细介绍';
@@ -243,11 +239,10 @@ function renderRegisterArea(){
     // 已报名
     $('registerFormArea').style.display = 'none';
     $('registeredArea').style.display = 'block';
-    const statusText = {pending:'待审核', approved:'已确认', rejected:'已拒绝', cancelled:'已取消'}[myReg.status] || myReg.status;
+    const statusText = {pending:'审核中', approved:'报名成功', rejected:'未通过', cancelled:'已取消'}[myReg.status] || myReg.status;
     $('myRegStatus').textContent = statusText;
     $('myRegStatus').className = 'status-badge ' + myReg.status;
-    $('myRegMessage').textContent = myReg.message ? `留言：${myReg.message}` : '等待主办方审核，结果将通过站内信通知';
-    $('cancelBtn').style.display = myReg.status === 'pending' ? 'inline-block' : 'none';
+    $('cancelBtn').style.display = ['pending', 'approved'].includes(myReg.status) ? 'inline-block' : 'none';
   }else{
     // 未报名
     $('registerFormArea').style.display = 'block';
@@ -288,7 +283,6 @@ async function checkScheduleConflict(){
 }
 
 async function submitRegister(){
-  const message = $('registerMessage').value;
   const btn = $('registerBtn');
   btn.disabled = true;
   btn.textContent = '提交中...';
@@ -296,18 +290,34 @@ async function submitRegister(){
     const res = await fetch(`/api/web/events/${eventData.id}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('tde_token') },
-      body: JSON.stringify({ message })
+      body: JSON.stringify({ message: '' })
     });
     const data = await res.json();
     if(data.error){ toast(data.error); btn.disabled = false; btn.textContent = '确认报名'; return; }
-    toast('报名成功，等待审核');
-    myReg = { status: 'pending', message };
+    window.alert('请及时联络你的奇灯星探官');
+    myReg = { status: 'pending', message: '' };
     renderRegisterArea();
   }catch(e){
     toast('报名失败，请重试');
     btn.disabled = false;
     btn.textContent = '确认报名';
   }
+}
+
+function renderEventCover(event){
+  const cover = $('eventCover');
+  cover.innerHTML = '';
+  if(event.coverUrl){
+    const image = document.createElement('img');
+    image.src = event.coverUrl;
+    image.alt = event.title || '活动海报';
+    cover.appendChild(image);
+    return;
+  }
+  const fallback = document.createElement('div');
+  fallback.className = 'event-cover-title';
+  fallback.textContent = event.title || '';
+  cover.appendChild(fallback);
 }
 
 async function cancelRegister(){

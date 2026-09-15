@@ -15,7 +15,8 @@ export async function POST(request: Request) {
     const phase2A = data.flow === "phase2a";
     const phone = normalizePhone(String(data.phone || ""));
     const confirmPhone = normalizePhone(String(data.confirmPhone || ""));
-    const password = String(data.password || "");
+    const rawPassword = String(data.password || "");
+    const password = creatorV1 ? rawPassword.replace(/\s+/g, "") : rawPassword;
     const confirmPassword = String(data.confirmPassword || "");
     const inviteCode = String(data.inviteCode || "").trim().toUpperCase();
     const province = String(data.province || "").trim();

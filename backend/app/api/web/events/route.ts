@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
   const events = all<any>(
     `SELECT id, reference, title, short_intro, cover_key, province, city, district, address,
-      start_date, end_date, registration_deadline, category_tags, max_participants, status, organizer,
+      start_date, end_date, business_hours, registration_deadline, category_tags, max_participants, status, organizer,
       (SELECT COUNT(*) FROM event_registrations WHERE event_id = tde_events.id AND status IN ('pending','approved')) as registered_count
      FROM tde_events ${where}
      ORDER BY start_date ASC`,
@@ -50,6 +50,7 @@ export async function GET(request: NextRequest) {
     address: e.address,
     start_date: e.start_date,
     end_date: e.end_date,
+    business_hours: e.business_hours,
     registration_deadline: e.registration_deadline,
     category_tags: e.category_tags,
     max_participants: e.max_participants,

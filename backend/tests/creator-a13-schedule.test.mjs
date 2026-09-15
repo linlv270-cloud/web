@@ -42,7 +42,7 @@ test("A1-3 does not show the last confirmation timestamp in the schedule panel",
 
 test("creator profile logo and avatar return to the schedule home", () => {
   assert.match(profile, /class="brandmark" onclick="location\.href='profile\.html\?section=schedule'"/);
-  assert.match(profile, /id="topAvatar"[^>]+onclick="location\.href='profile\.html\?section=schedule'"/);
+  assert.match(profile, /id="topAvatar"[^>]+onclick="location\.href='profile\.html\?section=overview'"/);
   assert.doesNotMatch(profile, /class="brandmark" onclick="location\.href='index\.html'"/);
   assert.equal(publishedProfile, profile);
 });

@@ -8,10 +8,7 @@
     const creator = payload && payload.creator ? payload.creator : {};
     const basicsCompleted = isA12ProfileComplete(creator);
     if (!basicsCompleted) return "profile.html?section=brand";
-    const key = scheduleSessionKey(creator);
-    return key && getScheduleSessionValue(key) === "1"
-      ? "profile.html?section=atlas"
-      : "profile.html?section=schedule";
+    return "profile.html?section=overview";
   }
 
   function isA12ProfileComplete(creator) {

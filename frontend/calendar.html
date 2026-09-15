@@ -130,6 +130,9 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 </style>
 </head>
 <body>
+<script>
+  location.replace(localStorage.getItem('tde_token') ? 'profile.html?section=schedule' : 'login.html');
+</script>
 
 <header class="topbar">
   <div class="logo" onclick="location.href='index.html'">TDE<span>·</span>活动日历</div>

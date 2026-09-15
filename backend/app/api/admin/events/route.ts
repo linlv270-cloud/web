@@ -40,8 +40,8 @@ export async function POST(request: NextRequest) {
 
     run(
       `INSERT INTO tde_events (reference, title, short_intro, description, province, city, district, address,
-        start_date, end_date, registration_deadline, category_tags, max_participants, status, organizer, created_by_admin_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        start_date, end_date, business_hours, registration_deadline, category_tags, max_participants, status, organizer, created_by_admin_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       reference,
       data.title || "",
       data.short_intro || "",
@@ -52,6 +52,7 @@ export async function POST(request: NextRequest) {
       data.address || "",
       data.start_date || "",
       data.end_date || "",
+      data.business_hours || "",
       data.registration_deadline || "",
       JSON.stringify(data.category_tags || []),
       data.max_participants || 0,

@@ -2180,13 +2180,24 @@ function TrendLibraryView({ showToast }: { showToast: (message: string) => void 
 type TdeEvent = {
   id: number; title: string; short_intro: string; description: string; coverUrl: string;
   province: string; city: string; district: string; address: string;
-  start_date: string; end_date: string; registration_deadline: string;
+  start_date: string; end_date: string; business_hours: string; registration_deadline: string;
   categoryTags: string[]; max_participants: number; status: string; organizer: string;
   registeredCount: number; view_count: number;
 };
 type EventRegistration = {
   id: number; event_id: number; creator_id: number; status: string; message: string;
   created_at: string; brand_name: string; phone: string; slogan: string; logoUrl: string;
+  operationRecords: Array<{ id: number; action: string; from_status: string; to_status: string; actor_type: string; note: string; created_at: string }>;
+};
+
+type EventCreatorDetail = {
+  id: number; phone: string; userName: string; brandName: string; slogan: string; intro: string;
+  province: string; city: string; district: string; wechat: string; socialAccount: string;
+  registeredWithCode: string; logoUrl: string; representativeImageUrl: string;
+  tags: Array<{ id: number; label: string; category: string; status: string }>;
+  opportunityTypes: string[]; precisionInviteGoals: string[]; precisionInviteScenes: string[];
+  xiaohongshuFollowers: number | null; xiaohongshuUrl: string;
+  douyinFollowers: number | null; douyinUrl: string;
 };
 
 function EventsView({ showToast, onRefresh }: { showToast: (message: string) => void; onRefresh: () => void }) {
@@ -2196,7 +2207,9 @@ function EventsView({ showToast, onRefresh }: { showToast: (message: string) => 
   const [editing, setEditing] = useState<TdeEvent | null>(null);
   const [detailEvent, setDetailEvent] = useState<TdeEvent | null>(null);
   const [registrations, setRegistrations] = useState<EventRegistration[]>([]);
-  const [form, setForm] = useState({ title: "", short_intro: "", description: "", province: "", city: "", district: "", address: "", start_date: "", end_date: "", registration_deadline: "", category_tags: "", max_participants: 0, status: "draft", organizer: "TDE官方" });
+  const [creatorDetail, setCreatorDetail] = useState<EventCreatorDetail | null>(null);
+  const [creatorDetailLoading, setCreatorDetailLoading] = useState(false);
+  const [form, setForm] = useState({ title: "", short_intro: "", description: "", province: "", city: "", district: "", address: "", start_date: "", end_date: "", business_hours: "", registration_deadline: "", category_tags: "", max_participants: 0, status: "draft", organizer: "奇灯®TDE" });
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -2212,13 +2225,13 @@ function EventsView({ showToast, onRefresh }: { showToast: (message: string) => 
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ title: "", short_intro: "", description: "", province: "", city: "", district: "", address: "", start_date: "", end_date: "", registration_deadline: "", category_tags: "", max_participants: 0, status: "draft", organizer: "TDE官方" });
+    setForm({ title: "", short_intro: "", description: "", province: "", city: "", district: "", address: "", start_date: "", end_date: "", business_hours: "", registration_deadline: "", category_tags: "", max_participants: 0, status: "draft", organizer: "奇灯®TDE" });
     setShowForm(true);
   };
 
   const openEdit = (e: TdeEvent) => {
     setEditing(e);
-    setForm({ title: e.title, short_intro: e.short_intro, description: e.description, province: e.province, city: e.city, district: e.district, address: e.address, start_date: e.start_date, end_date: e.end_date, registration_deadline: e.registration_deadline, category_tags: e.categoryTags.join("、"), max_participants: e.max_participants, status: e.status, organizer: e.organizer });
+    setForm({ title: e.title, short_intro: e.short_intro, description: e.description, province: e.province, city: e.city, district: e.district, address: e.address, start_date: e.start_date, end_date: e.end_date, business_hours: e.business_hours || "", registration_deadline: e.registration_deadline, category_tags: e.categoryTags.join("、"), max_participants: e.max_participants, status: e.status, organizer: "奇灯®TDE" });
     setShowForm(true);
   };
 
@@ -2247,10 +2260,24 @@ function EventsView({ showToast, onRefresh }: { showToast: (message: string) => 
     } catch { showToast("加载详情失败"); }
   };
 
+  const viewCreator = async (registration: EventRegistration) => {
+    if (!detailEvent) return;
+    setCreatorDetailLoading(true);
+    try {
+      const res = await fetch(`/api/admin/events/${detailEvent.id}/registrations/${registration.id}`, { credentials: "include" });
+      const data = await res.json();
+      if (!res.ok) { showToast(data.error || "无法查看主理人资料"); return; }
+      setCreatorDetail(data.creator || null);
+    } catch { showToast("加载主理人资料失败"); }
+    finally { setCreatorDetailLoading(false); }
+  };
+
   const reviewReg = async (regId: number, action: "approve" | "reject") => {
     if (!detailEvent) return;
     try {
-      await fetch(`/api/admin/events/${detailEvent.id}/registrations/${regId}`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ action }) });
+      const res = await fetch(`/api/admin/events/${detailEvent.id}/registrations/${regId}`, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: "include", body: JSON.stringify({ action }) });
+      const data = await res.json();
+      if (!res.ok) { showToast(data.error || "操作失败"); return; }
       showToast(action === "approve" ? "已通过" : "已拒绝");
       void viewDetail(detailEvent);
       void load();
@@ -2258,7 +2285,8 @@ function EventsView({ showToast, onRefresh }: { showToast: (message: string) => 
   };
 
   const statusLabel: Record<string, string> = { draft: "草稿", recruiting: "招募中", full: "已满员", ended: "已结束", cancelled: "已取消" };
-  const regStatusLabel: Record<string, string> = { pending: "待审核", approved: "已确认", rejected: "已拒绝", cancelled: "已取消" };
+  const regStatusLabel: Record<string, string> = { pending: "审核中", approved: "报名成功", rejected: "未通过", cancelled: "已取消" };
+  const actionLabel: Record<string, string> = { apply: "报名", cancel: "取消报名", review: "审核" };
 
   return (
     <div className="admin-stack">
@@ -2303,6 +2331,7 @@ function EventsView({ showToast, onRefresh }: { showToast: (message: string) => 
             <label className="field"><span>详细地址</span><input value={form.address} onChange={(ev) => setForm({ ...form, address: ev.target.value })} /></label>
             <label className="field"><span>开始日期 *</span><input type="date" value={form.start_date} onChange={(ev) => setForm({ ...form, start_date: ev.target.value })} required /></label>
             <label className="field"><span>结束日期 *</span><input type="date" value={form.end_date} onChange={(ev) => setForm({ ...form, end_date: ev.target.value })} required /></label>
+            <label className="field"><span>营业时间</span><input value={form.business_hours} onChange={(ev) => setForm({ ...form, business_hours: ev.target.value })} placeholder="例如 10:00-18:00" maxLength={60} /></label>
             <label className="field"><span>报名截止</span><input type="date" value={form.registration_deadline} onChange={(ev) => setForm({ ...form, registration_deadline: ev.target.value })} /></label>
             <label className="field"><span>最大参与人数（0=不限）</span><input type="number" min="0" value={form.max_participants} onChange={(ev) => setForm({ ...form, max_participants: Number(ev.target.value) })} /></label>
             <label className="field"><span>招募品类（顿号分隔）</span><input value={form.category_tags} onChange={(ev) => setForm({ ...form, category_tags: ev.target.value })} placeholder="陶瓷、木作、手作" /></label>
@@ -2318,14 +2347,15 @@ function EventsView({ showToast, onRefresh }: { showToast: (message: string) => 
           {registrations.length === 0 ? <p className="empty-note">暂无报名。</p> : (
             <div className="data-table-wrap">
               <table className="data-table">
-                <thead><tr><th>主理人</th><th>联系方式</th><th>留言</th><th>报名时间</th><th>状态</th><th>操作</th></tr></thead>
+                <thead><tr><th>主理人</th><th>联系方式</th><th>留言</th><th>报名时间</th><th>状态</th><th>操作记录</th><th>操作</th></tr></thead>
                 <tbody>{registrations.map((r) => (
                   <tr key={r.id}>
-                    <td><strong>{r.brand_name || "未命名"}</strong><span>{r.slogan || ""}</span></td>
+                    <td><button className="table-link-button" type="button" onClick={() => void viewCreator(r)}>{r.brand_name || "未命名"}</button><span>{r.slogan || ""}</span></td>
                     <td>{r.phone}</td>
                     <td>{r.message || "-"}</td>
                     <td>{r.created_at?.slice(0, 16).replace("T", " ")}</td>
                     <td><strong>{regStatusLabel[r.status] || r.status}</strong></td>
+                    <td><div className="event-operation-records">{r.operationRecords?.length ? r.operationRecords.map((record) => <span key={record.id}>{actionLabel[record.action] || record.action} {record.created_at?.slice(0, 16).replace("T", " ")}</span>) : <span>历史无流水</span>}</div></td>
                     <td>{r.status === "pending" ? (
                       <div className="table-actions">
                         <button type="button" onClick={() => void reviewReg(r.id, "approve")}>通过</button>
@@ -2338,6 +2368,20 @@ function EventsView({ showToast, onRefresh }: { showToast: (message: string) => 
             </div>
           )}
         </section>
+      ) : null}
+      {creatorDetailLoading ? <div className="event-creator-loading">正在读取主理人资料</div> : null}
+      {creatorDetail ? (
+        <div className="dialog-backdrop" onMouseDown={() => setCreatorDetail(null)}>
+          <section className="creator-dossier event-creator-dossier" role="dialog" aria-modal="true" onMouseDown={(event) => event.stopPropagation()}>
+            <header><div><p className="eyebrow">CREATOR PROFILE</p><h2>{creatorDetail.brandName || creatorDetail.userName || "主理人资料"}</h2><span>UID {creatorDetail.id} · {creatorDetail.phone}</span></div><button type="button" onClick={() => setCreatorDetail(null)} aria-label="关闭">关闭</button></header>
+            <div className="dossier-scroll">
+              <section className="dossier-media"><div>{creatorDetail.logoUrl ? <Image src={creatorDetail.logoUrl} alt="品牌标识" fill sizes="110px" unoptimized /> : <span>未上传 Logo</span>}</div><div>{creatorDetail.representativeImageUrl ? <Image src={creatorDetail.representativeImageUrl} alt="代表图片" fill sizes="220px" unoptimized /> : <span>未上传代表图片</span>}</div></section>
+              <section><h3>基础资料</h3><p>{creatorDetail.intro || "未填写品牌介绍"}</p><dl><div><dt>品牌名称</dt><dd>{creatorDetail.brandName || "未填写"}</dd></div><div><dt>所在地区</dt><dd>{[creatorDetail.province, creatorDetail.city, creatorDetail.district].filter(Boolean).join(" ") || "未填写"}</dd></div><div><dt>微信</dt><dd>{creatorDetail.wechat || "未填写"}</dd></div><div><dt>社交账号</dt><dd>{creatorDetail.socialAccount || "未填写"}</dd></div></dl></section>
+              <section><h3>身份与分类</h3><div className="dossier-tags">{creatorDetail.tags.map((tag) => <span key={tag.id}>{tag.label}</span>)}</div><dl><div><dt>合作意向</dt><dd>{creatorDetail.opportunityTypes.join("、") || "未填写"}</dd></div><div><dt>合作目标</dt><dd>{creatorDetail.precisionInviteGoals.join("、") || "未填写"}</dd></div><div><dt>期待场景</dt><dd>{creatorDetail.precisionInviteScenes.join("、") || "未填写"}</dd></div></dl></section>
+              <section><h3>平台账号</h3><dl><div><dt>小红书</dt><dd>{creatorDetail.xiaohongshuFollowers ?? 0} 粉丝{creatorDetail.xiaohongshuUrl ? ` · ${creatorDetail.xiaohongshuUrl}` : ""}</dd></div><div><dt>抖音</dt><dd>{creatorDetail.douyinFollowers ?? 0} 粉丝{creatorDetail.douyinUrl ? ` · ${creatorDetail.douyinUrl}` : ""}</dd></div></dl></section>
+            </div>
+          </section>
+        </div>
       ) : null}
     </div>
   );
