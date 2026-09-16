@@ -31,6 +31,9 @@ test("A1-2 shows custom identity labels immediately and keeps required validatio
   assert.match(frontend, /function removeIdentityOther\(\)/);
   assert.match(frontend, /id="brandNameStatus"/);
   assert.match(frontend, /focusA12Requirement\('brandName','brandNameStatus','请填写品牌名称'\)/);
+  assert.match(frontend, /identityDraft\.has\(label\)/);
+  assert.match(frontend, /label!=='其他'/);
+  assert.doesNotMatch(frontend, /desiredCustom=\[\.\.\.desired\]\.filter\(label=>!current\.some\(tag=>tag\.label===label\)\)/);
 });
 
 test("A1-2 validation returns to the first invalid field with yellow highlighting", () => {

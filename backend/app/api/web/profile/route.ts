@@ -420,7 +420,15 @@ export async function POST(request: Request) {
         categoryCounts.set(tag.category, count);
       }
 
-      const customTags = Array.isArray(data.customTags) ? data.customTags.slice(0, 40) : [];
+      const customTags = Array.isArray(data.customTags)
+        ? data.customTags
+            .slice(0, 40)
+            .filter((item) => {
+              if (!item || typeof item !== "object") return false;
+              const custom = item as { category?: unknown; label?: unknown };
+              return !(String(custom.category || "").trim() === "我的身份" && String(custom.label || "").trim() === "其他");
+            })
+        : [];
       const structuredFields = ["precisionInviteGoals", "precisionInviteScenes", "xiaohongshuFollowers", "xiaohongshuUrl", "douyinFollowers", "douyinUrl"];
       const profileInput: Record<string, unknown> = {
         opportunityTypes,

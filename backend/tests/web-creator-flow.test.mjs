@@ -172,6 +172,38 @@ test("homepage choices flow into the profile and operations review snapshot", as
 
   const activeTag = database.one("SELECT id FROM tags WHERE status = 'active' AND category = '我的身份' ORDER BY id LIMIT 1");
   assert.ok(activeTag?.id);
+  const identitySave = await payload(await profileRoute.POST(jsonRequest(
+    "http://localhost/api/web/profile",
+    {
+      action: "updateTags",
+      tagIds: [activeTag.id],
+      customTags: [
+        { category: "我的身份", label: "其他" },
+        { category: "我的身份", label: "纸艺策展" },
+      ],
+    },
+    creatorToken,
+  )));
+  assert.equal(identitySave.status, 200, JSON.stringify(identitySave.body));
+  assert.ok(identitySave.body.creator.tags.some((tag) => tag.category === "我的身份" && tag.label === "纸艺策展"));
+  assert.equal(identitySave.body.creator.tags.some((tag) => tag.category === "我的身份" && tag.label === "其他"), false);
+
+  const secondIdentityTag = database.one(
+    "SELECT id FROM tags WHERE status = 'active' AND category = '我的身份' AND id != ? ORDER BY id LIMIT 1",
+    activeTag.id,
+  );
+  assert.ok(secondIdentityTag?.id);
+  const multiIdentitySave = await payload(await profileRoute.POST(jsonRequest(
+    "http://localhost/api/web/profile",
+    { action: "updateTags", tagIds: [activeTag.id, secondIdentityTag.id], customTags: [] },
+    creatorToken,
+  )));
+  assert.equal(multiIdentitySave.status, 200, JSON.stringify(multiIdentitySave.body));
+  assert.equal(
+    multiIdentitySave.body.creator.tags.filter((tag) => tag.category === "我的身份" && tag.status === "active").length,
+    2,
+  );
+
   const selectedTag = await payload(await profileRoute.POST(jsonRequest(
     "http://localhost/api/web/profile",
     { action: "addTag", tagId: activeTag.id },
@@ -193,7 +225,10 @@ test("homepage choices flow into the profile and operations review snapshot", as
   assert.equal(submitted.status, 200, JSON.stringify(submitted.body));
   const snapshot = database.one("SELECT busy_periods, custom_tags, no_bookings FROM creator_applications WHERE creator_id = ?", creatorId);
   assert.deepEqual(JSON.parse(snapshot.busy_periods), [{ startDate: "2026-09-12", endDate: "2026-09-12", note: "首页已标记不可约" }]);
-  assert.deepEqual(JSON.parse(snapshot.custom_tags), [{ category: "我的风格", label: "测试新风格" }]);
+  assert.deepEqual(JSON.parse(snapshot.custom_tags), [
+    { category: "我的身份", label: "纸艺策展" },
+    { category: "我的风格", label: "测试新风格" },
+  ]);
   assert.equal(snapshot.no_bookings, 0);
 
   const unifiedTags = await payload(await profileRoute.POST(jsonRequest(
