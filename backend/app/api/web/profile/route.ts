@@ -267,9 +267,9 @@ export async function POST(request: Request) {
         if (!key.startsWith(`web-creators/${creatorId}/`)) throw new Error("不能使用其他账号上传的图片");
         if (!(await getObject(key))) throw new Error("图片已失效，请重新上传");
       }
-      updateCreatorImages(creatorId, input);
+      const creator = updateCreatorImages(creatorId, input);
       markCreatorSection(creatorId, "images");
-      return Response.json({ success: true });
+      return Response.json({ success: true, creator });
     }
 
     if (action === "updateOpportunityTypes") {

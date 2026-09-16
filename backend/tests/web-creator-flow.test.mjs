@@ -164,6 +164,11 @@ test("homepage choices flow into the profile and operations review snapshot", as
     creatorToken,
   )));
   assert.equal(image.status, 200, JSON.stringify(image.body));
+  assert.equal(image.body.creator.brandName, "测试品牌");
+  assert.equal(image.body.creator.province, "北京市");
+  assert.equal(image.body.creator.city, "北京市");
+  assert.equal(image.body.creator.district, "朝阳区");
+  assert.equal(image.body.creator.logoKey, "");
 
   const activeTag = database.one("SELECT id FROM tags WHERE status = 'active' AND category = '我的身份' ORDER BY id LIMIT 1");
   assert.ok(activeTag?.id);
